@@ -111,7 +111,7 @@ export function Header() {
       <header className="bg-white border-b sticky top-0 z-50 shadow-sm" style={{ borderColor: "#D9CFC7" }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-4 -ml-2">
+            <div className="flex items-center gap-4 -ml-3 sm:-ml-2">
               <Button
                 variant="ghost"
                 size="icon"
@@ -141,12 +141,12 @@ export function Header() {
                 <img
                   src="/logo.png"
                   alt="Ananthala Logo"
-                  className="h-28 w-auto object-contain"
+                  className="h-20 md:h-28 w-auto object-contain"
                 />
               </Link>
             </div>
 
-            <div className="flex items-center gap-4 -mr-2">
+            <div className="flex items-center gap-4 -mr-3 sm:-mr-2">
               {!isLoading && (
                 <>
                   {user ? (

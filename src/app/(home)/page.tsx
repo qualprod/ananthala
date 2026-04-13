@@ -21,12 +21,12 @@ const categories = [
   {
     id: 2,
     title: "We look to mother nature for time proven solutions and make them more relevant for the current times.",
-    image: "/Hero Banner 2.png",
+    image: "/Hero banner 3.png",
   },
   {
     id: 3,
     title: "Introducing our virgin cotton mattresses for all ages. Sleep in the lap of nature !",
-    image: "/Hero banner 3.png",
+    image: "/Hero Banner 2.png",
   },
 ]
 
@@ -55,12 +55,51 @@ function HomepageRangeProductCard({
   onNavigate: (productName: string) => void
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const cardRef = useRef<HTMLButtonElement>(null)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
   const backgroundImage = card.backgroundUrl || "/placeholder.svg"
   const isPlaceholder = backgroundImage === "/placeholder.svg"
   const isVideo = !isPlaceholder && isHomepageCardVideoUrl(backgroundImage)
   const rangeLabel = rangeLabelForCard(card.name)
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: none), (pointer: coarse)")
+    const updateTouchState = () => setIsTouchDevice(mediaQuery.matches)
+
+    updateTouchState()
+    mediaQuery.addEventListener("change", updateTouchState)
+
+    return () => mediaQuery.removeEventListener("change", updateTouchState)
+  }, [])
+
+  useEffect(() => {
+    if (!isVideo || !isTouchDevice) return
+    const card = cardRef.current
+    const video = videoRef.current
+    if (!card || !video) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries
+        if (!entry) return
+
+        if (entry.isIntersecting) {
+          void video.play().catch(() => {
+            // Some browsers may still block playback; ignore and leave poster frame.
+          })
+        } else {
+          video.pause()
+        }
+      },
+      { threshold: 0.4 },
+    )
+
+    observer.observe(card)
+    return () => observer.disconnect()
+  }, [isVideo, isTouchDevice, backgroundImage])
+
   const handleVideoHoverStart = () => {
+    if (isTouchDevice) return
     const video = videoRef.current
     if (!video) return
     void video.play().catch(() => {
@@ -69,6 +108,7 @@ function HomepageRangeProductCard({
   }
 
   const handleVideoHoverEnd = () => {
+    if (isTouchDevice) return
     const v = videoRef.current
     if (!v) return
     v.pause()
@@ -78,6 +118,7 @@ function HomepageRangeProductCard({
   return (
     <div className="flex flex-col gap-3">
       <button
+        ref={cardRef}
         type="button"
         onClick={() => onNavigate(card.name)}
         onMouseEnter={isVideo ? handleVideoHoverStart : undefined}
@@ -92,7 +133,7 @@ function HomepageRangeProductCard({
             muted
             loop
             playsInline
-            preload="metadata"
+            preload={isTouchDevice ? "auto" : "metadata"}
             aria-hidden
           />
         ) : (
@@ -262,7 +303,7 @@ export default function Home() {
         </section>
 
         {/* Experience The Difference Section */}
-        <div className="py-16 bg-white">
+        <div className="py-24 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto text-center px-4">
             <h2 className="mb-4 text-4xl font-medium text-foreground">
               Experience Infinity, Experience Ananthala
