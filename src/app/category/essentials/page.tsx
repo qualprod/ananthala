@@ -1,10 +1,10 @@
 "use client"
 
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import { type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { ChevronRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -14,6 +14,17 @@ import { CategoryProductsGrid } from "@/components/sections/category-products-gr
 export default function EssentialsPage() {
   const shopSectionRef = useRef<HTMLElement>(null)
   const aboutUsSectionRef = useRef<HTMLElement>(null)
+  const [differenceCarouselApi, setDifferenceCarouselApi] = useState<CarouselApi>()
+
+  useEffect(() => {
+    if (!differenceCarouselApi) return
+
+    const autoScroll = window.setInterval(() => {
+      differenceCarouselApi.scrollNext()
+    }, 4000)
+
+    return () => window.clearInterval(autoScroll)
+  }, [differenceCarouselApi])
 
   const scrollToShop = () => {
     shopSectionRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -93,6 +104,7 @@ export default function EssentialsPage() {
                   loop: true,
                 }}
                 className="w-full"
+                setApi={setDifferenceCarouselApi}
               >
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {[
@@ -106,22 +118,22 @@ export default function EssentialsPage() {
                     },
                     {
                       id: 3,
-                      image: "/luxury-plush-mattress-with-pillows-on-bed.jpg",
+                      image: "/Joy-Grace-Bliss 3.png",
                     },
                   ].map((slide) => (
                     <CarouselItem key={slide.id} className="pl-2 md:pl-4 basis-full">
                       <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-12 items-start bg-[#EED9C4] pr-0 sm:pr-8">
-                        <div className="relative h-[280px] sm:h-[340px] md:h-[420px] lg:h-[480px] xl:h-[540px] overflow-hidden">
+                        <div className="relative aspect-[3/2] overflow-hidden">
                           <Image src={slide.image} alt="Ananthala Essentials" fill className="object-cover" />
                         </div>
-                        <div className="space-y-6 p-6 pb-8 pr-8 sm:p-8 lg:py-8 lg:pr-10 lg:pl-0 self-start">
+                        <div className="space-y-6 p-6 pb-8 pr-8 sm:p-8 lg:py-8 lg:pr-10 lg:pl-0 self-center text-center flex flex-col justify-center h-full">
                           <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium font-cormorant text-foreground">
                             Ananthala Difference
                           </h1>
                           <div className="text-sm uppercase tracking-wider font-medium text-foreground">
                             ESSENTIALS COLLECTION
                           </div>
-                          <p className="text-lg leading-relaxed text-foreground mt-10">
+                          <p className="text-xl leading-relaxed text-foreground mt-4">
                             At Ananthala, we design sleep essentials that blend comfort, durability, and thoughtful
                             craftsmanship. From breathable bedsheets to supportive pillows and quality bedding, every
                             product is made to improve everyday rest.

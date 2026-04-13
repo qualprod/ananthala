@@ -88,49 +88,49 @@ export default function AboutPage() {
             </div>
             
             {/* IMAGE AND TEXT GRID */}
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-              {/* LEFT SIDE — IMAGE */}
-              <div className="relative w-full h-[420px] sm:h-[480px] md:h-[560px] lg:h-[640px] overflow-hidden rounded-lg group bg-white md:mt-0">
-                <Image
-                  src="/Ananthala Story.png"
-                  alt="Ananthala Story"
-                  fill
-                  className="object-contain object-center shadow-md transition-transform duration-700"
-                />
+            <div className="space-y-10">
+              <div className="grid md:grid-cols-2 gap-12 items-start">
+                <div className="relative w-full h-[420px] sm:h-[480px] md:h-[560px] lg:h-[640px] overflow-hidden rounded-lg group bg-white">
+                  <Image
+                    src="/Ananthala Story.png"
+                    alt="Ananthala Story"
+                    fill
+                    className="object-contain object-center shadow-md transition-transform duration-700"
+                  />
+                </div>
+                <div className="space-y-10 text-foreground">
+                  <div className="space-y-3">
+                    <h3 className="text-2xl font-bold">A Legacy Rooted in Nature</h3>
+                    <p className="text-lg font-medium">
+                      There are stories that are told, and there are those that are lived--quietly, over generations.
+                    </p>
+                    <p className="text-lg font-medium">
+                      Ours began in the early 20th century, amidst fields of cotton and stretches of timber, where the
+                      rhythm of the land shaped our way of life. What started as cultivation evolved into trade in 1959,
+                      when we brought the finest milling technologies from Manchester to refine what nature had so
+                      generously given us.
+                    </p>
+                    <p className="text-lg font-medium">
+                      Today, in our fourth generation, this legacy continues--not as tradition alone, but as a philosophy
+                      of living.
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="text-2xl font-semibold">The Art of Rest</h3>
+                    <p className="text-lg font-medium">
+                      We believe that true luxury is not excess, but restoration.
+                    </p>
+                    <p className="text-lg font-medium">
+                      Sleep, to us, is more than a necessity--it is a ritual of renewal. A moment where the body unwinds,
+                      the mind softens, and one awakens restored. In a world that moves relentlessly forward, we seek to
+                      bring you back--to stillness, to simplicity, to nature.
+                    </p>
+                    <p className="text-lg font-medium">Because nature, in its quiet wisdom, knows best.</p>
+                  </div>
+                </div>
               </div>
-              {/* RIGHT SIDE — TEXT */}
-              <div className="space-y-10 text-foreground">
-                <div className="space-y-3">
-                  <h3 className="text-2xl font-bold">A Legacy Rooted in Nature</h3>
-                  <p className="text-lg font-medium">
-                    There are stories that are told, and there are those that are lived--quietly, over generations.
-                  </p>
-                  <p className="text-lg font-medium">
-                    Ours began in the early 20th century, amidst fields of cotton and stretches of timber, where the
-                    rhythm of the land shaped our way of life. What started as cultivation evolved into trade in 1959,
-                    when we brought the finest milling technologies from Manchester to refine what nature had so
-                    generously given us.
-                  </p>
-                  <p className="text-lg font-medium">
-                    Today, in our fourth generation, this legacy continues--not as tradition alone, but as a philosophy
-                    of living.
-                  </p>
-                </div>
-                <hr className="border-[#EED9C4]" />
-                <div className="space-y-3">
-                  <h3 className="text-2xl font-semibold">The Art of Rest</h3>
-                  <p className="text-lg font-medium">
-                    We believe that true luxury is not excess, but restoration.
-                  </p>
-                  <p className="text-lg font-medium">
-                    Sleep, to us, is more than a necessity--it is a ritual of renewal. A moment where the body unwinds,
-                    the mind softens, and one awakens restored. In a world that moves relentlessly forward, we seek to
-                    bring you back--to stillness, to simplicity, to nature.
-                  </p>
-                  <p className="text-lg font-medium">Because nature, in its quiet wisdom, knows best.</p>
-                </div>
-                <hr className="border-[#EED9C4]" />
-                <div className="space-y-3">
+              <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-[#EED9C4] text-foreground">
+                <div className="space-y-3 py-6 lg:py-0 lg:pr-6">
                   <h3 className="text-2xl font-semibold">Materials in Their Purest Form</h3>
                   <p className="text-lg font-medium">
                     At the heart of our craft lies an uncompromising respect for natural materials.
@@ -146,8 +146,7 @@ export default function AboutPage() {
                     balance that feels instinctively right.
                   </p>
                 </div>
-                <hr className="border-[#EED9C4]" />
-                <div className="space-y-3">
+                <div className="space-y-3 py-6 lg:py-0 lg:px-6">
                   <h3 className="text-2xl font-semibold">Crafted with Quiet Precision</h3>
                   <p className="text-lg font-medium">Luxury reveals itself in the details.</p>
                   <p className="text-lg font-medium">
@@ -161,8 +160,7 @@ export default function AboutPage() {
                     a philosophy: to create with integrity, and to craft for a lifetime.
                   </p>
                 </div>
-                <hr className="border-[#EED9C4]" />
-                <div className="space-y-3">
+                <div className="space-y-3 py-6 lg:py-0 lg:pl-6">
                   <h3 className="text-2xl font-semibold">A Return to What Matters</h3>
                   <p className="text-lg font-medium">
                     In every product we offer is an invitation--to slow down, to reconnect, and to rediscover the simple
@@ -174,7 +172,6 @@ export default function AboutPage() {
                   </p>
                 </div>
               </div>
-              
             </div>
           </div>
         </section>
@@ -215,7 +212,7 @@ export default function AboutPage() {
               {/* Vision */}
                 <div className="relative overflow-hidden bg-white px-14 pt-14 pb-16 border border-[#EED9C4]/60 rounded-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl cursor-pointer">
                   <Image
-                    src="/Vision and Mission Background.png"
+                    src="/vision.png"
                     alt="Vision Background"
                     fill
                     className="object-cover opacity-60"

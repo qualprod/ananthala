@@ -16,20 +16,17 @@ const categories = [
   {
     id: 1,
     title: "At Ananthala, we truly value our traditions specifically the ones that have taken care of us for generations.",
-    image:
-      "/Banner1.png",
+    image: "/Hero Banner 1.png",
   },
   {
     id: 2,
     title: "We look to mother nature for time proven solutions and make them more relevant for the current times.",
-    image:
-      "/Banner2.png",
+    image: "/Hero Banner 2.png",
   },
   {
     id: 3,
     title: "Introducing our virgin cotton mattresses for all ages. Sleep in the lap of nature !",
-    image:
-      "/Banner3.png",
+    image: "/Hero banner 3.png",
   },
 ]
 
@@ -85,7 +82,7 @@ function HomepageRangeProductCard({
         onClick={() => onNavigate(card.name)}
         onMouseEnter={isVideo ? handleVideoHoverStart : undefined}
         onMouseLeave={isVideo ? handleVideoHoverEnd : undefined}
-        className="group relative w-full aspect-3/4 overflow-hidden cursor-pointer bg-gray-100"
+        className="group relative w-full aspect-[7/10] overflow-hidden cursor-pointer bg-gray-100"
       >
         {isVideo ? (
           <video
@@ -220,7 +217,7 @@ export default function Home() {
           {/* Background Video */}
           <div className="absolute inset-0 z-0">
             <video ref={videoRef} autoPlay loop muted playsInline className="w-full h-full object-cover">
-              <source src="/ananthala hero section video.mp4" type="video/mp4" />
+              <source src="/herosection.mp4" type="video/mp4" />
             </video>
             <div className="absolute inset-0 bg-black/20" />
           </div>
@@ -275,7 +272,7 @@ export default function Home() {
 
         {/* Category Slider Section */}
         <section className="relative w-full overflow-hidden">
-          <div className="relative h-[620px] md:h-[720px] lg:h-[820px]">
+          <div className="relative w-full aspect-video">
             {categories.map((category, index) => (
               <div
                 key={category.id}
@@ -288,7 +285,9 @@ export default function Home() {
                 <img
                   src={category.image || "/placeholder.svg"}
                   alt={category.title}
-                  className={`w-full h-full object-cover object-top transition-transform duration-7000 ease-out ${
+                  className={`w-full h-full transition-transform duration-7000 ease-out ${
+                    category.image ? "object-cover object-top" : "object-contain bg-white"
+                  } ${
                     currentSlide === index ? "scale-105" : "scale-100"
                   }`}
                 />

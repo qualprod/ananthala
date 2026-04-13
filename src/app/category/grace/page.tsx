@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import {
+  type CarouselApi,
   Carousel,
   CarouselContent,
   CarouselItem,
@@ -13,13 +14,24 @@ import {
 import { ChevronRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { CustomerTestimonialVideos } from "@/components/sections/customer-testimonial-videos"
 import { CategoryProductsGrid } from "@/components/sections/category-products-grid"
 
 export default function GracePage() {
   const shopSectionRef = useRef<HTMLElement>(null)
   const aboutUsSectionRef = useRef<HTMLElement>(null)
+  const [differenceCarouselApi, setDifferenceCarouselApi] = useState<CarouselApi>()
+
+  useEffect(() => {
+    if (!differenceCarouselApi) return
+
+    const autoScroll = window.setInterval(() => {
+      differenceCarouselApi.scrollNext()
+    }, 4000)
+
+    return () => window.clearInterval(autoScroll)
+  }, [differenceCarouselApi])
 
   const scrollToShop = () => {
     shopSectionRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -109,6 +121,7 @@ export default function GracePage() {
                   loop: true,
                 }}
                 className="w-full"
+                setApi={setDifferenceCarouselApi}
               >
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {[
@@ -120,14 +133,14 @@ export default function GracePage() {
                     },
                     {
                       id: 2,
-                      image: "/Ananthala Diff2.png",
+                      image: "/Grace 2.png",
                       title: "Ananthala Difference",
                       description:
                         "Every sleep feels like a rejuvenation in itself - deep and comforting !",
                     },
                     {
                       id: 3,
-                      image: "/Ananthala Diff3.png",
+                      image: "/Joy-Grace-Bliss 3.png",
                       title: "Ananthala Difference",
                       description:
                         "At Ananthala, our craftsmen choose the finest and the most suitable inputs that go into making your products.",
@@ -139,7 +152,7 @@ export default function GracePage() {
                     >
                       <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-12 items-start bg-[#EED9C4] pr-0 sm:pr-8">
                         {/* Left Side - Image */}
-                        <div className="relative h-[280px] sm:h-[340px] md:h-[420px] lg:h-[480px] xl:h-[540px] overflow-hidden">
+                        <div className="relative aspect-[3/2] overflow-hidden">
                           <Image
                             src={slide.image || "/placeholder.svg"}
                             alt={slide.title}
@@ -149,7 +162,7 @@ export default function GracePage() {
                         </div>
                         
                         {/* Right Side - Text Content with Card */}
-                        <div className="space-y-6 p-6 pb-8 pr-8 sm:p-8 lg:py-8 lg:pr-10 lg:pl-0 self-start">
+                        <div className="space-y-6 p-6 pb-8 pr-8 sm:p-8 lg:py-8 lg:pr-10 lg:pl-0 self-center text-center flex flex-col justify-center h-full">
                          
                           <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium font-cormorant text-foreground">
                             Ananthala Difference
@@ -157,7 +170,7 @@ export default function GracePage() {
                           <div className="text-lg md:text-xl uppercase tracking-wider font-medium text-foreground">
                             Grace Collection
                           </div>
-                          <p className="text-lg leading-relaxed text-foreground mt-10">
+                          <p className="text-xl leading-relaxed text-foreground mt-4">
                             {slide.description}
                           </p>
                           
