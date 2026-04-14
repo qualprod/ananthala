@@ -5,9 +5,10 @@ import { Analytics } from "@vercel/analytics/next"
 import { CartProvider } from "@/contexts/cart-context"
 import { FixedSidebar } from "@/components/layout/fixed-sidebar"
 import { Toaster } from "@/components/ui/toaster"
+import { ClarityAnalytics } from "@/components/clarity-analytics"
 
+// @ts-ignore
 import "./globals.css"
-import "react-inner-image-zoom/lib/styles.min.css"
 
 const cormorantGaramond = Cormorant_Garamond({ 
   subsets: ["latin"],
@@ -65,6 +66,7 @@ export default function RootLayout({
         </CartProvider>
         <Toaster />
         <Analytics />
+        <ClarityAnalytics />
       </body>
     </html>
   )
