@@ -16,11 +16,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (file.type !== "image/gif") {
+    const name = file.name.toLowerCase()
+    const looseType = file.type === "" || file.type === "application/octet-stream"
+    const isGif = file.type === "image/gif" || (looseType && name.endsWith(".gif"))
+    const isMp4 =
+      file.type === "video/mp4" || file.type.startsWith("video/mp4;") || (looseType && name.endsWith(".mp4"))
+
+    if (!isGif && !isMp4) {
       return NextResponse.json(
         {
           success: false,
-          message: "Please upload a valid GIF file",
+          message: "Please upload a GIF (.gif) or MP4 (.mp4) file",
         },
         { status: 400 },
       )

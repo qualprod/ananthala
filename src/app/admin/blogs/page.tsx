@@ -119,7 +119,7 @@ function BlogManagementContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#8B5A3C]" />
+        <Loader2 className="h-8 w-8 animate-spin text-foreground" />
       </div>
     )
   }
@@ -196,9 +196,9 @@ function BlogManagementContent() {
                   </td>
                   <td className="py-4 px-4">
                     <div className="font-semibold text-[#4A2F1F] max-w-xs truncate">{blog.title}</div>
-                    <div className="text-sm text-[#6D4530] mt-0.5 max-w-xs truncate">{blog.excerpt}</div>
+                    <div className="text-sm text-foreground mt-0.5 max-w-xs truncate">{blog.excerpt}</div>
                   </td>
-                  <td className="py-4 px-4 text-[#6D4530] font-medium">{blog.category}</td>
+                  <td className="py-4 px-4 text-foreground font-medium">{blog.category}</td>
                   <td className="py-4 px-4 text-[#4A2F1F]">{blog.author}</td>
                   <td className="py-4 px-4">
                     <span
@@ -221,7 +221,7 @@ function BlogManagementContent() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-[#8B5A3C] hover:bg-[#8B5A3C]/10"
+                        className="h-8 w-8 text-foreground hover:bg-[#8B5A3C]/10"
                         onClick={() => router.push(`/admin/blogs/edit/${blog._id}`)}
                       >
                         <Edit className="h-4 w-4" />
@@ -261,9 +261,9 @@ function BlogManagementContent() {
                 />
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-[#4A2F1F] truncate">{blog.title}</h3>
-                  <p className="text-sm text-[#6D4530] truncate">{blog.excerpt}</p>
+                  <p className="text-sm text-foreground truncate">{blog.excerpt}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-[#6D4530]">{blog.category}</span>
+                    <span className="text-xs text-foreground">{blog.category}</span>
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         blog.published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
@@ -276,7 +276,7 @@ function BlogManagementContent() {
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-[#D9CFC7]">
-                <span className="text-xs text-[#6D4530]">
+                <span className="text-xs text-foreground">
                   {new Date(blog.createdAt).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "short",
@@ -287,7 +287,7 @@ function BlogManagementContent() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-[#8B5A3C] hover:bg-[#8B5A3C]/10"
+                    className="h-8 w-8 text-foreground hover:bg-[#8B5A3C]/10"
                     onClick={() => router.push(`/admin/blogs/edit/${blog._id}`)}
                   >
                     <Edit className="h-4 w-4" />
@@ -316,7 +316,7 @@ function BlogManagementContent() {
 
         {filteredBlogs.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-[#6D4530] font-medium">
+            <p className="text-foreground font-medium">
               {selectedCategory === "all"
                 ? "No blogs found. Create your first blog to get started!"
                 : `No ${selectedCategory} blogs found.`}

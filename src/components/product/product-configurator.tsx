@@ -12,6 +12,12 @@ import { fabricOptions } from "@/data/fabric"
 import { MagnifyImage } from "@/components/product/MagnifyImage"
 import ComplementaryProductsModal from "@/components/product/complementary-products-modal"
 
+interface ApiFabric {
+  id: string
+  name: string
+  image?: string
+}
+
 interface ApiProductVariant {
   weight: number
   length: number
@@ -48,6 +54,7 @@ export function ProductConfigurator({
   const [showComplementaryModal, setShowComplementaryModal] = useState(false)
   const [pendingCartItem, setPendingCartItem] = useState<CartItem | null>(null)
   const [isLoadingComplementary, setIsLoadingComplementary] = useState(false)
+  const [dynamicFabrics, setDynamicFabrics] = useState<ApiFabric[]>([])
 
 
 
@@ -116,6 +123,22 @@ export function ProductConfigurator({
     (useCustomDimensions ? hasCustomDimensions : Boolean(selectedSize)) &&
     (availableFabrics.length <= 1 || Boolean(selectedFabric)) &&
     hasSufficientStock
+
+  // Fetch dynamic fabrics from database
+  useEffect(() => {
+    const fetchFabrics = async () => {
+      try {
+        const response = await fetch("/api/fabrics")
+        const data = await response.json()
+        if (data.success && Array.isArray(data.fabrics)) {
+          setDynamicFabrics(data.fabrics)
+        }
+      } catch (error) {
+        console.error("[v0] Error fetching fabrics:", error)
+      }
+    }
+    fetchFabrics()
+  }, [])
 
   useEffect(() => {
     if (!useCustomDimensions && !selectedSize && product.sizes.length > 0) {
@@ -371,7 +394,10 @@ export function ProductConfigurator({
                       </SelectTrigger>
                       <SelectContent>
                         {availableFabrics.map((fabricId) => {
-                          const fabricOption = fabricOptions.find((fabric) => fabric.id === fabricId)
+                          // First check dynamic fabrics from database
+                          const dynamicFabric = dynamicFabrics.find((fabric) => fabric.id === fabricId)
+                          // Fallback to static fabrics
+                          const fabricOption = dynamicFabric || fabricOptions.find((fabric) => fabric.id === fabricId)
                           return (
                             <SelectItem key={fabricId} value={fabricId}>
                               <span className="flex items-center gap-2">

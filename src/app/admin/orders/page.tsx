@@ -229,8 +229,8 @@ export default function OrderManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#6D4530]">Order Management</h1>
-          <p className="text-[#8B5A3C]/70 mt-1">Track and manage all customer orders</p>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Order Management</h1>
+          <p className="text-foreground/70 mt-1">Track and manage all customer orders</p>
         </div>
         <Button className="bg-[#8B5A3C] hover:bg-[#6D4530] text-white">
           <Download className="w-4 h-4 mr-2" />
@@ -246,7 +246,7 @@ export default function OrderManagementPage() {
             <div key={index} className={`${stat.color} border rounded-lg p-6 transition-all hover:shadow-md`}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[#8B5A3C]/70 text-sm font-medium">{stat.label}</p>
+                  <p className="text-foreground/70 text-sm font-medium">{stat.label}</p>
                   <p className={`text-3xl font-bold mt-2 ${stat.textColor}`}>{stat.value}</p>
                 </div>
                 <Icon className={`w-8 h-8 ${stat.textColor}/30`} />
@@ -275,7 +275,7 @@ export default function OrderManagementPage() {
       <div className="bg-white rounded-lg border p-4 space-y-4" style={{ borderColor: "#D9CFC7" }}>
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8B5A3C]/50 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-4 h-4" />
             <Input
               placeholder="Search by order ID or customer name..."
               value={searchQuery}
@@ -310,25 +310,25 @@ export default function OrderManagementPage() {
           <table className="w-full">
             <thead className="bg-[#F5F1ED]">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Order ID</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Customer</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Items</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Total</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Date</th>
-                <th className="px-6 py-3 text-right text-sm font-semibold text-[#6D4530]">Actions</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Order ID</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Customer</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Items</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Total</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Status</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Date</th>
+                <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: "#D9CFC7" }}>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-[#8B5A3C]/70">
+                  <td colSpan={7} className="px-6 py-8 text-center text-foreground/70">
                     Loading orders...
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-[#8B5A3C]/70">
+                  <td colSpan={7} className="px-6 py-8 text-center text-foreground/70">
                     No orders found
                   </td>
                 </tr>
@@ -338,19 +338,19 @@ export default function OrderManagementPage() {
                   return (
                     <tr key={order._id} className="hover:bg-[#F5F1ED]/50 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-mono text-sm text-[#8B5A3C]">{order.orderId}</div>
+                        <div className="font-mono text-sm text-foreground">{order.orderId}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div>
-                          <div className="font-medium text-[#6D4530]">{order.customerName}</div>
-                          <div className="text-xs text-[#8B5A3C]/70">{order.customerEmail}</div>
+                          <div className="font-medium text-foreground">{order.customerName}</div>
+                          <div className="text-xs text-foreground/70">{order.customerEmail}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-[#6D4530]">
+                      <td className="px-6 py-4 text-foreground">
                         {Array.isArray(order.items) ? order.items.length : 0} items
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-[#6D4530] flex items-center gap-1">
+                        <div className="font-semibold text-foreground flex items-center gap-1">
                           <IndianRupee className="w-4 h-4" />
                           {order.totalAmount.toLocaleString("en-IN", {
                             minimumFractionDigits: 2,
@@ -366,7 +366,7 @@ export default function OrderManagementPage() {
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-[#6D4530]">
+                      <td className="px-6 py-4 text-foreground">
                         {new Date(order.createdAt).toLocaleDateString("en-IN")}
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -407,7 +407,7 @@ export default function OrderManagementPage() {
 
         {/* Pagination */}
         <div className="px-6 py-4 border-t flex items-center justify-between" style={{ borderColor: "#D9CFC7" }}>
-          <div className="text-sm text-[#8B5A3C]/70">
+          <div className="text-sm text-foreground/70">
             Showing {orders.length > 0 ? (page - 1) * 10 + 1 : 0} - {Math.min(page * 10, stats?.totalOrders || 0)} of{" "}
             {stats?.totalOrders || 0} orders
           </div>
@@ -429,7 +429,7 @@ export default function OrderManagementPage() {
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-[#6D4530]">Order Details</DialogTitle>
+            <DialogTitle className="text-foreground">Order Details</DialogTitle>
           </DialogHeader>
 
           {selectedOrder && (
@@ -437,12 +437,12 @@ export default function OrderManagementPage() {
               {/* Order Header */}
               <div className="grid grid-cols-2 gap-4 p-4 bg-[#F5F1ED] rounded-lg">
                 <div>
-                  <p className="text-xs text-[#8B5A3C]/70 font-medium">Order ID</p>
-                  <p className="text-lg font-semibold text-[#6D4530]">{selectedOrder.orderId}</p>
+                  <p className="text-xs text-foreground/70 font-medium">Order ID</p>
+                  <p className="text-lg font-semibold text-foreground">{selectedOrder.orderId}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-[#8B5A3C]/70 font-medium">Order Date</p>
-                  <p className="text-lg font-semibold text-[#6D4530]">
+                  <p className="text-xs text-foreground/70 font-medium">Order Date</p>
+                  <p className="text-lg font-semibold text-foreground">
                     {new Date(selectedOrder.createdAt).toLocaleDateString("en-IN")}
                   </p>
                 </div>
@@ -450,15 +450,15 @@ export default function OrderManagementPage() {
 
               {/* Customer Information */}
               <div>
-                <h3 className="font-semibold text-[#6D4530] mb-3">Customer Information</h3>
+                <h3 className="font-semibold text-foreground mb-3">Customer Information</h3>
                 <div className="space-y-2 text-sm">
-                  <p className="text-[#6D4530]">
+                  <p className="text-foreground">
                     <span className="font-medium">Name:</span> {selectedOrder.customerName}
                   </p>
-                  <p className="text-[#6D4530]">
+                  <p className="text-foreground">
                     <span className="font-medium">Email:</span> {selectedOrder.customerEmail}
                   </p>
-                  <p className="text-[#6D4530]">
+                  <p className="text-foreground">
                     <span className="font-medium">Phone:</span> {selectedOrder.customerPhone}
                   </p>
                 </div>
@@ -466,7 +466,7 @@ export default function OrderManagementPage() {
 
               {/* Order Items */}
               <div>
-                <h3 className="font-semibold text-[#6D4530] mb-3">Order Items</h3>
+                <h3 className="font-semibold text-foreground mb-3">Order Items</h3>
                 <div className="space-y-3">
                   {Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
                     selectedOrder.items.map((item, index) => (
@@ -476,26 +476,26 @@ export default function OrderManagementPage() {
                         style={{ borderColor: "#D9CFC7" }}
                       >
                         <div>
-                          <p className="font-medium text-[#6D4530]">{item.productName}</p>
-                          <p className="text-xs text-[#8B5A3C]/70">
+                          <p className="font-medium text-foreground">{item.productName}</p>
+                          <p className="text-xs text-foreground/70">
                             Size: {item.size} | Qty: {item.quantity}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1 font-semibold text-[#6D4530]">
+                        <div className="flex items-center gap-1 font-semibold text-foreground">
                           <IndianRupee className="w-4 h-4" />
                           {(item.price * item.quantity).toLocaleString("en-IN")}
                         </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[#8B5A3C]/70">No items in this order</p>
+                    <p className="text-foreground/70">No items in this order</p>
                   )}
                 </div>
               </div>
 
               {/* Order Timeline */}
               <div>
-                <h3 className="font-semibold text-[#6D4530] mb-3">Order Journey</h3>
+                <h3 className="font-semibold text-foreground mb-3">Order Journey</h3>
                 <div className="space-y-3">
                   {Array.isArray(selectedOrder.orderTimeline) && selectedOrder.orderTimeline.length > 0 ? (
                     selectedOrder.orderTimeline.map((event, index) => (
@@ -507,23 +507,23 @@ export default function OrderManagementPage() {
                           )}
                         </div>
                         <div className="flex-1 pt-1">
-                          <p className="font-medium text-[#6D4530]">{event.status}</p>
-                          <p className="text-sm text-[#8B5A3C]/70">{event.description}</p>
-                          <p className="text-xs text-[#8B5A3C]/50">
+                          <p className="font-medium text-foreground">{event.status}</p>
+                          <p className="text-sm text-foreground/70">{event.description}</p>
+                          <p className="text-xs text-foreground/50">
                             {new Date(event.timestamp).toLocaleString("en-IN")}
                           </p>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-[#8B5A3C]/70">No timeline events yet</p>
+                    <p className="text-foreground/70">No timeline events yet</p>
                   )}
                 </div>
               </div>
 
               {/* Order Summary */}
               <div className="p-4 bg-[#F5F1ED] rounded-lg space-y-2">
-                <div className="flex justify-between text-[#6D4530]">
+                <div className="flex justify-between text-foreground">
                   <span>Subtotal:</span>
                   <span className="flex items-center gap-1">
                     <IndianRupee className="w-4 h-4" />
@@ -534,7 +534,7 @@ export default function OrderManagementPage() {
                       : "0.00"}
                   </span>
                 </div>
-                <div className="flex justify-between text-[#6D4530]">
+                <div className="flex justify-between text-foreground">
                   <span>Shipping:</span>
                   <span className="flex items-center gap-1">
                     <IndianRupee className="w-4 h-4" />
@@ -542,7 +542,7 @@ export default function OrderManagementPage() {
                   </span>
                 </div>
                 <div
-                  className="border-t pt-2 flex justify-between font-semibold text-[#6D4530]"
+                  className="border-t pt-2 flex justify-between font-semibold text-foreground"
                   style={{ borderColor: "#D9CFC7" }}
                 >
                   <span>Total:</span>
@@ -561,7 +561,7 @@ export default function OrderManagementPage() {
               {/* Order Status Badge */}
               <div className="flex items-center justify-between p-4 bg-[#F5F1ED] rounded-lg">
                 <div>
-                  <p className="text-xs text-[#8B5A3C]/70 font-medium">Current Status</p>
+                  <p className="text-xs text-foreground/70 font-medium">Current Status</p>
                   <p
                     className={`text-lg font-semibold mt-1 flex items-center gap-2 ${getStatusColor(
                       selectedOrder.orderStatus || "pending",
@@ -584,20 +584,20 @@ export default function OrderManagementPage() {
       <Dialog open={isStatusUpdateModalOpen} onOpenChange={setIsStatusUpdateModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#6D4530]">Update Order Status</DialogTitle>
+            <DialogTitle className="text-foreground">Update Order Status</DialogTitle>
           </DialogHeader>
 
           {selectedOrder && (
             <div className="space-y-4">
               {/* Order ID Display */}
               <div className="p-3 bg-[#F5F1ED] rounded-lg">
-                <p className="text-xs text-[#8B5A3C]/70 font-medium">Order ID</p>
-                <p className="font-mono text-sm font-semibold text-[#6D4530]">{selectedOrder.orderId}</p>
+                <p className="text-xs text-foreground/70 font-medium">Order ID</p>
+                <p className="font-mono text-sm font-semibold text-foreground">{selectedOrder.orderId}</p>
               </div>
 
               {/* Current Status Display */}
               <div className="p-3 bg-[#F5F1ED] rounded-lg">
-                <p className="text-xs text-[#8B5A3C]/70 font-medium">Current Status</p>
+                <p className="text-xs text-foreground/70 font-medium">Current Status</p>
                 <div className={`text-sm font-semibold mt-1 flex items-center gap-2 w-fit px-2 py-1 rounded ${getStatusColor(selectedOrder.orderStatus || "pending")}`}>
                   {getStatusIcon(selectedOrder.orderStatus || "pending")}
                   {(selectedOrder.orderStatus || "pending").charAt(0).toUpperCase() + (selectedOrder.orderStatus || "pending").slice(1)}
@@ -616,7 +616,7 @@ export default function OrderManagementPage() {
 
               {/* New Status Select */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#6D4530]">New Status</label>
+                <label className="text-sm font-medium text-foreground">New Status</label>
                 <Select value={newStatus} onValueChange={setNewStatus}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select new status" />
@@ -634,7 +634,7 @@ export default function OrderManagementPage() {
 
               {/* Tracking Number Input */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#6D4530]">Tracking Number (Optional)</label>
+                <label className="text-sm font-medium text-foreground">Tracking Number (Optional)</label>
                 <Input
                   placeholder="Enter tracking number"
                   value={trackingNumber}
@@ -645,7 +645,7 @@ export default function OrderManagementPage() {
 
               {/* Update Notes Input */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#6D4530]">Notes (Optional)</label>
+                <label className="text-sm font-medium text-foreground">Notes (Optional)</label>
                 <textarea
                   placeholder="Add any notes about this status update..."
                   value={updateNotes}

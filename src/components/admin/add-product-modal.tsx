@@ -18,6 +18,7 @@ import type {
 } from "@/types/product"
 import { fabricOptions } from "@/data/fabric"
 import { toast } from "@/hooks/use-toast"
+import { FabricSelector } from "@/components/admin/fabric-selector"
 
 interface AddProductModalProps {
   isOpen: boolean
@@ -45,7 +46,7 @@ interface EditableProduct {
   location: string
   category: string
   subCategory?: string
-  productType?: "normal" | "complementary"
+  productRole?: "normal" | "complementary"
   imageUrls: string[]
   hamperPrice?: number
   hamperFabric?: string
@@ -834,33 +835,13 @@ export default function AddProductModal({
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="hamperFabric" className="text-sm sm:text-base text-[#6D4530]">
-                      Hamper Fabric*
-                    </Label>
-                    <Select
-                      value={formData.hamperFabric || ""}
-                      onValueChange={(value) => handleInputChange("hamperFabric", value)}
-                    >
-                      <SelectTrigger id="hamperFabric" className="border-[#D9CFC7] h-11 sm:h-12">
-                        <SelectValue placeholder="Select fabric" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-[#D9CFC7]">
-                        {fabricOptions.map((fabric) => (
-                          <SelectItem key={fabric.id} value={fabric.id} className="flex items-center gap-2">
-                            <div className="flex items-center gap-2">
-                              <img
-                                src={fabric.image || "/placeholder.svg"}
-                                alt={fabric.name}
-                                className="h-4 w-4 rounded object-cover"
-                              />
-                              <span>{fabric.name}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <FabricSelector
+                    value={formData.hamperFabric || ""}
+                    onValueChange={(value) => handleInputChange("hamperFabric", value)}
+                    label="Hamper Fabric"
+                    htmlFor="hamperFabric"
+                    triggerClassName="border-[#D9CFC7] h-11 sm:h-12"
+                  />
                 </div>
               )}
             </div>
@@ -1479,32 +1460,14 @@ export default function AddProductModal({
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor={`fabric-${variant.id}`} className="text-sm text-[#6D4530]">
-                        Fabric*
-                      </Label>
-                      <Select value={variant.fabric} onValueChange={(value) => handleVariantChange(variant.id, "fabric", value)}>
-                        <SelectTrigger
-                          id={`fabric-${variant.id}`}
-                          className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3"
-                        >
-                          <SelectValue placeholder="Select fabric" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border-[#D9CFC7]">
-                          {fabricOptions.map((fabric) => (
-                            <SelectItem key={fabric.id} value={fabric.id} className="flex items-center gap-2">
-                              <div className="flex items-center gap-2">
-                                <img
-                                  src={fabric.image || "/placeholder.svg"}
-                                  alt={fabric.name}
-                                  className="h-4 w-4 rounded object-cover"
-                                />
-                                <span>{fabric.name}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-2 mb-3">
+                      <FabricSelector
+                        value={variant.fabric}
+                        onValueChange={(value) => handleVariantChange(variant.id, "fabric", value)}
+                        label="Fabric"
+                        htmlFor={`fabric-${variant.id}`}
+                        triggerClassName="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold"
+                      />
                     </div>
 
                     <div className="space-y-2">

@@ -94,7 +94,7 @@ export default function AdminLoginPage() {
       <div className="absolute top-4 right-4 md:top-8 md:right-8 z-20">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white border border-[#E5D5C5] rounded-lg text-[#8B5A3C] hover:text-[#6D4530] transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white border border-[#E5D5C5] rounded-lg text-foreground hover:text-foreground transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Ananthala</span>
@@ -117,23 +117,27 @@ export default function AdminLoginPage() {
         <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
           {/* Logo/Icon */}
           <div className="flex justify-center lg:justify-start">
-            <img src="/logo.png" alt="Ananthala Admin" className="h-20 md:h-24 w-auto" />
+            <img
+              src="/logo.png"
+              alt="Ananthala Admin"
+              className="h-24 md:h-28 w-auto mix-blend-darken"
+            />
           </div>
 
           {/* Welcome Message */}
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-[#6D4530] tracking-wide leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-normal text-foreground tracking-wide leading-tight">
               Welcome to Admin Portal
             </h1>
-            <p className="text-2xl md:text-3xl text-[#8B5A3C] font-light tracking-wider">
-              of <span className="font-normal text-[#6D4530]">Ananthala</span>
+            <p className="text-2xl md:text-3xl text-foreground font-light tracking-wider">
+              of <span className="font-normal text-foreground">Ananthala</span>
             </p>
-            <div className="h-px w-48 bg-gradient-to-r from-transparent via-[#8B5A3C] to-transparent mx-auto lg:mx-0" />
+            <div className="h-px w-48 bg-gradient-to-r from-transparent via-foreground/70 to-transparent mx-auto lg:mx-0" />
           </div>
 
           {/* Quote Section */}
           <blockquote className="space-y-4 py-6">
-            <p className="text-lg md:text-xl text-[#6D4530] italic leading-relaxed">
+            <p className="text-lg md:text-xl text-foreground italic leading-relaxed">
               "Excellence in administration is the foundation of exceptional service. Manage with precision, deliver
               with care."
             </p>
@@ -141,38 +145,38 @@ export default function AdminLoginPage() {
           </blockquote>
 
           {/* Features List */}
-          <div className="space-y-4 pt-4">
+          <div className="space-y-5 pt-0 -mt-2">
             <div className="flex items-start gap-4 justify-center lg:justify-start">
-              <div className="w-10 h-10 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
-                <Award className="w-5 h-5 text-[#8B5A3C]" />
+              <div className="w-12 h-12 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
+                <Award className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-[#6D4530] mb-1">Complete Control</h3>
-                <p className="text-sm text-[#B8A396] leading-relaxed">
+                <h3 className="text-2xl font-medium text-foreground mb-1">Complete Control</h3>
+                <p className="text-lg text-foreground/70 leading-relaxed">
                   Manage orders, products, and customers with ease
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 justify-center lg:justify-start">
-              <div className="w-10 h-10 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
-                <LockIcon className="w-5 h-5 text-[#8B5A3C]" />
+              <div className="w-12 h-12 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
+                <LockIcon className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-[#6D4530] mb-1">Secure Access</h3>
-                <p className="text-sm text-[#B8A396] leading-relaxed">
+                <h3 className="text-2xl font-medium text-foreground mb-1">Secure Access</h3>
+                <p className="text-lg text-foreground/70 leading-relaxed">
                   Enterprise-grade security for your business data
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 justify-center lg:justify-start">
-              <div className="w-10 h-10 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5 text-[#8B5A3C]" />
+              <div className="w-12 h-12 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
+                <Users className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-[#6D4530] mb-1">Real-time Analytics</h3>
-                <p className="text-sm text-[#B8A396] leading-relaxed">Track performance and insights instantly</p>
+                <h3 className="text-2xl font-medium text-foreground mb-1">Real-time Analytics</h3>
+                <p className="text-lg text-foreground/70 leading-relaxed">Track performance and insights instantly</p>
               </div>
             </div>
           </div>
@@ -181,12 +185,12 @@ export default function AdminLoginPage() {
         {/* Right Column - Login Form Section */}
         <div className="order-1 lg:order-2">
           <div className="bg-white rounded-2xl shadow-2xl border border-[#E5D5C5] p-8 md:p-10">
-            <h2 className="text-2xl font-medium text-[#6D4530] mb-8 text-center tracking-wide">Admin Login</h2>
+            <h2 className="text-2xl font-medium text-foreground mb-8 text-center tracking-wide">Admin Login</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6 font-roboto">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Address Field */}
               <div>
-                <label htmlFor="admin-email" className="block text-[#6D4530] text-sm font-medium mb-2">
+                <label htmlFor="admin-email" className="block text-foreground text-sm font-medium mb-2">
                   Email Address
                 </label>
                 <div className="relative">
@@ -198,7 +202,7 @@ export default function AdminLoginPage() {
                     name="email"
                     type="email"
                     placeholder=""
-                    className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3 rounded-lg"
+                    className="pl-12 h-12 bg-white border-[#D9CFC7] text-foreground placeholder:text-foreground/70 focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3 rounded-lg"
                     required
                     disabled={isLoading}
                   />
@@ -207,7 +211,7 @@ export default function AdminLoginPage() {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="admin-password" className="block text-[#6D4530] text-sm font-medium mb-2">
+                <label htmlFor="admin-password" className="block text-foreground text-sm font-medium mb-2">
                   Password
                 </label>
                 <div className="relative">
@@ -219,14 +223,14 @@ export default function AdminLoginPage() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder=""
-                    className="pl-12 pr-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3 rounded-lg"
+                    className="pl-12 pr-12 h-12 bg-white border-[#D9CFC7] text-foreground placeholder:text-foreground/70 focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3 rounded-lg"
                     required
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#B8A396] hover:text-[#8B5A3C] transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/70 hover:text-foreground transition-colors"
                     disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -245,7 +249,7 @@ export default function AdminLoginPage() {
             </form>
 
             <div className="mt-6 pt-6 border-t border-[#E5D5C5]">
-              <p className="text-xs text-[#B8A396] text-center leading-relaxed">
+              <p className="text-sm text-foreground/70 text-center leading-relaxed font-semibold">
                 This is a secure area. Unauthorized access attempts are logged and monitored.
               </p>
             </div>

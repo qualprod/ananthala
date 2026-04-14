@@ -311,46 +311,14 @@ export function BlissMattressProductTemplate({
                 <h2 className="text-2xl md:text-3xl font-medium text-foreground font-cormorant">
                   Our Crafted Heritage
                 </h2>
-                <p className="text-lg text-foreground/90 font-medium">
-                  Our mattresses are engineered with cutting-edge sleep technology and premium materials to
-                  provide the perfect balance of comfort and support. Every layer is thoughtfully designed to
-                  help you wake up refreshed.
-                </p>
-                <div className="space-y-4 mb-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-[#EED9C4] rounded-full mt-2"></div>
-                    <div>
-                      <p className="mb-1 font-medium text-lg text-foreground">
-                        Pressure Relief Technology
-                      </p>
-                      <p className="font-medium text-lg text-foreground">
-                        Conforms to your body for optimal spinal alignment
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-[#EED9C4] rounded-full mt-2"></div>
-                    <div>
-                      <p className="mb-1 font-medium text-lg text-foreground">
-                        Temperature Regulation
-                      </p>
-                      <p className="font-medium text-lg text-foreground">
-                        Advanced cooling system keeps you comfortable all night
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-[#EED9C4] rounded-full mt-2"></div>
-                    <div>
-                      <p className="mb-1 font-medium text-lg text-foreground">
-                        Motion Isolation
-                      </p>
-                      <p className="font-medium text-lg text-foreground">
-                        Undisturbed sleep even with a restless partner
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <ul className="mt-3 space-y-3 mb-4 list-disc pl-6 text-lg text-foreground/90 font-medium">
+                  <li>Rooted in the early 20th century, our journey is shaped by a deep bond with nature and generations of craftsmanship.</li>
+                  <li>We create refined, nature-led products that elevate everyday living through purity, simplicity, and enduring design.</li>
+                  <li>Using the finest cotton and responsibly sourced timber, untouched by synthetics, we honour both material and method.</li>
+                  <li>Each piece reflects quiet precision - crafted to last, and to restore balance to body and mind.</li>
+                  <li>Guided by a responsibility to the land, we create with care for both present and future.</li>
+                  <li>This is our legacy - where heritage, nature, and understated luxury come together.</li>
+                </ul>
                 <Link href="/about">
                   <Button 
                     className="mt-4 bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground border-2 border-[#EED9C4] px-6 py-4 text-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105"

@@ -10,9 +10,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#F5F1ED] flex items-center justify-center px-4 py-12 md:py-8 font-roboto">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8 md:mb-12">
-          <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="Ananthala" className="h-16 md:h-20 w-auto mx-auto" />
+        <div className="text-center mb-4 md:mb-8">
+          <Link href="/" className="inline-block transition-transform hover:scale-[1.01]">
+            <img
+              src="/logo.png"
+              alt="Ananthala"
+              className="h-24 md:h-28 w-auto mx-auto mix-blend-multiply"
+            />
           </Link>
         </div>
 

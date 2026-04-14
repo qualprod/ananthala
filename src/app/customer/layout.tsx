@@ -134,7 +134,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
               className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center overflow-hidden"
               aria-label="Ananthala home"
             >
-              <Image src="/Hi Res Logo.png" alt="Ananthala" width={170} height={68} className="h-24 w-auto " />
+              <Image src="/logo.png" alt="Ananthala" width={170} height={68} className="h-24 w-auto " />
             </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

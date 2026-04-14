@@ -278,7 +278,7 @@ export default function EditPress() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 via-white to-stone-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#8B5A3C]" />
+        <Loader2 className="w-8 h-8 animate-spin text-foreground" />
       </div>
     )
   }

@@ -123,7 +123,7 @@ export default function CreateBlogPage() {
               rows={2}
               className="border-[#D9CFC7] mt-1"
             />
-            <p className="text-xs text-[#6D4530] mt-1">{formData.excerpt.length}/200 characters</p>
+            <p className="text-xs text-foreground mt-1">{formData.excerpt.length}/200 characters</p>
           </div>
 
           <div>
@@ -164,8 +164,8 @@ export default function CreateBlogPage() {
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-[#D9CFC7] rounded-lg cursor-pointer hover:bg-[#F5F1ED]/50">
-                  <Upload className="h-12 w-12 text-[#8B5A3C] mb-2" />
-                  <p className="text-sm text-[#6D4530]">Click to upload image</p>
+                  <Upload className="h-12 w-12 text-foreground mb-2" />
+                  <p className="text-sm text-foreground">Click to upload image</p>
                   <input
                     id="image"
                     type="file"

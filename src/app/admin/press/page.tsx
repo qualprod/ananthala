@@ -118,7 +118,7 @@ export default function PressManagement() {
             onClick={handleRefresh}
             disabled={isRefreshing}
             variant="outline"
-            className="border-gray-200 text-[#8B5A3C] hover:bg-stone-50"
+            className="border-gray-200 text-foreground hover:bg-stone-50"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh
@@ -129,7 +129,7 @@ export default function PressManagement() {
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-[#8B5A3C]" />
+              <Loader2 className="w-8 h-8 animate-spin text-foreground" />
             </div>
           ) : paginatedReleases.length === 0 ? (
             <div className="text-center py-12">
@@ -175,7 +175,7 @@ export default function PressManagement() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-[#8B5A3C] hover:bg-stone-100"
+                              className="text-foreground hover:bg-stone-100"
                               title="Edit"
                             >
                               <Edit className="w-4 h-4" />

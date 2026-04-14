@@ -11,8 +11,8 @@ export default function PrivacyPolicyManagementPage() {
           <Shield className="h-6 w-6 text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#6D4530]">Privacy Policy Management</h1>
-          <p className="text-[#8B5A3C]/70 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Privacy Policy Management</h1>
+          <p className="text-foreground/70 mt-1">
             Create and manage your website&apos;s privacy policy. Changes will be reflected on your public privacy policy page.
           </p>
         </div>

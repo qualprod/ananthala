@@ -111,7 +111,7 @@ export function Header() {
       <header className="bg-white border-b sticky top-0 z-50 shadow-sm" style={{ borderColor: "#D9CFC7" }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-4 -ml-2">
+            <div className="flex items-center gap-4 -ml-3 sm:-ml-2">
               <Button
                 variant="ghost"
                 size="icon"
@@ -139,14 +139,14 @@ export function Header() {
             <div className="absolute left-1/2 transform -translate-x-1/2">
               <Link href="/" className="flex items-center group overflow-hidden h-20">
                 <img
-                  src="/Hi Res Logo.png"
+                  src="/logo.png"
                   alt="Ananthala Logo"
-                  className="h-28 w-auto object-contain"
+                  className="h-20 md:h-28 w-auto object-contain"
                 />
               </Link>
             </div>
 
-            <div className="flex items-center gap-4 -mr-2">
+            <div className="flex items-center gap-4 -mr-3 sm:-mr-2">
               {!isLoading && (
                 <>
                   {user ? (
@@ -228,8 +228,12 @@ export function Header() {
             style={{ borderColor: "#D9CFC7" }}
           >
             <nav className="p-4">
-              <div className="flex items-center justify-center py-4">
-                <img src="/Hi Res Logo.png" alt="Ananthala" className="h-14 w-auto" />
+              <div className="flex items-center justify-center px-2 py-5">
+                <img
+                  src="/logo.png"
+                  alt="Ananthala"
+                  className="h-28 w-auto max-w-full object-contain"
+                />
               </div>
               <ul className="space-y-1">
                 {getMenuItems(!!user).map((item, index) => (

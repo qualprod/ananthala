@@ -95,7 +95,7 @@ export default function AgentLoginPage() {
       <div className="absolute top-4 right-4 md:top-8 md:right-8 z-20">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white border border-[#E5D5C5] rounded-lg text-[#8B5A3C] hover:text-[#6D4530] transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white border border-[#E5D5C5] rounded-lg text-foreground hover:text-foreground/80 transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Ananthala</span>
@@ -118,23 +118,27 @@ export default function AgentLoginPage() {
         <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
           {/* Logo/Icon */}
           <div className="flex justify-center lg:justify-start">
-            <img src="/logo.png" alt="Ananthala Agent" className="h-20 md:h-24 w-auto" />
+            <img
+              src="/logo.png"
+              alt="Ananthala Agent"
+              className="h-20 md:h-24 w-auto mix-blend-multiply"
+            />
           </div>
 
           {/* Welcome Message */}
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-[#6D4530] tracking-wide leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-foreground tracking-wide leading-tight font-cormorant">
               Welcome to Agent Portal
             </h1>
-            <p className="text-2xl md:text-3xl text-[#8B5A3C] font-light tracking-wider">
-              of <span className="font-normal text-[#6D4530]">Ananthala</span>
+            <p className="text-2xl md:text-3xl text-foreground font-light tracking-wider">
+              of <span className="font-normal text-foreground">Ananthala</span>
             </p>
             <div className="h-px w-48 bg-gradient-to-r from-transparent via-[#8B5A3C] to-transparent mx-auto lg:mx-0" />
           </div>
 
           {/* Quote Section */}
           <blockquote className="space-y-4 py-6">
-            <p className="text-lg md:text-xl text-[#6D4530] italic leading-relaxed">
+            <p className="text-lg md:text-xl text-foreground italic leading-relaxed">
               "Your dedication to customer service creates exceptional experiences. Access your tools securely and serve
               with excellence."
             </p>
@@ -148,7 +152,7 @@ export default function AgentLoginPage() {
                 <Headphones className="w-5 h-5 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-[#6D4530] mb-1">Customer Support</h3>
+                <h3 className="font-medium text-foreground mb-1">Customer Support</h3>
                 <p className="text-sm text-[#B8A396] leading-relaxed">Assist customers with orders and inquiries</p>
               </div>
             </div>
@@ -158,7 +162,7 @@ export default function AgentLoginPage() {
                 <ShieldCheck className="w-5 h-5 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-[#6D4530] mb-1">Secure Access</h3>
+                <h3 className="font-medium text-foreground mb-1">Secure Access</h3>
                 <p className="text-sm text-[#B8A396] leading-relaxed">Protected workspace for agent operations</p>
               </div>
             </div>
@@ -168,7 +172,7 @@ export default function AgentLoginPage() {
                 <TrendingUp className="w-5 h-5 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-[#6D4530] mb-1">Performance Tracking</h3>
+                <h3 className="font-medium text-foreground mb-1">Performance Tracking</h3>
                 <p className="text-sm text-[#B8A396] leading-relaxed">Monitor your support metrics and progress</p>
               </div>
             </div>
@@ -178,12 +182,12 @@ export default function AgentLoginPage() {
         {/* Right Column - Login Form Section */}
         <div className="order-1 lg:order-2">
           <div className="bg-white rounded-2xl shadow-2xl border border-[#E5D5C5] p-8 md:p-10">
-            <h2 className="text-2xl font-medium text-[#6D4530] mb-8 text-center tracking-wide">Agent Login</h2>
+            <h2 className="text-2xl font-medium text-foreground mb-8 text-center tracking-wide font-cormorant">Agent Login</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6 font-roboto">
+            <form onSubmit={handleSubmit} className="space-y-6 font-cormorant">
               {/* Email Address Field */}
               <div>
-                <label htmlFor="agent-email" className="block text-[#6D4530] text-sm font-medium mb-2">
+                <label htmlFor="agent-email" className="block text-foreground text-sm font-medium mb-2">
                   Email Address
                 </label>
                 <div className="relative">
@@ -195,7 +199,7 @@ export default function AgentLoginPage() {
                     name="email"
                     type="email"
                     placeholder=""
-                    className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3 rounded-lg"
+                    className="pl-12 h-12 bg-white border-[#D9CFC7] text-foreground placeholder:text-foreground focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-normal mb-3 rounded-lg font-cormorant"
                     required
                     disabled={isLoading}
                   />
@@ -204,7 +208,7 @@ export default function AgentLoginPage() {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="agent-password" className="block text-[#6D4530] text-sm font-medium mb-2">
+                <label htmlFor="agent-password" className="block text-foreground text-sm font-medium mb-2">
                   Password
                 </label>
                 <div className="relative">
@@ -216,7 +220,7 @@ export default function AgentLoginPage() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder=""
-                    className="pl-12 pr-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3 rounded-lg"
+                    className="pl-12 pr-12 h-12 bg-white border-[#D9CFC7] text-foreground placeholder:text-foreground focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-normal mb-3 rounded-lg font-cormorant"
                     required
                     disabled={isLoading}
                   />

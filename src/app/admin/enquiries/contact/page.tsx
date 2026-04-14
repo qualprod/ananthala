@@ -72,8 +72,8 @@ function ContactUsContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#6D4530]">Contact Us Messages</h1>
-          <p className="text-[#8B5A3C]/70 mt-1">Review and manage customer inquiries</p>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Contact Us Messages</h1>
+          <p className="text-foreground/70 mt-1">Review and manage customer inquiries</p>
         </div>
         <div className="bg-[#8B5A3C] text-white px-4 py-2 rounded-lg">
           <p className="text-sm font-medium">Total Messages</p>
@@ -84,7 +84,7 @@ function ContactUsContent() {
       {/* Search Bar */}
       <div className="bg-white rounded-lg border p-4" style={{ borderColor: "#D9CFC7" }}>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8B5A3C]/50 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-4 h-4" />
           <Input
             placeholder="Search by name, email, phone, or subject..."
             value={searchQuery}
@@ -100,25 +100,25 @@ function ContactUsContent() {
           <table className="w-full">
             <thead className="bg-[#F5F1ED]">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Name</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Email</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Phone</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Subject</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Message Preview</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Date</th>
-                <th className="px-6 py-3 text-right text-sm font-semibold text-[#6D4530]">Actions</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Name</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Email</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Phone</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Subject</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Message Preview</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Date</th>
+                <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: "#D9CFC7" }}>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-[#8B5A3C]/70">
+                  <td colSpan={7} className="px-6 py-8 text-center text-foreground/70">
                     Loading messages...
                   </td>
                 </tr>
               ) : filteredContacts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-[#8B5A3C]/70">
+                  <td colSpan={7} className="px-6 py-8 text-center text-foreground/70">
                     {searchQuery ? "No messages found matching your search" : "No messages received yet"}
                   </td>
                 </tr>
@@ -126,31 +126,31 @@ function ContactUsContent() {
                 filteredContacts.map((contact) => (
                   <tr key={contact._id} className="hover:bg-[#F5F1ED]/50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="font-medium text-[#6D4530]">{contact.name}</div>
+                      <div className="font-medium text-foreground">{contact.name}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-sm text-[#8B5A3C]">
+                      <div className="flex items-center gap-2 text-sm text-foreground">
                         <Mail className="w-3 h-3" />
                         {contact.email}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       {contact.phone ? (
-                        <div className="flex items-center gap-2 text-sm text-[#8B5A3C]">
+                        <div className="flex items-center gap-2 text-sm text-foreground">
                           <Phone className="w-3 h-3" />
                           {contact.phone}
                         </div>
                       ) : (
-                        <span className="text-[#8B5A3C]/50 text-sm">N/A</span>
+                        <span className="text-foreground/50 text-sm">N/A</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-medium text-[#6D4530] max-w-xs truncate">{contact.subject}</div>
+                      <div className="font-medium text-foreground max-w-xs truncate">{contact.subject}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-[#8B5A3C]/70 max-w-sm">{truncateMessage(contact.message)}</div>
+                      <div className="text-sm text-foreground/70 max-w-sm">{truncateMessage(contact.message)}</div>
                     </td>
-                    <td className="px-6 py-4 text-[#6D4530]">
+                    <td className="px-6 py-4 text-foreground">
                       {new Date(contact.createdAt).toLocaleDateString("en-IN")}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -161,7 +161,7 @@ function ContactUsContent() {
                           setSelectedContact(contact)
                           setIsDetailModalOpen(true)
                         }}
-                        className="text-[#8B5A3C] hover:text-[#6D4530] hover:bg-[#8B5A3C]/10"
+                        className="text-foreground hover:text-foreground hover:bg-[#8B5A3C]/10"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         View Full
@@ -179,24 +179,24 @@ function ContactUsContent() {
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-[#6D4530]">Contact Message Details</DialogTitle>
+            <DialogTitle className="text-foreground">Contact Message Details</DialogTitle>
           </DialogHeader>
 
           {selectedContact && (
             <div className="space-y-6">
               {/* Contact Information */}
               <div className="bg-[#F5F1ED] p-4 rounded-lg">
-                <h3 className="font-semibold text-[#6D4530] mb-3">Contact Information</h3>
+                <h3 className="font-semibold text-foreground mb-3">Contact Information</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-[#8B5A3C]/70 font-medium">Name:</span>
-                    <span className="text-[#6D4530] font-semibold">{selectedContact.name}</span>
+                    <span className="text-foreground/70 font-medium">Name:</span>
+                    <span className="text-foreground font-semibold">{selectedContact.name}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[#8B5A3C]/70 font-medium">Email:</span>
+                    <span className="text-foreground/70 font-medium">Email:</span>
                     <a
                       href={`mailto:${selectedContact.email}`}
-                      className="text-[#6D4530] hover:underline font-semibold flex items-center gap-2"
+                      className="text-foreground hover:underline font-semibold flex items-center gap-2"
                     >
                       <Mail className="w-3 h-3" />
                       {selectedContact.email}
@@ -204,10 +204,10 @@ function ContactUsContent() {
                   </div>
                   {selectedContact.phone && (
                     <div className="flex items-center justify-between">
-                      <span className="text-[#8B5A3C]/70 font-medium">Phone:</span>
+                      <span className="text-foreground/70 font-medium">Phone:</span>
                       <a
                         href={`tel:${selectedContact.phone}`}
-                        className="text-[#6D4530] hover:underline font-semibold flex items-center gap-2"
+                        className="text-foreground hover:underline font-semibold flex items-center gap-2"
                       >
                         <Phone className="w-3 h-3" />
                         {selectedContact.phone}
@@ -215,8 +215,8 @@ function ContactUsContent() {
                     </div>
                   )}
                   <div className="flex items-center justify-between">
-                    <span className="text-[#8B5A3C]/70 font-medium">Date Received:</span>
-                    <span className="text-[#6D4530] font-semibold flex items-center gap-2">
+                    <span className="text-foreground/70 font-medium">Date Received:</span>
+                    <span className="text-foreground font-semibold flex items-center gap-2">
                       <Calendar className="w-3 h-3" />
                       {new Date(selectedContact.createdAt).toLocaleDateString("en-IN", {
                         year: "numeric",
@@ -232,20 +232,20 @@ function ContactUsContent() {
 
               {/* Subject */}
               <div>
-                <h3 className="font-semibold text-[#6D4530] mb-3 flex items-center gap-2">
+                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                   <MessageSquare className="w-5 h-5" />
                   Subject
                 </h3>
-                <div className="bg-[#F5F1ED] p-4 rounded-lg text-[#6D4530] font-medium">{selectedContact.subject}</div>
+                <div className="bg-[#F5F1ED] p-4 rounded-lg text-foreground font-medium">{selectedContact.subject}</div>
               </div>
 
               {/* Message */}
               <div>
-                <h3 className="font-semibold text-[#6D4530] mb-3 flex items-center gap-2">
+                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                   <MessageSquare className="w-5 h-5" />
                   Message
                 </h3>
-                <div className="bg-[#F5F1ED] p-4 rounded-lg text-sm text-[#6D4530] leading-relaxed whitespace-pre-wrap">
+                <div className="bg-[#F5F1ED] p-4 rounded-lg text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                   {selectedContact.message}
                 </div>
               </div>

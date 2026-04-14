@@ -163,7 +163,7 @@ export default function ReviewVideosPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-[#8B5A3C]/10 animate-pulse mx-auto mb-4" />
-          <p className="text-[#8B5A3C]">Loading review videos...</p>
+          <p className="text-foreground">Loading review videos...</p>
         </div>
       </div>
     )
@@ -186,8 +186,8 @@ export default function ReviewVideosPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-[#8B5A3C]">Customer Review Videos</h1>
-          <p className="text-[#8B5A3C]/60 mt-1">Manage customer testimonial videos displayed on homepage</p>
+          <h1 className="text-3xl font-bold text-foreground">Customer Review Videos</h1>
+          <p className="text-foreground/60 mt-1">Manage customer testimonial videos displayed on homepage</p>
         </div>
         <Button
           onClick={() => setIsUploadModalOpen(true)}
@@ -212,7 +212,7 @@ export default function ReviewVideosPage() {
       <div className="space-y-3">
         {videos.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-[#D9CFC7]">
-            <p className="text-[#8B5A3C]/60">No review videos yet. Add one to get started!</p>
+            <p className="text-foreground/60">No review videos yet. Add one to get started!</p>
           </div>
         ) : (
           videos.map((video, index) => (
@@ -224,31 +224,31 @@ export default function ReviewVideosPage() {
                 // Edit Mode
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-[#6D4530] mb-1">Title</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Title</label>
                     <Input
                       value={editData.title || ""}
                       onChange={(e) => setEditData({ ...editData, title: e.target.value })}
                       placeholder="Video title"
-                      className="border-[#D9CFC7] text-[#6D4530]"
+                      className="border-[#D9CFC7] text-foreground"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[#6D4530] mb-1">Description</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Description</label>
                     <Textarea
                       value={editData.description || ""}
                       onChange={(e) => setEditData({ ...editData, description: e.target.value })}
                       placeholder="Brief description"
-                      className="border-[#D9CFC7] text-[#6D4530]"
+                      className="border-[#D9CFC7] text-foreground"
                       rows={3}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[#6D4530] mb-1">Customer Name</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Customer Name</label>
                     <Input
                       value={editData.customerName || ""}
                       onChange={(e) => setEditData({ ...editData, customerName: e.target.value })}
                       placeholder="Customer name"
-                      className="border-[#D9CFC7] text-[#6D4530]"
+                      className="border-[#D9CFC7] text-foreground"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -264,7 +264,7 @@ export default function ReviewVideosPage() {
                         setEditData({})
                       }}
                       variant="outline"
-                      className="border-[#D9CFC7] text-[#6D4530]"
+                      className="border-[#D9CFC7] text-foreground"
                     >
                       Cancel
                     </Button>
@@ -276,8 +276,8 @@ export default function ReviewVideosPage() {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="font-semibold text-[#6D4530]">{video.title}</h3>
-                        {video.customerName && <p className="text-sm text-[#8B5A3C]/70">by {video.customerName}</p>}
+                        <h3 className="font-semibold text-foreground">{video.title}</h3>
+                        {video.customerName && <p className="text-sm text-foreground/70">by {video.customerName}</p>}
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -287,8 +287,8 @@ export default function ReviewVideosPage() {
                         {video.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
-                    {video.description && <p className="text-sm text-[#8B5A3C]/60 mb-2">{video.description}</p>}
-                    <p className="text-xs text-[#B8A396]">{new Date(video.createdAt).toLocaleDateString()}</p>
+                    {video.description && <p className="text-sm text-foreground/60 mb-2">{video.description}</p>}
+                    <p className="text-xs text-foreground/70">{new Date(video.createdAt).toLocaleDateString()}</p>
                   </div>
 
                   {/* Actions */}
@@ -298,7 +298,7 @@ export default function ReviewVideosPage() {
                       disabled={index === 0}
                       size="sm"
                       variant="outline"
-                      className="border-[#D9CFC7] text-[#6D4530] disabled:opacity-50"
+                      className="border-[#D9CFC7] text-foreground disabled:opacity-50"
                     >
                       <ChevronUp className="h-4 w-4" />
                     </Button>
@@ -307,7 +307,7 @@ export default function ReviewVideosPage() {
                       disabled={index === videos.length - 1}
                       size="sm"
                       variant="outline"
-                      className="border-[#D9CFC7] text-[#6D4530] disabled:opacity-50"
+                      className="border-[#D9CFC7] text-foreground disabled:opacity-50"
                     >
                       <ChevronDown className="h-4 w-4" />
                     </Button>
@@ -315,7 +315,7 @@ export default function ReviewVideosPage() {
                       onClick={() => toggleActive(video._id, video.isActive)}
                       size="sm"
                       variant="outline"
-                      className="border-[#D9CFC7] text-[#6D4530]"
+                      className="border-[#D9CFC7] text-foreground"
                     >
                       {video.isActive ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                     </Button>
@@ -326,7 +326,7 @@ export default function ReviewVideosPage() {
                       }}
                       size="sm"
                       variant="outline"
-                      className="border-[#D9CFC7] text-[#6D4530]"
+                      className="border-[#D9CFC7] text-foreground"
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>

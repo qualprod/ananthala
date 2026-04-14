@@ -58,7 +58,7 @@ export default function AnalyticsPage() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#8B5A3C] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#6D4530] font-medium">Loading analytics...</p>
+          <p className="text-foreground font-medium">Loading analytics...</p>
         </div>
       </div>
     )
@@ -107,7 +107,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#4A2F1F]">Analytics</h1>
-        <p className="text-[#6D4530] mt-1 font-medium">Monitor your business performance and insights</p>
+        <p className="text-foreground mt-1 font-medium">Monitor your business performance and insights</p>
       </div>
 
       {/* Stats Grid */}
@@ -137,8 +137,8 @@ export default function AnalyticsPage() {
                 </div>
               </div>
               <div className="text-3xl font-bold text-[#4A2F1F] mb-1">{stat.value}</div>
-              <div className="text-sm font-semibold text-[#6D4530] mb-1">{stat.label}</div>
-              {stat.subtext && <div className="text-xs text-[#8B5A3C] font-medium mt-1">{stat.subtext}</div>}
+              <div className="text-sm font-semibold text-foreground mb-1">{stat.label}</div>
+              {stat.subtext && <div className="text-xs text-foreground font-medium mt-1">{stat.subtext}</div>}
             </div>
           )
         })}
@@ -154,7 +154,7 @@ export default function AnalyticsPage() {
               <button
                 onClick={() => setPeriod("jan-jun")}
                 className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
-                  period === "jan-jun" ? "bg-[#8B5A3C] text-white" : "bg-gray-100 text-[#6D4530] hover:bg-gray-200"
+                  period === "jan-jun" ? "bg-[#8B5A3C] text-white" : "bg-gray-100 text-foreground hover:bg-gray-200"
                 }`}
               >
                 Jan-Jun
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
               <button
                 onClick={() => setPeriod("jul-dec")}
                 className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
-                  period === "jul-dec" ? "bg-[#8B5A3C] text-white" : "bg-gray-100 text-[#6D4530] hover:bg-gray-200"
+                  period === "jul-dec" ? "bg-[#8B5A3C] text-white" : "bg-gray-100 text-foreground hover:bg-gray-200"
                 }`}
               >
                 Jul-Dec

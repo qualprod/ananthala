@@ -140,8 +140,8 @@ export default function UserManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#6D4530]">User Management</h1>
-          <p className="text-[#8B5A3C]/70 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">User Management</h1>
+          <p className="text-foreground/70 mt-1">
             Manage user roles and permissions ({users.length} {users.length === 1 ? "user" : "users"})
           </p>
         </div>
@@ -155,7 +155,7 @@ export default function UserManagementPage() {
       <div className="bg-white rounded-lg border p-4 space-y-4" style={{ borderColor: "#D9CFC7" }}>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8B5A3C]/50 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-4 h-4" />
             <Input
               placeholder="Search users by name or email..."
               value={searchQuery}
@@ -189,16 +189,16 @@ export default function UserManagementPage() {
           <div className="flex items-center justify-center p-12">
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-[#8B5A3C]/10 flex items-center justify-center mx-auto mb-3 animate-pulse">
-                <UserIcon className="w-6 h-6 text-[#8B5A3C]" />
+                <UserIcon className="w-6 h-6 text-foreground" />
               </div>
-              <p className="text-[#8B5A3C]/70">Loading users...</p>
+              <p className="text-foreground/70">Loading users...</p>
             </div>
           </div>
         ) : users.length === 0 ? (
           <div className="flex items-center justify-center p-12">
             <div className="text-center">
-              <UserIcon className="w-12 h-12 text-[#8B5A3C]/30 mx-auto mb-3" />
-              <p className="text-[#8B5A3C]/70">No users found</p>
+              <UserIcon className="w-12 h-12 text-foreground/30 mx-auto mb-3" />
+              <p className="text-foreground/70">No users found</p>
             </div>
           </div>
         ) : (
@@ -206,11 +206,11 @@ export default function UserManagementPage() {
             <table className="w-full">
               <thead className="bg-[#F5F1ED]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">User Details</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-[#6D4530]">Customer</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-[#6D4530]">Admin</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-[#6D4530]">Agent</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6D4530]">Joined</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">User Details</th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-foreground">Customer</th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-foreground">Admin</th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-foreground">Agent</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Joined</th>
                 </tr>
               </thead>
               <tbody className="divide-y" style={{ borderColor: "#D9CFC7" }}>
@@ -224,8 +224,8 @@ export default function UserManagementPage() {
                           {user.fullname.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-medium text-[#6D4530]">{user.fullname}</div>
-                          <div className="text-sm text-[#6D4530]/80 font-medium">{user.email}</div>
+                          <div className="font-medium text-foreground">{user.fullname}</div>
+                          <div className="text-sm text-foreground/80 font-medium">{user.email}</div>
                         </div>
                       </div>
                     </td>
@@ -256,7 +256,7 @@ export default function UserManagementPage() {
                         />
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-[#6D4530]">{formatDate(user.createdAt)}</td>
+                    <td className="px-6 py-4 text-foreground">{formatDate(user.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -266,14 +266,14 @@ export default function UserManagementPage() {
 
         {!isLoading && users.length > 0 && (
           <div className="px-6 py-4 border-t flex items-center justify-between" style={{ borderColor: "#D9CFC7" }}>
-            <div className="text-sm text-[#8B5A3C]/70">
+            <div className="text-sm text-foreground/70">
               Showing {startIndex + 1}-{Math.min(endIndex, users.length)} of {users.length}{" "}
               {users.length === 1 ? "user" : "users"}
             </div>
 
             {totalPages > 1 && (
               <div className="flex items-center gap-4">
-                <div className="text-sm font-medium text-[#6D4530]">
+                <div className="text-sm font-medium text-foreground">
                   Page {currentPage} of {totalPages}
                 </div>
                 <div className="flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function UserManagementPage() {
                     size="sm"
                     onClick={goToPreviousPage}
                     disabled={currentPage === 1}
-                    className="border-[#8B5A3C] text-[#8B5A3C] hover:bg-[#8B5A3C] hover:text-white disabled:opacity-50 bg-transparent"
+                    className="border-[#8B5A3C] text-foreground hover:bg-[#8B5A3C] hover:text-white disabled:opacity-50 bg-transparent"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
@@ -291,7 +291,7 @@ export default function UserManagementPage() {
                     size="sm"
                     onClick={goToNextPage}
                     disabled={currentPage === totalPages}
-                    className="border-[#8B5A3C] text-[#8B5A3C] hover:bg-[#8B5A3C] hover:text-white disabled:opacity-50 bg-transparent"
+                    className="border-[#8B5A3C] text-foreground hover:bg-[#8B5A3C] hover:text-white disabled:opacity-50 bg-transparent"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>

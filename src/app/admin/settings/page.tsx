@@ -85,8 +85,8 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-semibold text-[#6D4530] mb-2">Settings</h1>
-          <p className="text-[#8B5A3C]/70">Manage your admin account security</p>
+          <h1 className="text-3xl sm:text-4xl font-semibold text-foreground mb-2">Settings</h1>
+          <p className="text-foreground/70">Manage your admin account security</p>
         </div>
 
         {/* Main Card */}
@@ -98,8 +98,8 @@ export default function SettingsPage() {
                 <Lock className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold text-[#6D4530]">Security</h2>
-                <p className="text-sm text-[#8B5A3C]/70">Update your password to keep your account secure</p>
+                <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Security</h2>
+                <p className="text-sm text-foreground/70">Update your password to keep your account secure</p>
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function SettingsPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Current Password Field */}
               <div className="space-y-2">
-                <Label htmlFor="currentPassword" className="text-sm font-semibold text-[#6D4530]">
+                <Label htmlFor="currentPassword" className="text-sm font-semibold text-foreground">
                   Current Password <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
@@ -140,13 +140,13 @@ export default function SettingsPage() {
                     placeholder="Enter your current password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="pr-10 border-[#D9CFC7] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-[#6D4530] placeholder:text-[#8B5A3C]/50"
+                    className="pr-10 border-[#D9CFC7] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-foreground placeholder:text-foreground/50"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B5A3C]/60 hover:text-[#8B5A3C] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors"
                   >
                     {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -155,7 +155,7 @@ export default function SettingsPage() {
 
               {/* New Password Field */}
               <div className="space-y-2">
-                <Label htmlFor="newPassword" className="text-sm font-semibold text-[#6D4530]">
+                <Label htmlFor="newPassword" className="text-sm font-semibold text-foreground">
                   New Password <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
@@ -165,13 +165,13 @@ export default function SettingsPage() {
                     placeholder="Enter your new password (minimum 6 characters)"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="pr-10 border-[#D9CFC7] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-[#6D4530] placeholder:text-[#8B5A3C]/50"
+                    className="pr-10 border-[#D9CFC7] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-foreground placeholder:text-foreground/50"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B5A3C]/60 hover:text-[#8B5A3C] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors"
                   >
                     {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -184,7 +184,7 @@ export default function SettingsPage() {
 
               {/* Confirm Password Field */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-semibold text-[#6D4530]">
+                <Label htmlFor="confirmPassword" className="text-sm font-semibold text-foreground">
                   Confirm New Password <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
@@ -194,13 +194,13 @@ export default function SettingsPage() {
                     placeholder="Re-enter your new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pr-10 border-[#D9CFC7] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-[#6D4530] placeholder:text-[#8B5A3C]/50"
+                    className="pr-10 border-[#D9CFC7] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-foreground placeholder:text-foreground/50"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B5A3C]/60 hover:text-[#8B5A3C] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -213,8 +213,8 @@ export default function SettingsPage() {
 
               {/* Password Requirements Info */}
               <div className="bg-[#F5F1ED] rounded-lg p-4 border border-[#D9CFC7]">
-                <p className="text-xs font-semibold text-[#6D4530] mb-2">Password Requirements:</p>
-                <ul className="text-xs text-[#8B5A3C]/80 space-y-1">
+                <p className="text-xs font-semibold text-foreground mb-2">Password Requirements:</p>
+                <ul className="text-xs text-foreground/80 space-y-1">
                   <li className={`flex items-center gap-2 ${newPassword.length >= 6 ? "text-green-600" : ""}`}>
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${newPassword.length >= 6 ? "bg-green-600" : "bg-[#D9CFC7]"}`}
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                     setSuccessMessage("")
                   }}
                   disabled={isLoading}
-                  className="px-6 border-[#D9CFC7] text-[#6D4530] hover:bg-[#F5F1ED]"
+                  className="px-6 border-[#D9CFC7] text-foreground hover:bg-[#F5F1ED]"
                 >
                   Clear
                 </Button>
@@ -274,8 +274,8 @@ export default function SettingsPage() {
 
             {/* Security Note */}
             <div className="mt-8 pt-6 border-t border-[#D9CFC7]">
-              <p className="text-xs text-[#8B5A3C]/70 leading-relaxed">
-                <span className="font-semibold text-[#6D4530]">🔒 Security Note:</span> Your password is securely hashed
+              <p className="text-xs text-foreground/70 leading-relaxed">
+                <span className="font-semibold text-foreground">🔒 Security Note:</span> Your password is securely hashed
                 and stored. After updating your password, you'll be logged out for security reasons and will need to
                 login again with your new password.
               </p>

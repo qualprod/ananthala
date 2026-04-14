@@ -277,7 +277,7 @@ export default function ProductManagementPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#8B5A3C]" />
+        <Loader2 className="h-8 w-8 animate-spin text-foreground" />
       </div>
     )
   }
@@ -342,7 +342,7 @@ export default function ProductManagementPage() {
                 <h3 className="text-base sm:text-lg font-semibold text-[#4A2F1F] capitalize">
                   Reorder {selectedCategory} products
                 </h3>
-                <p className="text-sm text-[#6D4530]">
+                <p className="text-sm text-foreground">
                   Drag and drop to set the order shown on the category page, then save.
                 </p>
               </div>
@@ -381,7 +381,7 @@ export default function ProductManagementPage() {
                       dragIndex === index ? "opacity-60" : ""
                     }`}
                   >
-                    <GripVertical className="h-4 w-4 text-[#6D4530] cursor-grab" />
+                    <GripVertical className="h-4 w-4 text-foreground cursor-grab" />
                     <img
                       src={product.imageUrls[0] || "/placeholder.svg"}
                       alt={product.productTitle}
@@ -389,7 +389,7 @@ export default function ProductManagementPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-[#4A2F1F] truncate">{product.productTitle}</div>
-                      <div className="text-xs text-[#6D4530]">Position {index + 1}</div>
+                      <div className="text-xs text-foreground">Position {index + 1}</div>
                     </div>
                   </div>
                 ))}
@@ -426,12 +426,12 @@ export default function ProductManagementPage() {
                         className="w-12 h-12 object-cover rounded"
                       />
                     </td>
-                    <td className="py-4 px-4 text-[#6D4530] font-medium capitalize">{product.category}</td>
+                    <td className="py-4 px-4 text-foreground font-medium capitalize">{product.category}</td>
                     <td className="py-4 px-4">
                       <div>
                         <div className="font-semibold text-[#4A2F1F]">{product.productTitle}</div>
                         {product.subCategory && (
-                          <div className="text-sm text-[#6D4530] mt-0.5">{product.subCategory}</div>
+                          <div className="text-sm text-foreground mt-0.5">{product.subCategory}</div>
                         )}
                       </div>
                     </td>
@@ -506,14 +506,14 @@ export default function ProductManagementPage() {
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-[#4A2F1F] truncate">{product.productTitle}</h3>
-                    <p className="text-sm text-[#6D4530] font-medium capitalize">{product.category}</p>
-                    <p className="text-sm text-[#6D4530]">{variantsCount} variants</p>
+                    <p className="text-sm text-foreground font-medium capitalize">{product.category}</p>
+                    <p className="text-sm text-foreground">{variantsCount} variants</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-[#6D4530]">Type:</span>
+                    <span className="text-foreground">Type:</span>
                     <span className={`ml-2 px-2 py-1 rounded text-xs font-semibold inline-block capitalize ${
                       product.productType === "hamper"
                         ? "bg-purple-100 text-purple-700"
@@ -523,7 +523,7 @@ export default function ProductManagementPage() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-[#6D4530]">Role:</span>
+                    <span className="text-foreground">Role:</span>
                     <span className={`ml-2 px-2 py-1 rounded text-xs font-semibold inline-block ${
                       product.productRole === "complementary"
                         ? "bg-blue-100 text-blue-700"
@@ -533,11 +533,11 @@ export default function ProductManagementPage() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-[#6D4530]">Total Stock:</span>
+                    <span className="text-foreground">Total Stock:</span>
                     <span className="ml-2 font-semibold text-[#4A2F1F]">{totalStock}</span>
                   </div>
                   <div>
-                    <span className="text-[#6D4530]">Base Price:</span>
+                    <span className="text-foreground">Base Price:</span>
                     <span className="ml-2 font-semibold text-[#4A2F1F]">₹{basePrice.toLocaleString()}</span>
                   </div>
                 </div>
@@ -576,7 +576,7 @@ export default function ProductManagementPage() {
 
         {filteredProducts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-[#6D4530] font-medium">
+            <p className="text-foreground font-medium">
               {selectedCategory === "all"
                 ? "No products found. Add your first product to get started!"
                 : `No ${selectedCategory} products found.`}

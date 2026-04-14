@@ -20,46 +20,14 @@ export function ComfortSection() {
             <h2 className="mb-6 text-lg" style={{ color: "#000000" }}>
               The Science of Better Sleep
             </h2>
-            <p className="mb-6" style={{ color: "#000000" }}>
-              Our mattresses are engineered with cutting-edge sleep technology and premium materials to
-              provide the perfect balance of comfort and support. Every layer is thoughtfully designed to
-              help you wake up refreshed.
-            </p>
-            <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-amber-900 rounded-full mt-2"></div>
-                <div>
-                  <p className="mb-1" style={{ color: "#000000" }}>
-                    Pressure Relief Technology
-                  </p>
-                  <p style={{ color: "#000000" }}>
-                    Conforms to your body for optimal spinal alignment
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-amber-900 rounded-full mt-2"></div>
-                <div>
-                  <p className="mb-1" style={{ color: "#000000" }}>
-                    Temperature Regulation
-                  </p>
-                  <p style={{ color: "#000000" }}>
-                    Advanced cooling system keeps you comfortable all night
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-amber-900 rounded-full mt-2"></div>
-                <div>
-                  <p className="mb-1" style={{ color: "#000000" }}>
-                    Motion Isolation
-                  </p>
-                  <p style={{ color: "#000000" }}>
-                    Undisturbed sleep even with a restless partner
-                  </p>
-                </div>
-              </div>
-            </div>
+            <ul className="mt-3 space-y-3 mb-8 list-disc pl-6" style={{ color: "#000000" }}>
+              <li>Rooted in the early 20th century, our journey is shaped by a deep bond with nature and generations of craftsmanship.</li>
+              <li>We create refined, nature-led products that elevate everyday living through purity, simplicity, and enduring design.</li>
+              <li>Using the finest cotton and responsibly sourced timber, untouched by synthetics, we honour both material and method.</li>
+              <li>Each piece reflects quiet precision - crafted to last, and to restore balance to body and mind.</li>
+              <li>Guided by a responsibility to the land, we create with care for both present and future.</li>
+              <li>This is our legacy - where heritage, nature, and understated luxury come together.</li>
+            </ul>
             <button
               onClick={() => router.push("/about")}
               className="bg-[#6B563F] text-white px-8 py-3 hover:bg-amber-950 transition-colors"

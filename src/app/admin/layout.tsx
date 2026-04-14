@@ -4,7 +4,6 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Plus_Jakarta_Sans } from "next/font/google"
 import {
   LayoutDashboard,
   Package,
@@ -20,15 +19,10 @@ import {
   BookOpen,
   Tag,
   Image,
+  Palette,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-
-const googleSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-google-sans",
-})
 
 interface AuthenticatedAdmin {
   id: string
@@ -84,6 +78,11 @@ const menuItems = [
     icon: Tag,
   },
   {
+    label: "Fabrics Management",
+    href: "/admin/fabrics",
+    icon: Palette,
+  },
+  {
     label: "Enquiry & Queries",
     icon: MessageSquare,
     subItems: [
@@ -100,10 +99,12 @@ const menuItems = [
   {
     label: "Policies Management",
     icon: BookOpen,
-   
+    subItems: [
+      {
         label: "Privacy Policy",
         href: "/admin/policies/privacy",
-     
+      },
+    ],
   },
   
   {
@@ -209,10 +210,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div key={item.label}>
           <button
             onClick={() => toggleDropdown(item.label)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-xl transition-all duration-200 ${
               hasActiveSubItem || isOpen
                 ? "bg-[#8B5A3C] text-white"
-                : "text-[#6D4530] hover:bg-[#8B5A3C]/10 hover:text-[#8B5A3C]"
+                : "text-foreground hover:bg-[#8B5A3C]/10 hover:text-foreground"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -230,10 +231,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     key={subItem.href}
                     href={subItem.href}
                     onClick={() => isMobile && setIsSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg text-xl transition-all duration-200 ${
                       isActive
-                        ? "bg-[#8B5A3C]/20 text-[#8B5A3C] font-medium"
-                        : "text-[#6D4530] hover:bg-[#8B5A3C]/10 hover:text-[#8B5A3C]"
+                        ? "bg-[#8B5A3C]/20 text-foreground font-medium"
+                        : "text-foreground hover:bg-[#8B5A3C]/10 hover:text-foreground"
                     }`}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -253,8 +254,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         key={item.href}
         href={item.href}
         onClick={() => isMobile && setIsSidebarOpen(false)}
-        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-          isActive ? "bg-[#8B5A3C] text-white" : "text-[#6D4530] hover:bg-[#8B5A3C]/10 hover:text-[#8B5A3C]"
+        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-xl transition-all duration-200 ${
+          isActive ? "bg-[#8B5A3C] text-white" : "text-foreground hover:bg-[#8B5A3C]/10 hover:text-foreground"
         }`}
       >
         <Icon className="h-5 w-5" />
@@ -270,7 +271,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="w-16 h-16 rounded-full bg-white shadow-lg border-2 border-[#E5D5C5] flex items-center justify-center mx-auto mb-4 animate-pulse p-2">
             <img src="/logo.png" alt="Ananthala" className="w-full h-full object-contain" />
           </div>
-          <p className="text-[#8B5A3C] font-medium">Verifying admin access...</p>
+          <p className="text-foreground font-medium">Verifying admin access...</p>
         </div>
       </div>
     )
@@ -281,45 +282,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F1ED]">
-      <style jsx global>{`
-        .admin-portal * {
-          font-family: var(--font-google-sans) !important;
-        }
-      `}</style>
-      <div className={`admin-portal ${googleSans.variable}`}>
+    <div className="min-h-screen bg-[#F5F1ED] text-foreground">
+      <div className="text-2xl">
         {/* Header */}
         <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: "#D9CFC7" }}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
+            <div className="relative flex items-center justify-between h-20">
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden text-[#8B5A3C] hover:bg-[#8B5A3C]/10"
+                  className="lg:hidden text-foreground hover:bg-[#8B5A3C]/10"
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 >
                   {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </Button>
-                <div className="flex items-center gap-3">
-                  <img src="/logo.png" alt="Ananthala" className="h-8 w-auto" />
-                  <div>
-                    <Link
-                      href="/admin/dashboard"
-                      className="text-[#8B5A3C] text-lg font-normal tracking-wider hover:text-[#6D4530] transition-colors"
-                    >
-                      ANANTHALA ADMIN
-                    </Link>
-                    <p className="text-xs text-[#B8A396]">Admin Portal</p>
-                  </div>
-                </div>
+                <Link
+                  href="/admin/dashboard"
+                  className="text-foreground text-3xl font-normal tracking-wide hover:text-foreground transition-colors"
+                >
+                  Ananthala Admin
+                </Link>
               </div>
+              <Link
+                href="/admin/dashboard"
+                className="absolute left-1/2 -translate-x-1/2 flex h-20 items-center justify-center overflow-hidden"
+                aria-label="Admin dashboard home"
+              >
+                <img src="/logo.png" alt="Ananthala" className="h-28 w-auto object-contain" />
+              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-[#8B5A3C] hover:bg-[#8B5A3C]/10 transition-colors relative"
+                    className="text-foreground hover:bg-[#8B5A3C]/10 transition-colors relative"
                   >
                     <div
                       className={`w-10 h-10 rounded-full bg-gradient-to-br ${getGradientColor(admin.fullname)} flex items-center justify-center text-white font-semibold cursor-pointer`}
@@ -329,17 +326,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5 text-sm text-[#6D4530]">
+                  <div className="px-2 py-1.5 text-2xl text-foreground">
                     <div className="font-semibold">{getFirstName(admin.fullname)}</div>
-                    <div className="text-xs text-[#8B5A3C]/70 truncate">{admin.email}</div>
+                    <div className="text-xl text-foreground/70 truncate">{admin.email}</div>
                   </div>
-                  <DropdownMenuItem asChild className="text-[#6D4530] cursor-pointer">
+                  <DropdownMenuItem asChild className="text-foreground cursor-pointer">
                     <Link href="/admin/dashboard">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>Dashboard</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout} className="text-[#6D4530] cursor-pointer">
+                  <DropdownMenuItem onClick={handleLogout} className="text-foreground cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                   </DropdownMenuItem>
@@ -351,7 +348,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="flex">
           <aside
-            className="hidden lg:block w-64 bg-white border-r min-h-[calc(100vh-4rem)] sticky top-16"
+            className="hidden lg:block w-64 bg-white border-r min-h-[calc(100vh-5rem)] sticky top-20"
             style={{ borderColor: "#D9CFC7" }}
           >
             <nav className="p-4 space-y-1">
@@ -363,7 +360,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <>
               <div className="fixed inset-0 bg-black/20 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
               <aside
-                className="fixed left-0 top-16 bottom-0 w-64 bg-white border-r z-50 lg:hidden animate-in slide-in-from-left duration-300"
+                className="fixed left-0 top-20 bottom-0 w-64 bg-white border-r z-50 lg:hidden animate-in slide-in-from-left duration-300"
                 style={{ borderColor: "#D9CFC7" }}
               >
                 <nav className="p-4 space-y-1">
@@ -373,7 +370,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </>
           )}
 
-          <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 text-foreground">{children}</main>
         </div>
       </div>
     </div>

@@ -119,7 +119,7 @@ export function BabyHamperProductTemplate({
       </section>
 
       {detailSections.length > 0 && (
-        <section className="w-full bg-white py-12">
+        <section className="relative left-1/2 right-1/2 -mx-[50vw] w-screen bg-stone-50 py-12">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
             <h2 className="text-center text-3xl sm:text-4xl font-medium text-foreground">
               Product Traits
@@ -137,13 +137,15 @@ export function BabyHamperProductTemplate({
                   }`}
                 >
                   <div className={`order-2 ${isImageLeft ? "lg:order-1" : "lg:order-2"}`}>
+                    <div className="w-full aspect-[3/2] overflow-hidden">
                     <img
                       src={image}
                       alt={section.imageAlt || section.title || "Product detail"}
-                      className={`w-full h-full max-h-[520px] border border-[#EED9C4] ${
+                      className={`w-full h-full border border-[#EED9C4] ${
                         isPlaceholder ? "object-contain bg-white" : "object-cover"
                       }`}
                     />
+                    </div>
                   </div>
                   <div className={`order-1 ${isImageLeft ? "lg:order-2" : "lg:order-1"}`}>
                     {section.title && (

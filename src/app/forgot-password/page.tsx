@@ -57,7 +57,11 @@ export default function ForgotPasswordPage() {
         {/* Logo/Brand */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <span className="text-[#8B5A3C] text-2xl font-normal tracking-wider">ANANTHALA</span>
+            <img
+              src="/logo.png"
+              alt="Ananthala"
+              className="h-16 md:h-20 w-auto mx-auto mix-blend-multiply"
+            />
           </Link>
         </div>
 

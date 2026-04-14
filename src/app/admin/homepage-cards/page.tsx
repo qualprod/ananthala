@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { isHomepageCardGifUrl, isHomepageCardVideoUrl } from "@/lib/homepage-card-media"
 
 interface HomepageCard {
   _id: string
@@ -11,6 +12,39 @@ interface HomepageCard {
   position: "center" | "bottom-left" | "bottom-right"
   isActive: boolean
   createdAt: string
+}
+
+function AdminVideoThumb({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null)
+  return (
+    <div
+      className="h-full w-full"
+      onMouseEnter={() => {
+        const video = ref.current
+        if (!video) return
+        void video.play().catch(() => {
+          // Hover can end before play resolves; ignore expected aborts.
+        })
+      }}
+      onMouseLeave={() => {
+        const v = ref.current
+        if (!v) return
+        v.pause()
+        v.currentTime = 0
+      }}
+    >
+      <video
+        ref={ref}
+        src={src}
+        className="h-full w-full object-cover"
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-hidden
+      />
+    </div>
+  )
 }
 
 export default function HomepageCardsPage() {
@@ -42,7 +76,7 @@ export default function HomepageCardsPage() {
     fetchCards()
   }, [fetchCards])
 
-  const uploadGif = async (file: File) => {
+  const uploadBackground = async (file: File) => {
     const formData = new FormData()
     formData.append("file", file)
 
@@ -60,11 +94,11 @@ export default function HomepageCardsPage() {
     return uploadData.url as string
   }
 
-  const handleGifReplace = async (cardId: string, file: File) => {
+  const handleBackgroundReplace = async (cardId: string, file: File) => {
     try {
       setUploadingCardId(cardId)
       setError(null)
-      const url = await uploadGif(file)
+      const url = await uploadBackground(file)
       const response = await fetch(`/api/admin/homepage-cards/${cardId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -76,14 +110,14 @@ export default function HomepageCardsPage() {
         setCards(cards.map((card) => (card._id === cardId ? data.data : card)))
         setSelectedFiles((prev) => ({ ...prev, [cardId]: null }))
         setInputKeys((prev) => ({ ...prev, [cardId]: (prev[cardId] || 0) + 1 }))
-        setSuccess("GIF updated successfully")
+        setSuccess("Background updated successfully")
         setTimeout(() => setSuccess(null), 3000)
       } else {
-        setError(data.message || "Failed to update GIF")
+        setError(data.message || "Failed to update background")
       }
     } catch (error: any) {
-      console.error("[v0] Error updating GIF:", error)
-      setError(error.message || "Failed to update GIF. Please try again.")
+      console.error("[v0] Error updating homepage card background:", error)
+      setError(error.message || "Failed to update background. Please try again.")
     } finally {
       setUploadingCardId(null)
     }
@@ -94,7 +128,7 @@ export default function HomepageCardsPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-[#8B5A3C]/10 animate-pulse mx-auto mb-4" />
-          <p className="text-[#8B5A3C]">Loading homepage cards...</p>
+          <p className="text-foreground">Loading homepage cards...</p>
         </div>
       </div>
     )
@@ -115,31 +149,33 @@ export default function HomepageCardsPage() {
 
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-[#8B5A3C]">Homepage Cards</h1>
-          <p className="text-[#8B5A3C]/60 mt-1">Update background GIFs for the existing homepage cards</p>
+          <h1 className="text-3xl font-bold text-foreground">Homepage Cards</h1>
+          <p className="text-foreground/60 mt-1">Update background media (GIF or MP4) for the existing homepage cards</p>
         </div>
       </div>
 
       <div className="space-y-3">
         {cards.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-[#D9CFC7]">
-            <p className="text-[#8B5A3C]/60">No cards found. Please seed the existing cards in the database.</p>
+            <p className="text-foreground/60">No cards found. Please seed the existing cards in the database.</p>
           </div>
         ) : (
           cards.map((card) => (
             <div key={card._id} className="bg-white rounded-lg border border-[#D9CFC7] p-4 transition-all hover:shadow-md">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-24 h-24 rounded-md border border-[#EED9C4] bg-[#F9F7F4] flex items-center justify-center text-xs text-[#8B5A3C]/70 overflow-hidden">
-                    {card.backgroundUrl && /\.(gif)(\?|#|$)/i.test(card.backgroundUrl) ? (
-                      <img src={card.backgroundUrl} alt={`${card.name} GIF`} className="w-full h-full object-cover" />
+                  <div className="w-24 h-24 rounded-md border border-[#EED9C4] bg-[#F9F7F4] flex items-center justify-center text-xs text-foreground/70 overflow-hidden">
+                    {card.backgroundUrl && isHomepageCardGifUrl(card.backgroundUrl) ? (
+                      <img src={card.backgroundUrl} alt="" className="w-full h-full object-cover" />
+                    ) : card.backgroundUrl && isHomepageCardVideoUrl(card.backgroundUrl) ? (
+                      <AdminVideoThumb src={card.backgroundUrl} />
                     ) : (
-                      "GIF"
+                      "Media"
                     )}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-[#6D4530]">{card.name}</h3>
+                      <h3 className="font-semibold text-foreground">{card.name}</h3>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
                           card.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
@@ -148,8 +184,8 @@ export default function HomepageCardsPage() {
                         {card.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
-                    <p className="text-sm text-[#8B5A3C]/70">Position: {card.position}</p>
-                    <p className="text-xs text-[#B8A396]">{new Date(card.createdAt).toLocaleDateString()}</p>
+                    <p className="text-sm text-foreground/70">Position: {card.position}</p>
+                    <p className="text-xs text-foreground/70">{new Date(card.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
 
@@ -157,8 +193,8 @@ export default function HomepageCardsPage() {
                   <Input
                     key={inputKeys[card._id] || 0}
                     type="file"
-                    accept="image/gif"
-                    className="border-[#D9CFC7] text-[#6D4530]"
+                    accept="image/gif,video/mp4,.mp4"
+                    className="border-[#D9CFC7] text-foreground"
                     onChange={(e) => {
                       const file = e.target.files?.[0] || null
                       setSelectedFiles((prev) => ({ ...prev, [card._id]: file }))
@@ -171,7 +207,7 @@ export default function HomepageCardsPage() {
                       onClick={() => {
                         const file = selectedFiles[card._id]
                         if (file) {
-                          handleGifReplace(card._id, file)
+                          handleBackgroundReplace(card._id, file)
                         }
                       }}
                       disabled={!selectedFiles[card._id] || uploadingCardId === card._id}
@@ -187,13 +223,13 @@ export default function HomepageCardsPage() {
                         setInputKeys((prev) => ({ ...prev, [card._id]: (prev[card._id] || 0) + 1 }))
                       }}
                       disabled={!selectedFiles[card._id] || uploadingCardId === card._id}
-                      className="border-[#D9CFC7] text-[#6D4530]"
+                      className="border-[#D9CFC7] text-foreground"
                     >
                       Cancel
                     </Button>
                   </div>
-                  <p className="text-xs text-[#8B5A3C]/70">
-                    {selectedFiles[card._id] ? "Ready to upload." : "Select a GIF to upload."}
+                  <p className="text-xs text-foreground/70">
+                    {selectedFiles[card._id] ? "Ready to upload." : "Select a GIF or MP4 to upload."}
                   </p>
                 </div>
               </div>

@@ -259,8 +259,8 @@ export default function AdminCouponManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#6D4530]">Coupon Management</h1>
-          <p className="text-[#8B5A3C]/70 mt-1">Generate and manage discount coupons</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Coupon Management</h1>
+          <p className="text-foreground/70 mt-1">Generate and manage discount coupons</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
@@ -271,8 +271,8 @@ export default function AdminCouponManagementPage() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px] font-roboto">
             <DialogHeader>
-              <DialogTitle className="text-[#6D4530]">Generate New Coupon</DialogTitle>
-              <DialogDescription className="text-[#8B5A3C]/70">
+              <DialogTitle className="text-foreground">Generate New Coupon</DialogTitle>
+              <DialogDescription className="text-foreground/70">
                 Create a new discount coupon for customers
               </DialogDescription>
             </DialogHeader>
@@ -287,7 +287,7 @@ export default function AdminCouponManagementPage() {
 
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="code" className="text-[#6D4530]">
+                <Label htmlFor="code" className="text-foreground">
                   Coupon Code <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -301,7 +301,7 @@ export default function AdminCouponManagementPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="discount" className="text-[#6D4530]">
+                  <Label htmlFor="discount" className="text-foreground">
                     Discount Value <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -315,7 +315,7 @@ export default function AdminCouponManagementPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="type" className="text-[#6D4530]">
+                  <Label htmlFor="type" className="text-foreground">
                     Discount Type <span className="text-red-500">*</span>
                   </Label>
                   <Select
@@ -334,7 +334,7 @@ export default function AdminCouponManagementPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="minPurchase" className="text-[#6D4530]">
+                  <Label htmlFor="minPurchase" className="text-foreground">
                     Min. Purchase (₹) <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -348,7 +348,7 @@ export default function AdminCouponManagementPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="maxDiscount" className="text-[#6D4530]">
+                  <Label htmlFor="maxDiscount" className="text-foreground">
                     Max. Discount (₹)
                   </Label>
                   <Input
@@ -364,7 +364,7 @@ export default function AdminCouponManagementPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="usageLimit" className="text-[#6D4530]">
+                  <Label htmlFor="usageLimit" className="text-foreground">
                     Usage Limit <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -378,7 +378,7 @@ export default function AdminCouponManagementPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="expiryDate" className="text-[#6D4530]">
+                  <Label htmlFor="expiryDate" className="text-foreground">
                     Expiry Date <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -394,18 +394,18 @@ export default function AdminCouponManagementPage() {
 
               {/* Agent Selection */}
               <div className="grid gap-2 border-t border-[#D9CFC7] pt-4">
-                <Label className="text-[#6D4530]">
+                <Label className="text-foreground">
                   Assign to Agents (Optional)
                 </Label>
-                <p className="text-sm text-[#8B5A3C]/70 mb-3">
+                <p className="text-sm text-foreground/70 mb-3">
                   {formData.agents.length > 0
                     ? `${formData.agents.length} agent(s) selected`
                     : "No agents selected - coupon available to all"}
                 </p>
                 {isLoadingAgents ? (
-                  <p className="text-sm text-[#8B5A3C]">Loading agents...</p>
+                  <p className="text-sm text-foreground">Loading agents...</p>
                 ) : agents.length === 0 ? (
-                  <p className="text-sm text-[#8B5A3C]/70">No agents available</p>
+                  <p className="text-sm text-foreground/70">No agents available</p>
                 ) : (
                   <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border border-[#D9CFC7] rounded-lg p-3 bg-stone-50">
                     {agents.map((agent) => (
@@ -415,11 +415,11 @@ export default function AdminCouponManagementPage() {
                           checked={formData.agents.includes(agent.id)}
                           onChange={() => toggleAgent(agent.id)}
                           disabled={isSubmitting}
-                          className="w-4 h-4 border-[#D9CFC7] text-[#8B5A3C] focus:ring-[#8B5A3C] rounded cursor-pointer"
+                          className="w-4 h-4 border-[#D9CFC7] text-foreground focus:ring-[#8B5A3C] rounded cursor-pointer"
                         />
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-[#6D4530]">{agent.name}</p>
-                          <p className="text-xs text-[#8B5A3C]/70">{agent.email}</p>
+                          <p className="text-sm font-medium text-foreground">{agent.name}</p>
+                          <p className="text-xs text-foreground/70">{agent.email}</p>
                         </div>
                       </label>
                     ))}
@@ -434,7 +434,7 @@ export default function AdminCouponManagementPage() {
                   setIsAddDialogOpen(false)
                   setMessages({ success: "", error: "" })
                 }}
-                className="border-[#D9CFC7] text-[#6D4530] hover:bg-[#F5F1ED]"
+                className="border-[#D9CFC7] text-foreground hover:bg-[#F5F1ED]"
                 disabled={isSubmitting}
               >
                 Cancel
@@ -469,7 +469,7 @@ export default function AdminCouponManagementPage() {
       <div className="bg-white rounded-lg border border-[#D9CFC7] p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#8B5A3C]/50" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-foreground/50" />
             <Input
               placeholder="Search by coupon code or status..."
               value={searchTerm}
@@ -485,19 +485,19 @@ export default function AdminCouponManagementPage() {
         <div className="bg-white rounded-lg border border-[#D9CFC7] p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[#8B5A3C]/70 font-medium">Total Coupons</p>
-              <p className="text-3xl font-bold text-[#6D4530] mt-2">{totalCoupons}</p>
+              <p className="text-sm text-foreground/70 font-medium">Total Coupons</p>
+              <p className="text-3xl font-bold text-foreground mt-2">{totalCoupons}</p>
             </div>
             <div className="w-12 h-12 rounded-full bg-[#8B5A3C]/10 flex items-center justify-center">
-              <Tag className="h-6 w-6 text-[#8B5A3C]" />
+              <Tag className="h-6 w-6 text-foreground" />
             </div>
           </div>
         </div>
         <div className="bg-white rounded-lg border border-[#D9CFC7] p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[#8B5A3C]/70 font-medium">Active Coupons</p>
-              <p className="text-3xl font-bold text-[#6D4530] mt-2">{activeCoupons}</p>
+              <p className="text-sm text-foreground/70 font-medium">Active Coupons</p>
+              <p className="text-3xl font-bold text-foreground mt-2">{activeCoupons}</p>
             </div>
             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
               <Check className="h-6 w-6 text-green-600" />
@@ -507,8 +507,8 @@ export default function AdminCouponManagementPage() {
         <div className="bg-white rounded-lg border border-[#D9CFC7] p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[#8B5A3C]/70 font-medium">Expired Coupons</p>
-              <p className="text-3xl font-bold text-[#6D4530] mt-2">{expiredCoupons}</p>
+              <p className="text-sm text-foreground/70 font-medium">Expired Coupons</p>
+              <p className="text-3xl font-bold text-foreground mt-2">{expiredCoupons}</p>
             </div>
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
               <X className="h-6 w-6 text-red-600" />
@@ -521,25 +521,25 @@ export default function AdminCouponManagementPage() {
       <div className="bg-white rounded-lg border border-[#D9CFC7] overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
-            <p className="text-[#8B5A3C]/70">Loading coupons...</p>
+            <p className="text-foreground/70">Loading coupons...</p>
           </div>
         ) : filteredCoupons.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-[#8B5A3C]/70">No coupons found</p>
+            <p className="text-foreground/70">No coupons found</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-[#F5F1ED] hover:bg-[#F5F1ED]">
-                  <TableHead className="text-[#6D4530] font-semibold">Coupon Code</TableHead>
-                  <TableHead className="text-[#6D4530] font-semibold">Discount</TableHead>
-                  <TableHead className="text-[#6D4530] font-semibold">Min. Purchase</TableHead>
-                  <TableHead className="text-[#6D4530] font-semibold">Usage</TableHead>
-                  <TableHead className="text-[#6D4530] font-semibold">Agents</TableHead>
-                  <TableHead className="text-[#6D4530] font-semibold">Expiry Date</TableHead>
-                  <TableHead className="text-[#6D4530] font-semibold">Status</TableHead>
-                  <TableHead className="text-[#6D4530] font-semibold text-right">Actions</TableHead>
+                  <TableHead className="text-foreground font-semibold">Coupon Code</TableHead>
+                  <TableHead className="text-foreground font-semibold">Discount</TableHead>
+                  <TableHead className="text-foreground font-semibold">Min. Purchase</TableHead>
+                  <TableHead className="text-foreground font-semibold">Usage</TableHead>
+                  <TableHead className="text-foreground font-semibold">Agents</TableHead>
+                  <TableHead className="text-foreground font-semibold">Expiry Date</TableHead>
+                  <TableHead className="text-foreground font-semibold">Status</TableHead>
+                  <TableHead className="text-foreground font-semibold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -547,25 +547,25 @@ export default function AdminCouponManagementPage() {
                   <TableRow key={coupon.id} className="hover:bg-[#F5F1ED]/50 transition-colors">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-semibold text-[#6D4530]">{coupon.code}</span>
+                        <span className="font-mono font-semibold text-foreground">{coupon.code}</span>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 text-[#8B5A3C] hover:text-[#6D4530]"
+                          className="h-6 w-6 text-foreground hover:text-foreground"
                           onClick={() => handleCopyCode(coupon.code, coupon.id)}
                         >
                           {copiedId === coupon.id ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell className="text-[#6D4530] font-medium">
+                    <TableCell className="text-foreground font-medium">
                       {coupon.type === "percentage" ? `${coupon.discount}%` : `₹${coupon.discount}`}
                       {coupon.maxDiscount && (
-                        <span className="text-xs text-[#8B5A3C]/70 ml-1 block">(max ₹{coupon.maxDiscount})</span>
+                        <span className="text-xs text-foreground/70 ml-1 block">(max ₹{coupon.maxDiscount})</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-[#6D4530]">₹{coupon.minPurchase}</TableCell>
-                    <TableCell className="text-[#6D4530]">
+                    <TableCell className="text-foreground">₹{coupon.minPurchase}</TableCell>
+                    <TableCell className="text-foreground">
                       <div className="flex items-center gap-2">
                         <span>
                           {coupon.usedCount}/{coupon.usageLimit}
@@ -584,17 +584,17 @@ export default function AdminCouponManagementPage() {
                           {coupon.agentNames.map((name, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-1 text-xs bg-[#8B5A3C]/10 text-[#6D4530] rounded-full font-medium"
+                              className="px-2 py-1 text-xs bg-[#8B5A3C]/10 text-foreground rounded-full font-medium"
                             >
                               {name}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-[#8B5A3C]/70 text-sm">All agents</span>
+                        <span className="text-foreground/70 text-sm">All agents</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-[#6D4530]">{coupon.expiryDate}</TableCell>
+                    <TableCell className="text-foreground">{coupon.expiryDate}</TableCell>
                     <TableCell>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(coupon.status)}`}
