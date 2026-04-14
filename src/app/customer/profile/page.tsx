@@ -1,13 +1,15 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import { User, Mail, Phone, MapPin, Edit2, Trash2, Plus, Check, ExternalLink } from "lucide-react"
+import { useState, useEffect, lazy, Suspense } from "react"
+import { User, Mail, Phone, MapPin, Edit2, Trash2, Plus, Check, ExternalLink, Navigation } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+
+const GoogleMapsPicker = lazy(() => import("@/components/location/google-maps-picker"))
 
 interface Address {
   _id?: string
@@ -42,6 +44,7 @@ export default function ProfilePage() {
   const [addresses, setAddresses] = useState<Address[]>([])
   const [editingAddressIndex, setEditingAddressIndex] = useState<number | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showMapPicker, setShowMapPicker] = useState(false)
   const [newAddress, setNewAddress] = useState<Address>({
     label: "Home",
     houseNumber: "",
@@ -212,6 +215,33 @@ export default function ProfilePage() {
     setIsEditing(true)
   }
 
+  const handleLocationSelect = (locationData: {
+    latitude: number
+    longitude: number
+    houseNumber?: string
+    crossStreet?: string
+    locality?: string
+    city?: string
+    state?: string
+    pincode?: string
+    country?: string
+  }) => {
+    setNewAddress((prev) => ({
+      ...prev,
+      houseNumber: locationData.houseNumber || prev.houseNumber,
+      crossStreet: locationData.crossStreet || prev.crossStreet,
+      locality: locationData.locality || prev.locality,
+      city: locationData.city || prev.city,
+      state: locationData.state || prev.state,
+      pincode: locationData.pincode || prev.pincode,
+      country: locationData.country || prev.country || "India",
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+    }))
+    setShowMapPicker(false)
+    toast.success("Location selected! Please review and complete the address details.")
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -336,9 +366,26 @@ export default function ProfilePage() {
         <CardContent className="space-y-6">
           {showAddForm && (
             <div className="border border-[#D9CFC7] rounded-lg p-4 space-y-4 bg-background">
-              <h3 className="font-semibold text-foreground">
-                {editingAddressIndex !== null ? "Edit Address" : "Add New Address"}
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">
+                  {editingAddressIndex !== null ? "Edit Address" : "Add New Address"}
+                </h3>
+                <Button
+                  type="button"
+                  onClick={() => setShowMapPicker(true)}
+                  variant="outline"
+                  className="border-[#D9CFC7] text-foreground"
+                >
+                  <Navigation className="h-4 w-4 mr-2" />
+                  Pick from Map
+                </Button>
+              </div>
+
+              {newAddress.latitude && newAddress.longitude && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+                  Location coordinates saved: {newAddress.latitude.toFixed(6)}, {newAddress.longitude.toFixed(6)}
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -563,6 +610,21 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
+
+      {showMapPicker && (
+        <Suspense fallback={null}>
+          <GoogleMapsPicker
+            open={showMapPicker}
+            onClose={() => setShowMapPicker(false)}
+            onSelectLocation={handleLocationSelect}
+            initialLocation={
+              newAddress.latitude && newAddress.longitude
+                ? { lat: newAddress.latitude, lng: newAddress.longitude }
+                : undefined
+            }
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

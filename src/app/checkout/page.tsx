@@ -45,7 +45,6 @@ export default function CheckoutPage() {
   const [isAuthChecking, setIsAuthChecking] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [allStates, setAllStates] = useState<string[]>([])
-  const [availableCities, setAvailableCities] = useState<string[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 const [couponCode, setCouponCode] = useState("")
   const [couponError, setCouponError] = useState("")
@@ -59,7 +58,6 @@ const [couponCode, setCouponCode] = useState("")
   // Billing address states
   const [billingDifferent, setBillingDifferent] = useState(false)
   const [billingAllStates, setBillingAllStates] = useState<string[]>([])
-  const [billingAvailableCities, setBillingAvailableCities] = useState<string[]>([])
   
   // GST states
   const [hasGST, setHasGST] = useState(false)
@@ -227,25 +225,7 @@ useEffect(() => {
     loadStates()
   }, [])
 
-// Update cities when state changes
-  useEffect(() => {
-    const loadCities = async () => {
-      if (formData.state) {
-        try {
-          const cities = await getCitiesForState(formData.state)
-          setAvailableCities(cities)
-        } catch (error) {
-          console.error("Error loading cities data:", error)
-          setAvailableCities([])
-        }
-      } else {
-        setAvailableCities([])
-      }
-    }
-    loadCities()
-  }, [formData.state])
-
-  // Load billing states
+// Load billing states
   useEffect(() => {
     const loadBillingStates = async () => {
       try {
@@ -259,24 +239,6 @@ useEffect(() => {
       loadBillingStates()
     }
   }, [billingDifferent])
-
-  // Update billing cities when billing state changes
-  useEffect(() => {
-    const loadBillingCities = async () => {
-      if (billingData.state) {
-        try {
-          const cities = await getCitiesForState(billingData.state)
-          setBillingAvailableCities(cities)
-        } catch (error) {
-          console.error("Error loading billing cities:", error)
-          setBillingAvailableCities([])
-        }
-      } else {
-        setBillingAvailableCities([])
-      }
-    }
-    loadBillingCities()
-  }, [billingData.state])
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -888,21 +850,15 @@ shippingAddress: {
                           <label className="block text-black mb-2 text-lg font-medium">
                             City <span className="text-red-500">*</span>
                           </label>
-                          <select
+                          <input
+                            type="text"
                             name="city"
                             value={formData.city}
                             onChange={handleInputChange}
-                            disabled={!formData.state}
-                            className={`w-full px-4 py-3 border text-black bg-white disabled:bg-gray-100 disabled:cursor-not-allowed text-lg ${fieldErrors.city ? "border-red-500 bg-red-50" : ""}`}
+                            placeholder="Enter your city"
+                            className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.city ? "border-red-500 bg-red-50" : ""}`}
                             style={{ borderColor: fieldErrors.city ? undefined : "#D9CFC7" }}
-                          >
-                            <option value="">Select City</option>
-                            {availableCities.map((city) => (
-                              <option key={city} value={city}>
-                                {city}
-                              </option>
-                            ))}
-                          </select>
+                          />
                           {fieldErrors.city && (
                             <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                               <AlertCircle className="w-4 h-4" /> {fieldErrors.city}
@@ -1065,21 +1021,15 @@ shippingAddress: {
                             <label className="block text-black mb-2 font-medium">
                               City <span className="text-red-500">*</span>
                             </label>
-                            <select
+                            <input
+                              type="text"
                               name="city"
                               value={billingData.city}
                               onChange={handleBillingInputChange}
-                              disabled={!billingData.state}
-                              className={`w-full px-4 py-3 border text-black bg-white disabled:bg-gray-100 disabled:cursor-not-allowed ${fieldErrors.billing_city ? "border-red-500 bg-red-50" : ""}`}
+                              placeholder="Enter your city"
+                              className={`w-full px-4 py-3 border text-black ${fieldErrors.billing_city ? "border-red-500 bg-red-50" : ""}`}
                               style={{ borderColor: fieldErrors.billing_city ? undefined : "#D9CFC7" }}
-                            >
-                              <option value="">Select City</option>
-                              {billingAvailableCities.map((city) => (
-                                <option key={city} value={city}>
-                                  {city}
-                                </option>
-                              ))}
-                            </select>
+                            />
                             {fieldErrors.billing_city && (
                               <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                                 <AlertCircle className="w-4 h-4" /> {fieldErrors.billing_city}
