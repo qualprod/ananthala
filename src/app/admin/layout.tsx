@@ -67,11 +67,7 @@ const menuItems = [
     href: "/admin/orders",
     icon: ShoppingCart,
   },
-  {
-    label: "Press",
-    href: "/admin/press",
-    icon: BookOpen,
-  },
+  
   {
     label: "Coupon Management",
     href: "/admin/coupons",

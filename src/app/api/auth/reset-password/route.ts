@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import connectDB from "@/lib/mongodb"
 import User from "@/models/User"
 import { validatePassword } from "@/lib/password-validation"
+import { sendPasswordResetConfirmationEmail } from "@/lib/email-service"
 
 export const runtime = "nodejs"
 
@@ -42,6 +43,9 @@ export async function POST(request: Request) {
     // Update password
     user.password = hashedPassword
     await user.save()
+
+    // Send password reset confirmation email
+    await sendPasswordResetConfirmationEmail(email, user.fullname)
 
     return NextResponse.json(
       {

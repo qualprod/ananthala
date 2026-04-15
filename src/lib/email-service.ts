@@ -1,14 +1,26 @@
 import nodemailer from "nodemailer"
 import type { Order } from "@/types/index"
 
-const getEmailTransporter = () => {
-  // Check if using Gmail (most common)
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+const getEmailTransporter = async () => {
+  // Check if using Gmail with EMAIL_PROVIDER explicitly set to gmail
+  const emailProvider = process.env.EMAIL_PROVIDER || "gmail"
+  const emailUser = process.env.EMAIL_USER
+  // Check for both EMAIL_PASSWORD and EMAIL_APP_PASSWORD for backward compatibility
+  const emailPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_APP_PASSWORD
+
+  console.log(`[v0] Email Provider: ${emailProvider}`)
+  console.log(`[v0] Email User: ${emailUser || "NOT SET"}`)
+  console.log(`[v0] EMAIL_PASSWORD exists: ${!!process.env.EMAIL_PASSWORD}`)
+  console.log(`[v0] EMAIL_APP_PASSWORD exists: ${!!process.env.EMAIL_APP_PASSWORD}`)
+  console.log(`[v0] Final password exists: ${!!emailPassword}`)
+
+  if (emailProvider === "gmail" && emailUser && emailPassword) {
+    console.log(`[v0] Configuring Gmail transport for ${emailUser}`)
     return nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        user: emailUser,
+        pass: emailPassword,
       },
     })
   }
@@ -20,6 +32,7 @@ const getEmailTransporter = () => {
     process.env.SMTP_USER &&
     process.env.SMTP_PASSWORD
   ) {
+    console.log(`[v0] Configuring SMTP transport for ${process.env.SMTP_USER}`)
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
@@ -33,16 +46,15 @@ const getEmailTransporter = () => {
 
   // Fallback to test account if no credentials provided
   console.warn("[v0] No email credentials configured. Using test account.")
-  return nodemailer.createTestAccount().then((testAccount) => {
-    return nodemailer.createTransport({
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    })
+  const testAccount = await nodemailer.createTestAccount()
+  return nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
   })
 }
 
@@ -1501,6 +1513,451 @@ Phone: +91 9071799966
     return true
   } catch (error) {
     console.error(`[v0] Failed to send welcome email: ${error}`)
+    return false
+  }
+}
+
+export async function sendOTPEmail(
+  email: string,
+  otp: string,
+  userName: string,
+): Promise<boolean> {
+  try {
+    console.log(`[v0] Starting sendOTPEmail for ${email}`)
+    const transporter = await getEmailTransporter()
+
+    if (!transporter) {
+      console.error(`[v0] Email transporter not configured for OTP email`)
+      return false
+    }
+
+    console.log(`[v0] Email transporter configured successfully`)
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Password Reset OTP - Ananthala</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+          line-height: 1.5;
+          color: #4a4a4a;
+          background-color: #f9f7f4;
+          padding: 16px;
+        }
+        .wrapper {
+          max-width: 600px;
+          margin: 0 auto;
+        }
+        .container {
+          background-color: #ffffff;
+          border: 1px solid #e8ddd5;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .header {
+          background: linear-gradient(135deg, #6d4530 0%, #8b5a3c 100%);
+          color: white;
+          padding: 32px 24px;
+          text-align: center;
+        }
+        .header-logo {
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+          margin-bottom: 8px;
+        }
+        .content {
+          padding: 32px 24px;
+        }
+        .greeting {
+          font-size: 18px;
+          font-weight: 600;
+          color: #6d4530;
+          margin-bottom: 6px;
+        }
+        .intro-text {
+          color: #8b5a3c;
+          font-size: 14px;
+          margin-bottom: 24px;
+          line-height: 1.6;
+        }
+        .otp-box {
+          background: linear-gradient(135deg, #fafaf8 0%, #f5f1ed 100%);
+          border: 2px solid #8b5a3c;
+          border-radius: 8px;
+          padding: 24px;
+          text-align: center;
+          margin: 24px 0;
+        }
+        .otp-label {
+          color: #8b5a3c;
+          font-size: 12px;
+          text-transform: uppercase;
+          font-weight: 600;
+          letter-spacing: 0.3px;
+          margin-bottom: 12px;
+        }
+        .otp-value {
+          font-size: 36px;
+          font-weight: 700;
+          color: #6d4530;
+          letter-spacing: 8px;
+          font-family: 'Courier New', monospace;
+        }
+        .expiry-note {
+          color: #b8a396;
+          font-size: 12px;
+          margin-top: 12px;
+          font-style: italic;
+        }
+        .warning-box {
+          background-color: #fef3cd;
+          border: 1px solid #ffc107;
+          border-radius: 6px;
+          padding: 12px;
+          margin: 20px 0;
+          color: #856404;
+          font-size: 13px;
+        }
+        .footer {
+          background-color: #f5f1ed;
+          padding: 24px;
+          text-align: center;
+          border-top: 1px solid #e8ddd5;
+        }
+        .footer-text {
+          color: #8b5a3c;
+          font-size: 12px;
+          margin-bottom: 12px;
+          line-height: 1.6;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <div class="header-logo">🏠 Ananthala</div>
+          </div>
+          <div class="content">
+            <p class="greeting">Hello ${userName},</p>
+            <p class="intro-text">We received a request to reset your password. Use the 4-digit verification code below to verify your identity and proceed with resetting your password.</p>
+            
+            <div class="otp-box">
+              <div class="otp-label">Your Verification Code</div>
+              <div class="otp-value">${otp}</div>
+              <div class="expiry-note">This code will expire in 10 minutes</div>
+            </div>
+
+            <div class="warning-box">
+              <strong>Important:</strong> Never share this code with anyone. Ananthala staff will never ask for your verification code.
+            </div>
+
+            <p class="intro-text">Once you enter this code, you'll be able to set a new password for your account.</p>
+          </div>
+          <div class="footer">
+            <p class="footer-text">If you didn't request this password reset, please ignore this email and your password will remain unchanged.</p>
+            <p class="footer-text">Need help? Contact us at qualprodsllp@gmail.com</p>
+            <p class="footer-text">© 2026 Ananthala. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+    `
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || "noreply@ananthala.com",
+      to: email,
+      subject: "Password Reset Verification Code - Ananthala",
+      html: htmlContent,
+      text: `
+Hello ${userName},
+
+We received a request to reset your password. Use this 4-digit verification code:
+
+${otp}
+
+This code will expire in 10 minutes.
+
+If you didn't request this password reset, please ignore this email.
+
+Thank you,
+Ananthala Team
+      `,
+    }
+
+    console.log(`[v0] Calling transporter.sendMail with options:`, {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+    })
+    const result = await transporter.sendMail(mailOptions)
+    console.log(`[v0] Password reset OTP sent successfully to ${email}`, result)
+    return true
+  } catch (error) {
+    console.error(`[v0] Failed to send OTP email:`, error)
+    return false
+  }
+}
+
+export async function sendPasswordResetConfirmationEmail(
+  email: string,
+  userName: string,
+): Promise<boolean> {
+  try {
+    const transporter = await getEmailTransporter()
+
+    if (!transporter) {
+      console.error(`[v0] Email transporter not configured for password reset email`)
+      return false
+    }
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Password Reset Confirmation - Ananthala</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+          line-height: 1.5;
+          color: #4a4a4a;
+          background-color: #f9f7f4;
+          padding: 16px;
+        }
+        .wrapper {
+          max-width: 600px;
+          margin: 0 auto;
+        }
+        .container {
+          background-color: #ffffff;
+          border: 1px solid #e8ddd5;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .header {
+          background: linear-gradient(135deg, #6d4530 0%, #8b5a3c 100%);
+          color: white;
+          padding: 32px 24px;
+          text-align: center;
+        }
+        .header-logo {
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+          margin-bottom: 8px;
+        }
+        .header-subtitle {
+          font-size: 13px;
+          opacity: 0.9;
+          letter-spacing: 0.3px;
+        }
+        .content {
+          padding: 32px 24px;
+        }
+        .greeting {
+          font-size: 18px;
+          font-weight: 600;
+          color: #6d4530;
+          margin-bottom: 6px;
+        }
+        .intro-text {
+          color: #8b5a3c;
+          font-size: 14px;
+          margin-bottom: 24px;
+          line-height: 1.6;
+        }
+        .success-box {
+          background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+          border: 1px solid #28a745;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 24px 0;
+          text-align: center;
+        }
+        .success-icon {
+          font-size: 40px;
+          margin-bottom: 12px;
+        }
+        .success-title {
+          color: #155724;
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        .success-message {
+          color: #1e7e34;
+          font-size: 14px;
+        }
+        .security-section {
+          background: linear-gradient(135deg, #fafaf8 0%, #f5f1ed 100%);
+          border: 1px solid #e8ddd5;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .security-title {
+          color: #6d4530;
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          margin-bottom: 12px;
+        }
+        .security-list {
+          list-style: none;
+          font-size: 13px;
+          color: #8b5a3c;
+          line-height: 1.8;
+        }
+        .security-list li {
+          margin-bottom: 8px;
+          padding-left: 20px;
+          position: relative;
+        }
+        .security-list li:before {
+          content: "✓";
+          position: absolute;
+          left: 0;
+          color: #6d4530;
+          font-weight: bold;
+        }
+        .warning-section {
+          background-color: #fff3cd;
+          border: 1px solid #ffc107;
+          border-radius: 8px;
+          padding: 16px;
+          margin: 20px 0;
+        }
+        .warning-title {
+          color: #856404;
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        .warning-text {
+          color: #856404;
+          font-size: 13px;
+          line-height: 1.6;
+        }
+        .footer {
+          background-color: #f5f1ed;
+          padding: 24px;
+          text-align: center;
+          border-top: 1px solid #e8ddd5;
+        }
+        .footer-text {
+          color: #8b5a3c;
+          font-size: 12px;
+          margin-bottom: 12px;
+          line-height: 1.6;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <div class="header-logo">🏠 Ananthala</div>
+            <div class="header-subtitle">Password Reset Confirmation</div>
+          </div>
+          <div class="content">
+            <p class="greeting">Hello ${userName},</p>
+            
+            <div class="success-box">
+              <div class="success-icon">✓</div>
+              <div class="success-title">Password Successfully Reset</div>
+              <div class="success-message">Your account password has been reset successfully.</div>
+            </div>
+
+            <p class="intro-text">Your Ananthala account password has been changed. If you didn't make this change, please take immediate action to secure your account.</p>
+
+            <div class="security-section">
+              <div class="security-title">What Happens Next</div>
+              <ul class="security-list">
+                <li>You can now log in with your new password</li>
+                <li>Your old password will no longer work</li>
+                <li>All active sessions have been cleared for security</li>
+                <li>You may need to log in again on your devices</li>
+              </ul>
+            </div>
+
+            <div class="warning-section">
+              <div class="warning-title">⚠️ Security Alert</div>
+              <div class="warning-text">
+                If you did not request this password change, please contact us immediately at qualprodsllp@gmail.com. You can also change your password again if you believe your account has been compromised.
+              </div>
+            </div>
+
+            <p class="intro-text">Thank you for keeping your Ananthala account secure!</p>
+          </div>
+          <div class="footer">
+            <p class="footer-text">Need help? Contact us immediately if you did not request this password reset.</p>
+            <p class="footer-text">
+              <strong>Email:</strong> qualprodsllp@gmail.com<br>
+              <strong>Phone:</strong> +91 9071799966
+            </p>
+            <p class="footer-text">© 2026 Ananthala. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+    `
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || "noreply@ananthala.com",
+      to: email,
+      subject: "Your Account Password Has Been Reset - Ananthala",
+      html: htmlContent,
+      text: `
+Hello ${userName},
+
+Your Ananthala account password has been reset successfully.
+
+WHAT HAPPENS NEXT:
+- You can now log in with your new password
+- Your old password will no longer work
+- All active sessions have been cleared for security
+- You may need to log in again on your devices
+
+SECURITY ALERT:
+If you did not request this password change, please contact us immediately at qualprodsllp@gmail.com.
+
+Thank you for keeping your Ananthala account secure!
+
+Need help?
+Email: qualprodsllp@gmail.com
+Phone: +91 9071799966
+
+© 2026 Ananthala. All rights reserved.
+      `,
+    }
+
+    await transporter.sendMail(mailOptions)
+    console.log(`[v0] Password reset confirmation email sent to ${email}`)
+    return true
+  } catch (error) {
+    console.error(`[v0] Failed to send password reset confirmation email: ${error}`)
     return false
   }
 }

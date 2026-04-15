@@ -94,9 +94,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Usage limit must be at least 1" }, { status: 400 })
     }
 
+    // Set expiry date to end of day (23:59:59)
     const expiryDateTime = new Date(expiryDate)
-    if (expiryDateTime < new Date()) {
-      return NextResponse.json({ error: "Expiry date must be in the future" }, { status: 400 })
+    expiryDateTime.setHours(23, 59, 59, 999)
+    
+    // Allow today's date or future dates
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    if (expiryDateTime < today) {
+      return NextResponse.json({ error: "Expiry date must be today or in the future" }, { status: 400 })
     }
 
     await connectDB()

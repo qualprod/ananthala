@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
 import connectDB from "@/lib/mongodb"
 import User from "@/models/User"
-import { generateToken } from "@/lib/jwt"
+import { sendOTPEmail } from "@/lib/email-service"
 
 export const runtime = "nodejs"
+
+const generateOTP = () => {
+  return Math.floor(1000 + Math.random() * 9000).toString()
+}
 
 export async function POST(request: Request) {
   try {
@@ -23,30 +27,41 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: true,
-          message: "If an account exists with this email, a password reset link has been sent.",
+          message: "If an account exists with this email, an OTP has been sent to verify your identity.",
         },
         { status: 200 },
       )
     }
 
-    // Generate reset token
-    const resetToken = generateToken(user.email)
+    // Generate OTP
+    const otp = generateOTP()
+    console.log(`[v0] Generated OTP for ${email}: ${otp}`)
 
-    // Save token and expiration to database
-    user.resetPasswordToken = resetToken
-    user.resetPasswordExpires = new Date(Date.now() + 3600000) // 1 hour from now
+    // Save OTP and expiration to database (10 minutes validity)
+    user.otpCode = otp
+    user.otpExpiry = new Date(Date.now() + 600000) // 10 minutes from now
+    user.otpMethod = "email"
     await user.save()
+    console.log(`[v0] OTP saved to database for ${email}`)
 
-    // In a real application, you would send this token via email
-    // For now, we'll return it in the response
-    console.log("[RESET_TOKEN]", resetToken)
+    // Send OTP via email
+    console.log(`[v0] Sending OTP email to ${email}`)
+    const emailSent = await sendOTPEmail(email, otp, user.fullname)
+
+    if (!emailSent) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Failed to send OTP. Please try again.",
+        },
+        { status: 500 },
+      )
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: "If an account exists with this email, a password reset link has been sent.",
-        // In production, remove this line and send via email instead
-        resetToken,
+        message: "If an account exists with this email, an OTP has been sent to verify your identity.",
       },
       { status: 200 },
     )

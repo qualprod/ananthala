@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/auth/verify-email", {
+      const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,8 +31,12 @@ export default function ForgotPasswordPage() {
       const data = await response.json()
 
       if (data.success) {
-        // Email exists, redirect to reset password page with email
-        router.push(`/reset-password?email=${encodeURIComponent(email)}`)
+        toast({
+          title: "Success",
+          description: "OTP has been sent to your email. Please check your inbox.",
+        })
+        // Redirect to OTP verification page with email
+        router.push(`/verify-otp-password?email=${encodeURIComponent(email)}`)
       } else {
         toast({
           title: "Error",
@@ -111,7 +115,7 @@ export default function ForgotPasswordPage() {
               className="w-full h-12 bg-[#8B5A3C] hover:bg-[#6D4530] text-white font-medium text-base transition-colors"
               disabled={isLoading}
             >
-              {isLoading ? "Verifying..." : "Change Password"}
+              {isLoading ? "Sending OTP..." : "Send OTP"}
             </Button>
           </form>
 
