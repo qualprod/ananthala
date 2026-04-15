@@ -43,20 +43,8 @@ export function Footer() {
             >
               Shipping
             </Link>
-            <span className="text-gray-400 hidden sm:inline">•</span>
-            <Link 
-              href="/dealer-enquiry" 
-              className="hover:text-amber-950 transition-colors font-medium text-xs sm:text-sm md:text-base"
-            >
-              Dealer Enquiry
-            </Link>
-            <span className="text-gray-400 hidden sm:inline">•</span>
-            <Link 
-              href="/contact-us" 
-              className="hover:text-amber-950 transition-colors font-medium text-xs sm:text-sm md:text-base"
-            >
-              Contact-Us
-            </Link>
+            
+    
           </div>
           
         </div>
