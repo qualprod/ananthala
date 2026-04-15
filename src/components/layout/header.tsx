@@ -50,7 +50,6 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const { cartItems } = useCart()
   const [user, setUser] = useState<AuthenticatedUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -62,8 +61,6 @@ export function Header() {
         }
       } catch (error) {
         console.error("Auth check failed:", error)
-      } finally {
-        setIsLoading(false)
       }
     }
     checkAuth()
@@ -147,56 +144,52 @@ export function Header() {
             </div>
 
             <div className="flex items-center gap-4 -mr-3 sm:-mr-2">
-              {!isLoading && (
-                <>
-                  {user ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="hover:bg-[#F5EFE8] transition-all duration-300 relative p-1 h-14 w-14 group outline-none focus:outline-none focus-visible:ring-0 focus:ring-0 rounded-lg"
-                        >
-                          <div
-                            className={`w-12 h-12 rounded-full bg-gradient-to-br ${getGradientColor(
-                              user.fullname,
-                            )} flex items-center justify-center text-white font-black text-lg shadow-md border-2 border-white group-hover:scale-110 transition-transform duration-300`}
-                          >
-                            {getFirstName(user.fullname).charAt(0).toUpperCase()}
-                          </div>
-                          <span className="sr-only">User menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
-                        <div className="px-2 py-1.5 text-sm text-[#6D4530]">
-                          <div className="font-bold">{getFirstName(user.fullname)}</div>
-                          <div className="text-xs text-[#8B5A3C]/70 truncate">{user.email}</div>
-                        </div>
-                        <DropdownMenuItem asChild className="text-[#6D4530] cursor-pointer font-semibold">
-                          <Link href="/customer/dashboard">
-                            <LayoutDashboard className="mr-2 h-4 w-4" />
-                            <span>Dashboard</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogout} className="text-[#6D4530] cursor-pointer font-semibold">
-                          <LogOut className="mr-2 h-4 w-4" />
-                          <span>Logout</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : (
-                    <Link href="/login">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-foreground hover:bg-[#F5EFE8] transition-all duration-300 p-0 h-14 w-14 rounded-lg font-black flex items-center justify-center group outline-none focus:outline-none focus-visible:ring-0 focus:ring-0"
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="hover:bg-[#F5EFE8] transition-all duration-300 relative p-1 h-14 w-14 group outline-none focus:outline-none focus-visible:ring-0 focus:ring-0 rounded-lg"
+                    >
+                      <div
+                        className={`w-12 h-12 rounded-full bg-gradient-to-br ${getGradientColor(
+                          user.fullname,
+                        )} flex items-center justify-center text-white font-black text-lg shadow-md border-2 border-white group-hover:scale-110 transition-transform duration-300`}
                       >
-                        <User className="h-12 w-12 stroke-[2.5] group-hover:scale-110 transition-transform duration-300 text-foreground" />
-                        <span className="sr-only">User account</span>
-                      </Button>
-                    </Link>
-                  )}
-                </>
+                        {getFirstName(user.fullname).charAt(0).toUpperCase()}
+                      </div>
+                      <span className="sr-only">User menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="px-2 py-1.5 text-sm text-[#6D4530]">
+                      <div className="font-bold">{getFirstName(user.fullname)}</div>
+                      <div className="text-xs text-[#8B5A3C]/70 truncate">{user.email}</div>
+                    </div>
+                    <DropdownMenuItem asChild className="text-[#6D4530] cursor-pointer font-semibold">
+                      <Link href="/customer/dashboard">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} className="text-[#6D4530] cursor-pointer font-semibold">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link href="/login">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-foreground hover:bg-[#F5EFE8] transition-all duration-300 p-0 h-14 w-14 rounded-lg font-black flex items-center justify-center group outline-none focus:outline-none focus-visible:ring-0 focus:ring-0"
+                  >
+                    <User className="h-12 w-12 stroke-[2.5] group-hover:scale-110 transition-transform duration-300 text-foreground" />
+                    <span className="sr-only">User account</span>
+                  </Button>
+                </Link>
               )}
               <Button
                 variant="ghost"
