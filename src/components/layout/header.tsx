@@ -194,12 +194,12 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-foreground hover:bg-[#F5EFE8] transition-all duration-300 relative p-0 h-14 w-14 rounded-lg font-black group flex items-center justify-center outline-none focus:outline-none focus-visible:ring-0 focus:ring-0"
+                className="text-foreground hover:bg-[#F5EFE8] transition-all duration-300 relative p-0 h-16 w-16 rounded-lg font-black group flex items-center justify-center outline-none focus:outline-none focus-visible:ring-0 focus:ring-0"
                 onClick={() => router.push("/cart")}
               >
-                <ShoppingCart className="h-12 w-12 stroke-[2.5] group-hover:scale-110 transition-transform duration-300 text-foreground" />
+                <ShoppingCart className="h-14 w-14 stroke-[2.5] group-hover:scale-110 transition-transform duration-300 text-foreground" />
                 {cartItems.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-br from-[#8B5A3C] to-[#6D4530] text-white text-xs font-black rounded-full min-w-[1.5rem] h-6 flex items-center justify-center px-0.5 border-2 border-white shadow-lg animate-pulse">
+                  <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-br from-[#8B5A3C] to-[#6D4530] text-white text-xs font-black rounded-full min-w-[1.5rem] h-6 flex items-center justify-center px-0.5 border-2 border-white shadow-lg animate-pulse">
                     {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
                   </span>
                 )}
@@ -222,11 +222,17 @@ export function Header() {
           >
             <nav className="p-4">
               <div className="flex items-center justify-center px-2 py-5">
-                <img
-                  src="/logo.png"
-                  alt="Ananthala"
-                  className="h-28 w-auto max-w-full object-contain"
-                />
+                <Link
+                  href="/"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="inline-flex items-center justify-center"
+                >
+                  <img
+                    src="/logo.png"
+                    alt="Ananthala"
+                    className="h-28 w-auto max-w-full object-contain"
+                  />
+                </Link>
               </div>
               <ul className="space-y-1">
                 {getMenuItems(!!user).map((item, index) => (

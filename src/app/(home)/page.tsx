@@ -254,7 +254,7 @@ export default function Home() {
       <Header />
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-[640px] flex items-end">
+        <section className="relative min-h-[720px] md:min-h-[840px] flex items-end">
           {/* Background Video */}
           <div className="absolute inset-0 z-0">
             <video ref={videoRef} autoPlay loop muted playsInline className="w-full h-full object-cover">

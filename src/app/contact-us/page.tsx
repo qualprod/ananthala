@@ -7,6 +7,9 @@ import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Mail, Phone, MapPin, Clock } from "lucide-react"
 import { useState } from "react"
+import { CountryCodeSelect } from "@/components/ui/country-code-select"
+import { DEFAULT_COUNTRY_CODE } from "@/lib/country-codes"
+import { withCountryCode } from "@/lib/phone"
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -20,6 +23,7 @@ export default function ContactUs() {
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -33,13 +37,17 @@ export default function ContactUs() {
     setError("")
 
     try {
-      console.log("[v0] Submitting contact form with data:", formData)
+      const payload = {
+        ...formData,
+        phone: formData.phone ? withCountryCode(`${countryCode}${formData.phone}`, countryCode) : "",
+      }
+      console.log("[v0] Submitting contact form with data:", payload)
       const response = await fetch("/api/contact-us", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       const data = await response.json()
@@ -51,6 +59,7 @@ export default function ContactUs() {
 
       setSubmitted(true)
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" })
+      setCountryCode(DEFAULT_COUNTRY_CODE)
       setTimeout(() => setSubmitted(false), 5000)
     } catch (err: any) {
       console.error("[v0] Form submission error:", err)
@@ -161,15 +170,24 @@ export default function ContactUs() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-foreground font-medium mb-2">Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                    className="w-full px-4 py-3 border border-amber-100 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:border-transparent disabled:opacity-50"
-                    placeholder="+1 (555) 000-0000"
-                  />
+                  <div className="flex gap-2">
+                    <CountryCodeSelect
+                      id="contact-country-code"
+                      value={countryCode}
+                      onChange={setCountryCode}
+                      disabled={isLoading}
+                      className="w-44 px-3 py-3 border border-amber-100 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:border-transparent disabled:opacity-50"
+                    />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      disabled={isLoading}
+                      className="w-full px-4 py-3 border border-amber-100 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:border-transparent disabled:opacity-50"
+                      placeholder="Phone number"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-foreground font-medium mb-2">Subject</label>

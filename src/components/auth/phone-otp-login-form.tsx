@@ -10,6 +10,9 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { CountryCodeSelect } from "@/components/ui/country-code-select"
+import { DEFAULT_COUNTRY_CODE } from "@/lib/country-codes"
+import { withCountryCode } from "@/lib/phone"
 
 interface ProfileCompletionNeeds {
   name: boolean
@@ -20,6 +23,7 @@ interface ProfileCompletionNeeds {
 export function PhoneOTPLoginForm() {
   const [step, setStep] = useState<"phone" | "otp" | "complete-profile">("phone")
   const [phone, setPhone] = useState("")
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
   const [otp, setOtp] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
@@ -41,22 +45,22 @@ export function PhoneOTPLoginForm() {
   const handleSendOTP = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    // Validate phone number - allow digits, +, -, spaces
     const phoneDigits = phone.replace(/\D/g, "")
+    const fullPhone = withCountryCode(`${countryCode}${phone}`, countryCode)
 
-    if (phoneDigits.length < 10) {
+    if (phoneDigits.length < 6) {
       toast({
         title: "Error",
-        description: "Please enter a valid phone number with at least 10 digits",
+        description: "Please enter a valid phone number",
         variant: "destructive",
       })
       return
     }
 
-    if (phoneDigits.length > 12) {
+    if (phoneDigits.length > 15) {
       toast({
         title: "Error",
-        description: "Phone number is too long. Should be max 12 digits",
+        description: "Phone number is too long",
         variant: "destructive",
       })
       return
@@ -68,7 +72,7 @@ export function PhoneOTPLoginForm() {
       const response = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, method: "phone" }),
+        body: JSON.stringify({ phone: fullPhone, method: "phone" }),
       })
 
       const data = await response.json()
@@ -122,7 +126,7 @@ export function PhoneOTPLoginForm() {
       const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, otp, rememberMe }),
+        body: JSON.stringify({ phone: withCountryCode(`${countryCode}${phone}`, countryCode), otp, rememberMe }),
       })
 
       const data = await response.json()
@@ -278,19 +282,28 @@ export function PhoneOTPLoginForm() {
           <label htmlFor="phone" className="block text-[#6D4530] text-sm md:text-base font-semibold mb-3">
             Phone Number
           </label>
-          <div className="relative">
-            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8B5A3C]" />
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              placeholder="Enter 10-digit number (e.g., 9876543210)"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#8B5A3C] placeholder:text-sm focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3"
-              required
+          <div className="flex gap-2">
+            <CountryCodeSelect
+              id="phone-otp-country-code"
+              value={countryCode}
+              onChange={setCountryCode}
               disabled={isLoading}
+              className="h-12 w-44 rounded-md border border-[#D9CFC7] bg-white px-3 text-sm text-[#6D4530]"
             />
+            <div className="relative flex-1">
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8B5A3C]" />
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="Enter phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#8B5A3C] placeholder:text-sm focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3"
+                required
+                disabled={isLoading}
+              />
+            </div>
           </div>
           <p className="text-xs text-[#8B5A3C] mt-2">
             We&apos;ll send a 4-digit OTP to your registered phone.{" "}

@@ -10,6 +10,9 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { CountryCodeSelect } from "@/components/ui/country-code-select"
+import { DEFAULT_COUNTRY_CODE } from "@/lib/country-codes"
+import { withCountryCode } from "@/lib/phone"
 
 interface ProfileCompletionNeeds {
   name: boolean
@@ -27,6 +30,7 @@ export function EmailOTPLoginForm() {
   const [redirectUrl, setRedirectUrl] = useState<string>("/")
   const [profileNeeds, setProfileNeeds] = useState<ProfileCompletionNeeds>({ name: false, phone: false, email: false })
   const [profileData, setProfileData] = useState({ fullname: "", phone: "" })
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -142,7 +146,7 @@ export function EmailOTPLoginForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullname: profileNeeds.name ? profileData.fullname : undefined,
-          phone: profileNeeds.phone ? profileData.phone : undefined,
+          phone: profileNeeds.phone ? withCountryCode(`${countryCode}${profileData.phone}`, countryCode) : undefined,
         }),
       })
 
@@ -211,21 +215,28 @@ export function EmailOTPLoginForm() {
             <label htmlFor="phone" className="block text-[#6D4530] text-sm md:text-base font-semibold mb-3">
               Mobile Number
             </label>
-            <div className="relative">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8B5A3C]" />
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder="Enter 10-digit mobile number"
-                value={profileData.phone}
-                onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#8B5A3C] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold"
-                required
+            <div className="flex gap-2">
+              <CountryCodeSelect
+                id="email-otp-profile-country-code"
+                value={countryCode}
+                onChange={setCountryCode}
                 disabled={isLoading}
-                pattern="^(?:\+91[\s-]?)?[6-9]\d{9}$"
-                title="Enter a valid 10-digit Indian mobile number"
+                className="h-12 w-44 rounded-md border border-[#D9CFC7] bg-white px-3 text-sm text-[#6D4530]"
               />
+              <div className="relative flex-1">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8B5A3C]" />
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="Phone number"
+                  value={profileData.phone}
+                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                  className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#8B5A3C] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
             </div>
           </div>
         )}

@@ -39,11 +39,28 @@ interface Order {
   createdAt: string
   orderTimeline: TimelineEvent[]
   shippingAddress?: {
+    houseNumber?: string
+    crossStreet?: string
+    locality?: string
+    landmark?: string
     fullAddress: string
     city: string
     state: string
     zipCode: string
     country: string
+  }
+  billingAddress?: {
+    firstName?: string
+    lastName?: string
+    houseNumber?: string
+    crossStreet?: string
+    locality?: string
+    landmark?: string
+    fullAddress?: string
+    city?: string
+    state?: string
+    zipCode?: string
+    country?: string
   }
   trackingNumber?: string
 }
@@ -223,6 +240,27 @@ export default function OrderManagementPage() {
       textColor: "text-green-700",
     },
   ]
+
+  const formatAddressLines = (address?: {
+    houseNumber?: string
+    crossStreet?: string
+    locality?: string
+    landmark?: string
+    fullAddress?: string
+    city?: string
+    state?: string
+    zipCode?: string
+    country?: string
+  }) => {
+    if (!address) return []
+    const line1 = [address.houseNumber, address.crossStreet].filter(Boolean).join(", ")
+    const line2 = [address.locality, address.landmark].filter(Boolean).join(", ")
+    const line3 = [address.city, address.state, address.zipCode, address.country].filter(Boolean).join(", ")
+    const fallback = [address.fullAddress, [address.city, address.state].filter(Boolean).join(", "), address.zipCode, address.country]
+      .filter(Boolean)
+      .join(", ")
+    return [line1, line2, line3].filter(Boolean).length > 0 ? [line1, line2, line3].filter(Boolean) : fallback ? [fallback] : []
+  }
 
   return (
     <div className="space-y-6">
@@ -463,6 +501,36 @@ export default function OrderManagementPage() {
                   </p>
                 </div>
               </div>
+
+              {(selectedOrder.shippingAddress || selectedOrder.billingAddress) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedOrder.shippingAddress && (
+                    <div className="p-4 bg-[#F5F1ED] rounded-lg">
+                      <h3 className="font-semibold text-foreground mb-2">Shipping Address</h3>
+                      <div className="text-sm text-foreground/90 space-y-1">
+                        {formatAddressLines(selectedOrder.shippingAddress).map((line, idx) => (
+                          <p key={`shipping-line-${idx}`}>{line}</p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {selectedOrder.billingAddress && (
+                    <div className="p-4 bg-[#F5F1ED] rounded-lg">
+                      <h3 className="font-semibold text-foreground mb-2">Billing Address</h3>
+                      {(selectedOrder.billingAddress.firstName || selectedOrder.billingAddress.lastName) && (
+                        <p className="text-sm text-foreground/90 mb-1">
+                          {[selectedOrder.billingAddress.firstName, selectedOrder.billingAddress.lastName].filter(Boolean).join(" ")}
+                        </p>
+                      )}
+                      <div className="text-sm text-foreground/90 space-y-1">
+                        {formatAddressLines(selectedOrder.billingAddress).map((line, idx) => (
+                          <p key={`billing-line-${idx}`}>{line}</p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Order Items */}
               <div>

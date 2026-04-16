@@ -6,6 +6,9 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { CountryCodeSelect } from "@/components/ui/country-code-select"
+import { DEFAULT_COUNTRY_CODE } from "@/lib/country-codes"
+import { withCountryCode } from "@/lib/phone"
 
 export default function DealerEnquiry() {
   const [formData, setFormData] = useState({
@@ -24,6 +27,7 @@ export default function DealerEnquiry() {
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -37,13 +41,17 @@ export default function DealerEnquiry() {
     setError("")
 
     try {
-      console.log("[v0] Submitting dealer enquiry with data:", formData)
+      const payload = {
+        ...formData,
+        phone: withCountryCode(`${countryCode}${formData.phone}`, countryCode),
+      }
+      console.log("[v0] Submitting dealer enquiry with data:", payload)
       const response = await fetch("/api/dealer-enquiry", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       const data = await response.json()
@@ -66,6 +74,7 @@ export default function DealerEnquiry() {
         inventory: "",
         message: "",
       })
+      setCountryCode(DEFAULT_COUNTRY_CODE)
       setTimeout(() => setSubmitted(false), 5000)
     } catch (err: any) {
       console.error("[v0] Form submission error:", err)
@@ -178,16 +187,25 @@ export default function DealerEnquiry() {
                 </div>
                 <div>
                   <label className="block text-foreground font-medium mb-2">Phone *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="w-full px-4 py-3 border border-amber-100 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] disabled:opacity-50"
-                    placeholder="+1 (555) 000-0000"
-                  />
+                  <div className="flex gap-2">
+                    <CountryCodeSelect
+                      id="dealer-country-code"
+                      value={countryCode}
+                      onChange={setCountryCode}
+                      disabled={isLoading}
+                      className="w-44 px-3 py-3 border border-amber-100 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] disabled:opacity-50"
+                    />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                      disabled={isLoading}
+                      className="w-full px-4 py-3 border border-amber-100 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] disabled:opacity-50"
+                      placeholder="Phone number"
+                    />
+                  </div>
                 </div>
               </div>
 

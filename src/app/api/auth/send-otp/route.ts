@@ -149,14 +149,13 @@ if (method === "email") {
         console.log(`[v0] Original phone: ${phone}, Normalized: ${normalizedPhone}`)
 
         // Check if user exists with phone - check both with and without country code
-        const phoneWithPrefix = normalizedPhone
-        const phoneWithoutPrefix = normalizedPhone.startsWith("91") ? normalizedPhone.slice(2) : normalizedPhone
-        
-        let user = await User.findOne({ 
-          $or: [
-            { phone: phoneWithPrefix },
-            { phone: phoneWithoutPrefix }
-          ]
+        const phoneCandidates = [normalizedPhone]
+        if (normalizedPhone.startsWith("91")) {
+          phoneCandidates.push(normalizedPhone.slice(2))
+        }
+
+        let user = await User.findOne({
+          phone: { $in: phoneCandidates },
         })
 
         // If user doesn't exist, return error - they need to register first

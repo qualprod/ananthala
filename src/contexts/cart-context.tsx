@@ -190,11 +190,38 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return mergeDuplicateCartItems([...prevItems, normalizedItem])
     })
 
-    toast({
-      title: existingItem ? "Cart updated" : "Added to cart",
-      description: existingItem
-        ? `${normalizedItem.name} quantity updated in your cart.`
-        : `${normalizedItem.name} has been added to your cart.`,
+    const { dismiss } = toast({
+      title: <span className="text-lg font-semibold">{existingItem ? "Cart updated" : "Added to cart"}</span>,
+      className:
+        "cart-toast fixed left-1/2 top-1/2 z-100 w-[520px] max-w-[96vw] -translate-x-1/2 -translate-y-1/2 p-8",
+      description: (
+        <div className="mt-3 space-y-4">
+          <p className="text-base leading-relaxed">
+            {existingItem
+              ? `${normalizedItem.name} quantity updated in your cart.`
+              : `${normalizedItem.name} has been added to your cart.`}
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                dismiss()
+                window.location.href = "/cart"
+              }}
+              className="rounded-md bg-[#EED9C4] px-4 py-2 text-sm font-medium text-[#6D4530] transition-colors hover:bg-[#D9BB9B]"
+            >
+              Go to Cart
+            </button>
+            <button
+              type="button"
+              onClick={() => dismiss()}
+              className="rounded-md bg-[#6D4530] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#5B3928]"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      ),
     })
   }
 

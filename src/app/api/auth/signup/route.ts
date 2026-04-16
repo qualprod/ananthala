@@ -5,28 +5,9 @@ import User from "@/models/User"
 import PendingUser from "@/models/PendingUser"
 import nodemailer from "nodemailer"
 import { validatePassword } from "@/lib/password-validation"
+import { withCountryCode } from "@/lib/phone"
 
 export const runtime = "nodejs"
-
-// Helper function to normalize phone number with country code
-function normalizePhoneForStorage(phone: string): string {
-  const rawPhone = String(phone).trim()
-  let digits = rawPhone.replace(/\D/g, "")
-  
-  // Remove leading 0 if present
-  if (digits.startsWith("0")) {
-    digits = digits.slice(1)
-  }
-  
-  // If starts with 91, keep it
-  if (digits.startsWith("91") && digits.length === 12) {
-    return digits
-  }
-  
-  // Take last 10 digits and add 91 prefix
-  const last10 = digits.slice(-10)
-  return "91" + last10
-}
 
 // Helper function to generate 4-digit OTP
 function generateOTP() {
@@ -143,22 +124,15 @@ export async function POST(request: Request) {
     const rawPhone = String(phone).trim()
     let phoneDigits = rawPhone.replace(/\D/g, "")
     
-    if (phoneDigits.startsWith("91")) {
-      phoneDigits = phoneDigits.slice(2)
-    }
-    if (phoneDigits.startsWith("0")) {
-      phoneDigits = phoneDigits.slice(1)
-    }
-    
-    if (!/^[6-9]\d{9}$/.test(phoneDigits)) {
+    if (!/^\d{6,15}$/.test(phoneDigits)) {
       return NextResponse.json(
-        { success: false, message: "Please enter a valid 10-digit Indian mobile number" },
+        { success: false, message: "Please enter a valid phone number with country code" },
         { status: 400 },
       )
     }
 
     // Normalize phone with country code for consistent storage
-    const normalizedPhone = normalizePhoneForStorage(phone)
+    const normalizedPhone = withCountryCode(phone).replace(/^\+/, "")
     const normalizedEmail = email.toLowerCase()
 
     // Connect to database
@@ -173,15 +147,7 @@ export async function POST(request: Request) {
     }
 
     // Check for existing phone
-    const phoneWithPrefix = normalizedPhone
-    const phoneWithoutPrefix = normalizedPhone.startsWith("91") ? normalizedPhone.slice(2) : normalizedPhone
-    
-    const existingPhoneUser = await User.findOne({ 
-      $or: [
-        { phone: phoneWithPrefix },
-        { phone: phoneWithoutPrefix }
-      ]
-    })
+    const existingPhoneUser = await User.findOne({ phone: normalizedPhone })
     if (existingPhoneUser) {
       return NextResponse.json(
         { success: false, message: "An account already exists with this phone number" },

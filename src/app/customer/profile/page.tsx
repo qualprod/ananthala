@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { CountryCodeSelect } from "@/components/ui/country-code-select"
+import { DEFAULT_COUNTRY_CODE } from "@/lib/country-codes"
+import { splitPhoneNumber, withCountryCode } from "@/lib/phone"
 
 const GoogleMapsPicker = lazy(() => import("@/components/location/google-maps-picker"))
 
@@ -41,6 +44,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [phone, setPhone] = useState("")
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
   const [addresses, setAddresses] = useState<Address[]>([])
   const [editingAddressIndex, setEditingAddressIndex] = useState<number | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -65,8 +69,10 @@ export default function ProfilePage() {
         const data = await response.json()
 
         if (data.success && data.user) {
+          const splitPhone = splitPhoneNumber(data.user.phone || "", DEFAULT_COUNTRY_CODE)
           setUser(data.user)
-          setPhone(data.user.phone || "")
+          setPhone(splitPhone.localNumber)
+          setCountryCode(splitPhone.countryCode)
           setAddresses(data.user.addresses || [])
         } else {
           toast.error("Failed to load profile")
@@ -105,7 +111,7 @@ export default function ProfilePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone: phone.trim(),
+          phone: withCountryCode(`${countryCode}${phone}`, countryCode),
           addresses: addresses,
         }),
       })
@@ -304,17 +310,26 @@ export default function ProfilePage() {
               <Label htmlFor="phone" className="text-foreground">
                 Phone Number
               </Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter your phone number"
-                  className="pl-10 border-[#D9CFC7] focus-visible:ring-foreground"
+              <div className="flex gap-2">
+                <CountryCodeSelect
+                  id="profile-country-code"
+                  value={countryCode}
+                  onChange={setCountryCode}
                   disabled={!isEditing}
+                  className="h-10 w-44 rounded-md border border-[#D9CFC7] bg-white px-3 text-sm text-foreground disabled:cursor-not-allowed disabled:bg-gray-50"
                 />
+                <div className="relative flex-1">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Enter your phone number"
+                    className="pl-10 border-[#D9CFC7] focus-visible:ring-foreground"
+                    disabled={!isEditing}
+                  />
+                </div>
               </div>
             </div>
 

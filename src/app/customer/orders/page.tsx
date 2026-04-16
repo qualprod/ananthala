@@ -27,6 +27,10 @@ interface TimelineEntry {
 }
 
 interface ShippingAddress {
+  houseNumber?: string
+  crossStreet?: string
+  locality?: string
+  landmark?: string
   fullAddress?: string
   city?: string
   state?: string
@@ -132,6 +136,17 @@ export default function OrdersPage() {
       month: "short",
       day: "numeric",
     })
+  }
+
+  const getAddressLines = (address?: ShippingAddress) => {
+    if (!address) return []
+    const line1 = [address.houseNumber, address.crossStreet].filter(Boolean).join(", ")
+    const line2 = [address.locality, address.landmark].filter(Boolean).join(", ")
+    const line3 = [address.city, address.state, address.zipCode, address.country].filter(Boolean).join(", ")
+    const fallback = [address.fullAddress, [address.city, address.state].filter(Boolean).join(", "), address.zipCode, address.country]
+      .filter(Boolean)
+      .join(", ")
+    return [line1, line2, line3].filter(Boolean).length > 0 ? [line1, line2, line3].filter(Boolean) : fallback ? [fallback] : []
   }
 
   const handleCancelOrder = async () => {
@@ -413,17 +428,9 @@ export default function OrdersPage() {
                 <div className="space-y-3 p-4 bg-[#F5F1ED] rounded-lg border border-[#D9CFC7]">
                   <h3 className="font-semibold text-[#6D4530]">Shipping Address</h3>
                   <div className="text-sm text-foreground space-y-1">
-                    {selectedOrder.shippingAddress.fullAddress && (
-                      <p>{selectedOrder.shippingAddress.fullAddress}</p>
-                    )}
-                    <div className="flex gap-2">
-                      {selectedOrder.shippingAddress.city && <p>{selectedOrder.shippingAddress.city}</p>}
-                      {selectedOrder.shippingAddress.state && <p>{selectedOrder.shippingAddress.state}</p>}
-                    </div>
-                    <div className="flex gap-2">
-                      {selectedOrder.shippingAddress.zipCode && <p>{selectedOrder.shippingAddress.zipCode}</p>}
-                      {selectedOrder.shippingAddress.country && <p>{selectedOrder.shippingAddress.country}</p>}
-                    </div>
+                    {getAddressLines(selectedOrder.shippingAddress).map((line, idx) => (
+                      <p key={`shipping-line-${idx}`}>{line}</p>
+                    ))}
                   </div>
                 </div>
               )}

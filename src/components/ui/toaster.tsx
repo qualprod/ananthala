@@ -12,9 +12,18 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const hasVisibleCartToast = toasts.some(
+    (toast) =>
+      toast.open &&
+      typeof toast.className === "string" &&
+      toast.className.includes("cart-toast")
+  )
 
   return (
     <ToastProvider>
+      {hasVisibleCartToast && (
+        <div className="fixed inset-0 z-90 bg-black/10 backdrop-blur-[2px]" aria-hidden="true" />
+      )}
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>

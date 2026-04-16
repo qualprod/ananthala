@@ -73,6 +73,7 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.11.2",
     "vaul": "^1.1.2",
+    "world-countries": "^5.1.0",
     "zod": "3.25.76"
   },
   "devDependencies": {

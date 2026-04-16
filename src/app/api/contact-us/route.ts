@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import connectDB from "@/lib/mongodb"
 import ContactUs from "@/models/ContactUs"
+import { withCountryCode } from "@/lib/phone"
 
 export const runtime = "nodejs"
 
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
     const contactData = {
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      phone: phone?.trim() || "",
+      phone: phone?.trim() ? withCountryCode(phone) : "",
       subject: subject.trim(),
       message: message.trim(),
     }

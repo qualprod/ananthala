@@ -4,6 +4,7 @@ import { verifyToken } from "@/lib/jwt"
 import connectDB from "@/lib/mongodb"
 import User from "@/models/User"
 import mongoose from "mongoose"
+import { withCountryCode } from "@/lib/phone"
 
 export const runtime = "nodejs"
 
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 })
     }
 
-    user.phone = phone?.trim() || ""
+    user.phone = phone?.trim() ? withCountryCode(phone) : ""
     
     // Validate maximum 3 addresses
     if (Array.isArray(addresses) && addresses.length > 3) {

@@ -10,6 +10,9 @@ import { IndianRupee, ShoppingCart, ChevronRight, MapPin, Check, AlertCircle, Bu
 import { useCart } from "@/contexts/cart-context"
 import { getAllStates, getCitiesForState } from "@/lib/indian-states-cities"
 import { useToast } from "@/hooks/use-toast"
+import { CountryCodeSelect } from "@/components/ui/country-code-select"
+import { DEFAULT_COUNTRY_CODE } from "@/lib/country-codes"
+import { splitPhoneNumber, withCountryCode } from "@/lib/phone"
 
 interface SavedAddress {
   _id: string
@@ -48,6 +51,7 @@ export default function CheckoutPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 const [couponCode, setCouponCode] = useState("")
   const [couponError, setCouponError] = useState("")
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
   const { toast } = useToast()
   
   // Saved address states
@@ -72,6 +76,10 @@ const [couponCode, setCouponCode] = useState("")
     lastName: "",
     email: "",
     phone: "",
+    houseNumber: "",
+    crossStreet: "",
+    landmark: "",
+    locality: "",
     address: "",
     city: "",
     state: "",
@@ -83,12 +91,32 @@ const [couponCode, setCouponCode] = useState("")
   const [billingData, setBillingData] = useState({
     firstName: "",
     lastName: "",
+    houseNumber: "",
+    crossStreet: "",
+    landmark: "",
+    locality: "",
     address: "",
     city: "",
     state: "",
     zipCode: "",
     country: "India",
   })
+
+  const buildFullAddress = ({
+    houseNumber,
+    crossStreet,
+    locality,
+    landmark,
+  }: {
+    houseNumber: string
+    crossStreet: string
+    locality: string
+    landmark?: string
+  }) =>
+    [houseNumber, crossStreet, locality, landmark]
+      .map((part) => part?.trim())
+      .filter(Boolean)
+      .join(", ")
 
   const loadRazorpayScript = () =>
     new Promise<boolean>((resolve) => {
@@ -147,12 +175,14 @@ useEffect(() => {
         
         // Pre-fill name, email, phone from profile
         const nameParts = data.user.fullname?.split(" ") || []
+        const splitPhone = splitPhoneNumber(data.user.phone || "", DEFAULT_COUNTRY_CODE)
+        setCountryCode(splitPhone.countryCode)
         setFormData(prev => ({
           ...prev,
           firstName: nameParts[0] || "",
           lastName: nameParts.slice(1).join(" ") || "",
           email: data.user.email || "",
-          phone: data.user.phone || "",
+          phone: splitPhone.localNumber,
         }))
         
         // If user has saved addresses, select the default one or first one
@@ -173,15 +203,19 @@ useEffect(() => {
 
   // Apply selected address to form
   const applySelectedAddress = (address: SavedAddress) => {
-    const fullAddress = [
-      address.houseNumber,
-      address.crossStreet,
-      address.locality,
-      address.landmark
-    ].filter(Boolean).join(", ")
+    const fullAddress = buildFullAddress({
+      houseNumber: address.houseNumber,
+      crossStreet: address.crossStreet,
+      locality: address.locality,
+      landmark: address.landmark,
+    })
     
     setFormData(prev => ({
       ...prev,
+      houseNumber: address.houseNumber || "",
+      crossStreet: address.crossStreet || "",
+      landmark: address.landmark || "",
+      locality: address.locality || "",
       address: fullAddress,
       city: address.city,
       state: address.state,
@@ -197,6 +231,10 @@ useEffect(() => {
       setSelectedAddressId(null)
       setFormData(prev => ({
         ...prev,
+        houseNumber: "",
+        crossStreet: "",
+        landmark: "",
+        locality: "",
         address: "",
         city: "",
         state: "",
@@ -249,7 +287,14 @@ useEffect(() => {
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0)
   
   // Check if address is properly filled
-  const isAddressComplete = formData.address.trim() && formData.state && formData.city && formData.zipCode && /^\d{6}$/.test(formData.zipCode)
+  const isAddressComplete =
+    formData.houseNumber.trim() &&
+    formData.crossStreet.trim() &&
+    formData.locality.trim() &&
+    formData.state &&
+    formData.city &&
+    formData.zipCode &&
+    /^\d{6}$/.test(formData.zipCode)
   
   // Shipping formula: 120 for first product, +20 for each additional product
   // Only calculate shipping if address is complete
@@ -356,22 +401,28 @@ const handleInputChange = (
     if (!formData.email.trim()) errors.email = "Email is required"
     else if (!/^\S+@\S+\.\S+$/.test(formData.email)) errors.email = "Invalid email format"
     if (!formData.phone.trim()) errors.phone = "Phone number is required"
-    else if (!/^[6-9]\d{9}$/.test(formData.phone.replace(/\s/g, ""))) errors.phone = "Invalid phone number"
-    if (!formData.address.trim()) errors.address = "Address is required"
+    else if (!/^\d{6,15}$/.test(formData.phone.replace(/\D/g, ""))) errors.phone = "Invalid phone number"
+    if (!formData.houseNumber.trim()) errors.houseNumber = "House number is required"
+    if (!formData.crossStreet.trim()) errors.crossStreet = "Street is required"
+    if (!formData.locality.trim()) errors.locality = "Area / Locality is required"
     if (!formData.state) errors.state = "State is required"
     if (!formData.city) errors.city = "City is required"
     if (!formData.zipCode.trim()) errors.zipCode = "ZIP code is required"
     else if (!/^\d{6}$/.test(formData.zipCode)) errors.zipCode = "ZIP code must be 6 digits"
+    if (!formData.country.trim()) errors.country = "Country is required"
     
     // Billing address validation if different
     if (billingDifferent) {
       if (!billingData.firstName.trim()) errors.billing_firstName = "First name is required"
       if (!billingData.lastName.trim()) errors.billing_lastName = "Last name is required"
-      if (!billingData.address.trim()) errors.billing_address = "Address is required"
+      if (!billingData.houseNumber.trim()) errors.billing_houseNumber = "House number is required"
+      if (!billingData.crossStreet.trim()) errors.billing_crossStreet = "Street is required"
+      if (!billingData.locality.trim()) errors.billing_locality = "Area / Locality is required"
       if (!billingData.state) errors.billing_state = "State is required"
       if (!billingData.city) errors.billing_city = "City is required"
       if (!billingData.zipCode.trim()) errors.billing_zipCode = "ZIP code is required"
       else if (!/^\d{6}$/.test(billingData.zipCode)) errors.billing_zipCode = "ZIP code must be 6 digits"
+      if (!billingData.country.trim()) errors.billing_country = "Country is required"
     }
     
     // GST validation if provided
@@ -441,7 +492,9 @@ const handleSubmit = async (e: React.FormEvent) => {
         throw new Error(orderData?.message || "Failed to create payment order.")
       }
 
-      const options = {
+    const fullPhone = withCountryCode(`${countryCode}${formData.phone}`, countryCode)
+
+    const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: orderData.order.amount,
         currency: orderData.order.currency,
@@ -452,10 +505,15 @@ const handleSubmit = async (e: React.FormEvent) => {
         prefill: {
           name: `${formData.firstName} ${formData.lastName}`.trim(),
           email: formData.email,
-          contact: formData.phone,
+          contact: fullPhone,
         },
         notes: {
-          address: formData.address,
+          address: buildFullAddress({
+            houseNumber: formData.houseNumber,
+            crossStreet: formData.crossStreet,
+            locality: formData.locality,
+            landmark: formData.landmark,
+          }),
           city: formData.city,
           state: formData.state,
           zipCode: formData.zipCode,
@@ -473,10 +531,19 @@ const handleSubmit = async (e: React.FormEvent) => {
                   firstName: formData.firstName,
                   lastName: formData.lastName,
                   email: formData.email,
-                  phone: formData.phone,
+                  phone: fullPhone,
                 },
 shippingAddress: {
-                  address: formData.address,
+                  houseNumber: formData.houseNumber,
+                  crossStreet: formData.crossStreet,
+                  locality: formData.locality,
+                  landmark: formData.landmark,
+                  address: buildFullAddress({
+                    houseNumber: formData.houseNumber,
+                    crossStreet: formData.crossStreet,
+                    locality: formData.locality,
+                    landmark: formData.landmark,
+                  }),
                   city: formData.city,
                   state: formData.state,
                   zipCode: formData.zipCode,
@@ -485,7 +552,16 @@ shippingAddress: {
                 billingAddress: billingDifferent ? {
                   firstName: billingData.firstName,
                   lastName: billingData.lastName,
-                  address: billingData.address,
+                  houseNumber: billingData.houseNumber,
+                  crossStreet: billingData.crossStreet,
+                  locality: billingData.locality,
+                  landmark: billingData.landmark,
+                  address: buildFullAddress({
+                    houseNumber: billingData.houseNumber,
+                    crossStreet: billingData.crossStreet,
+                    locality: billingData.locality,
+                    landmark: billingData.landmark,
+                  }),
                   city: billingData.city,
                   state: billingData.state,
                   zipCode: billingData.zipCode,
@@ -715,15 +791,23 @@ shippingAddress: {
                       <label className="block text-black mb-2 text-lg font-medium">
                         Phone Number <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="10 digit mobile number"
-                        className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.phone ? "border-red-500 bg-red-50" : ""}`}
-                        style={{ borderColor: fieldErrors.phone ? undefined : "#D9CFC7" }}
-                      />
+                      <div className="flex gap-2">
+                        <CountryCodeSelect
+                          id="checkout-country-code"
+                          value={countryCode}
+                          onChange={setCountryCode}
+                          className="w-44 px-3 py-3 border text-black text-sm"
+                        />
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          placeholder="Phone number"
+                          className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.phone ? "border-red-500 bg-red-50" : ""}`}
+                          style={{ borderColor: fieldErrors.phone ? undefined : "#D9CFC7" }}
+                        />
+                      </div>
                       {fieldErrors.phone && (
                         <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                           <AlertCircle className="w-4 h-4" /> {fieldErrors.phone}
@@ -807,20 +891,70 @@ shippingAddress: {
                     <div className="space-y-4">
                       <div>
                         <label className="block text-black mb-2 text-lg font-medium">
-                          Address <span className="text-red-500">*</span>
+                          House Number <span className="text-red-500">*</span>
                         </label>
-                        <textarea
-                          name="address"
-                          value={formData.address}
+                        <input
+                          type="text"
+                          name="houseNumber"
+                          value={formData.houseNumber}
                           onChange={handleInputChange}
-                          rows={3}
-                          placeholder="House/Flat No., Street, Locality, Landmark"
-                          className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.address ? "border-red-500 bg-red-50" : ""}`}
-                          style={{ borderColor: fieldErrors.address ? undefined : "#D9CFC7" }}
+                          placeholder="House / Flat Number"
+                          className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.houseNumber ? "border-red-500 bg-red-50" : ""}`}
+                          style={{ borderColor: fieldErrors.houseNumber ? undefined : "#D9CFC7" }}
                         />
-                        {fieldErrors.address && (
+                        {fieldErrors.houseNumber && (
                           <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                            <AlertCircle className="w-4 h-4" /> {fieldErrors.address}
+                            <AlertCircle className="w-4 h-4" /> {fieldErrors.houseNumber}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-black mb-2 text-lg font-medium">
+                          Street <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="crossStreet"
+                          value={formData.crossStreet}
+                          onChange={handleInputChange}
+                          placeholder="Street name"
+                          className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.crossStreet ? "border-red-500 bg-red-50" : ""}`}
+                          style={{ borderColor: fieldErrors.crossStreet ? undefined : "#D9CFC7" }}
+                        />
+                        {fieldErrors.crossStreet && (
+                          <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-4 h-4" /> {fieldErrors.crossStreet}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-black mb-2 text-lg font-medium">Landmark</label>
+                        <input
+                          type="text"
+                          name="landmark"
+                          value={formData.landmark}
+                          onChange={handleInputChange}
+                          placeholder="Nearby landmark (optional)"
+                          className="w-full px-4 py-3 border text-black text-lg"
+                          style={{ borderColor: "#D9CFC7" }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-black mb-2 text-lg font-medium">
+                          Area / Locality <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="locality"
+                          value={formData.locality}
+                          onChange={handleInputChange}
+                          placeholder="Area / Locality"
+                          className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.locality ? "border-red-500 bg-red-50" : ""}`}
+                          style={{ borderColor: fieldErrors.locality ? undefined : "#D9CFC7" }}
+                        />
+                        {fieldErrors.locality && (
+                          <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-4 h-4" /> {fieldErrors.locality}
                           </p>
                         )}
                       </div>
@@ -911,7 +1045,7 @@ shippingAddress: {
                   {selectedAddressId && !useNewAddress && (
                     <div className="mt-4 p-4 bg-[#F5F1ED] rounded-lg border border-[#E5D5C5]">
                       <p className="text-sm font-medium text-[#6D4530] mb-2">Shipping to:</p>
-                      <p className="text-black">{formData.address}</p>
+                      <p className="text-black">{buildFullAddress(formData)}</p>
                       <p className="text-gray-600">{formData.city}, {formData.state} - {formData.zipCode}</p>
                     </div>
                   )}
@@ -979,19 +1113,66 @@ shippingAddress: {
 
                         <div>
                           <label className="block text-black mb-2 font-medium">
-                            Address <span className="text-red-500">*</span>
+                            House Number <span className="text-red-500">*</span>
                           </label>
-                          <textarea
-                            name="address"
-                            value={billingData.address}
+                          <input
+                            type="text"
+                            name="houseNumber"
+                            value={billingData.houseNumber}
                             onChange={handleBillingInputChange}
-                            rows={3}
-                            className={`w-full px-4 py-3 border text-black ${fieldErrors.billing_address ? "border-red-500 bg-red-50" : ""}`}
-                            style={{ borderColor: fieldErrors.billing_address ? undefined : "#D9CFC7" }}
+                            className={`w-full px-4 py-3 border text-black ${fieldErrors.billing_houseNumber ? "border-red-500 bg-red-50" : ""}`}
+                            style={{ borderColor: fieldErrors.billing_houseNumber ? undefined : "#D9CFC7" }}
                           />
-                          {fieldErrors.billing_address && (
+                          {fieldErrors.billing_houseNumber && (
                             <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                              <AlertCircle className="w-4 h-4" /> {fieldErrors.billing_address}
+                              <AlertCircle className="w-4 h-4" /> {fieldErrors.billing_houseNumber}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-black mb-2 font-medium">
+                            Street <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="crossStreet"
+                            value={billingData.crossStreet}
+                            onChange={handleBillingInputChange}
+                            className={`w-full px-4 py-3 border text-black ${fieldErrors.billing_crossStreet ? "border-red-500 bg-red-50" : ""}`}
+                            style={{ borderColor: fieldErrors.billing_crossStreet ? undefined : "#D9CFC7" }}
+                          />
+                          {fieldErrors.billing_crossStreet && (
+                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                              <AlertCircle className="w-4 h-4" /> {fieldErrors.billing_crossStreet}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-black mb-2 font-medium">Landmark</label>
+                          <input
+                            type="text"
+                            name="landmark"
+                            value={billingData.landmark}
+                            onChange={handleBillingInputChange}
+                            className="w-full px-4 py-3 border text-black"
+                            style={{ borderColor: "#D9CFC7" }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-black mb-2 font-medium">
+                            Area / Locality <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="locality"
+                            value={billingData.locality}
+                            onChange={handleBillingInputChange}
+                            className={`w-full px-4 py-3 border text-black ${fieldErrors.billing_locality ? "border-red-500 bg-red-50" : ""}`}
+                            style={{ borderColor: fieldErrors.billing_locality ? undefined : "#D9CFC7" }}
+                          />
+                          {fieldErrors.billing_locality && (
+                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                              <AlertCircle className="w-4 h-4" /> {fieldErrors.billing_locality}
                             </p>
                           )}
                         </div>

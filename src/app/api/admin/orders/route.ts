@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     const orders = await Order.find(filter)
       .select(
-        "orderId customerId customerName customerEmail customerPhone orderStatus totalAmount items orderTimeline createdAt updatedAt paymentStatus",
+        "orderId customerId customerName customerEmail customerPhone orderStatus totalAmount items orderTimeline createdAt updatedAt paymentStatus shippingAddress billingAddress",
       )
       .sort({ createdAt: -1 })
       .skip(skip)

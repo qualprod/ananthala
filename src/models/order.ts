@@ -26,6 +26,10 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 shippingAddress: {
+      houseNumber: String,
+      crossStreet: String,
+      locality: String,
+      landmark: String,
       fullAddress: String,
       city: String,
       state: String,
@@ -35,6 +39,10 @@ shippingAddress: {
     billingAddress: {
       firstName: String,
       lastName: String,
+      houseNumber: String,
+      crossStreet: String,
+      locality: String,
+      landmark: String,
       fullAddress: String,
       city: String,
       state: String,

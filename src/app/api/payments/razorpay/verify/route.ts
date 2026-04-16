@@ -6,6 +6,7 @@ import { verifyToken } from "@/lib/jwt"
 import connectDB from "@/lib/mongodb"
 import Order from "@/models/order"
 import { sendOrderConfirmationEmail } from "@/lib/email-service"
+import { withCountryCode } from "@/lib/phone"
 
 export const runtime = "nodejs"
 
@@ -17,6 +18,22 @@ interface CartItemPayload {
   fabric?: string
   productColor?: string
   productColorHex?: string
+}
+
+const buildFullAddress = (address?: {
+  houseNumber?: string
+  crossStreet?: string
+  locality?: string
+  landmark?: string
+  address?: string
+}) => {
+  const structuredAddress = [address?.houseNumber, address?.crossStreet, address?.locality, address?.landmark]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(", ")
+
+  if (structuredAddress) return structuredAddress
+  return address?.address?.trim() || ""
 }
 
 export async function POST(request: Request) {
@@ -88,9 +105,13 @@ const {
       customerId: customerId, // Store the authenticated user's ObjectId
       customerName: `${customer?.firstName || ""} ${customer?.lastName || ""}`.trim(),
       customerEmail: customer?.email || "",
-      customerPhone: customer?.phone || "",
+      customerPhone: customer?.phone ? withCountryCode(customer.phone) : "",
 shippingAddress: {
-        fullAddress: shippingAddress?.address || "",
+        houseNumber: shippingAddress?.houseNumber || "",
+        crossStreet: shippingAddress?.crossStreet || "",
+        locality: shippingAddress?.locality || "",
+        landmark: shippingAddress?.landmark || "",
+        fullAddress: buildFullAddress(shippingAddress),
         city: shippingAddress?.city || "",
         state: shippingAddress?.state || "",
         zipCode: shippingAddress?.zipCode || "",
@@ -99,7 +120,11 @@ shippingAddress: {
       billingAddress: billingAddress ? {
         firstName: billingAddress.firstName || "",
         lastName: billingAddress.lastName || "",
-        fullAddress: billingAddress.address || "",
+        houseNumber: billingAddress.houseNumber || "",
+        crossStreet: billingAddress.crossStreet || "",
+        locality: billingAddress.locality || "",
+        landmark: billingAddress.landmark || "",
+        fullAddress: buildFullAddress(billingAddress),
         city: billingAddress.city || "",
         state: billingAddress.state || "",
         zipCode: billingAddress.zipCode || "",

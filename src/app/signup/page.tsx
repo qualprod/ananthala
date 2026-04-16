@@ -9,6 +9,9 @@ import { validatePassword, PASSWORD_REQUIREMENTS } from "@/lib/password-validati
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
+import { CountryCodeSelect } from "@/components/ui/country-code-select"
+import { DEFAULT_COUNTRY_CODE } from "@/lib/country-codes"
+import { withCountryCode } from "@/lib/phone"
 
 type Step = "form" | "verify"
 
@@ -22,6 +25,7 @@ export default function SignupPage() {
     password: "",
     phone: "",
   })
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
   const [password, setPassword] = useState("")
   const [passwordValidation, setPasswordValidation] = useState(validatePassword(""))
   
@@ -71,6 +75,7 @@ export default function SignupPage() {
     const email = formDataObj.get("email") as string
     const passwordValue = password
     const phone = formDataObj.get("phone") as string
+    const fullPhone = withCountryCode(`${countryCode}${phone}`, countryCode)
 
     try {
       const response = await fetch("/api/auth/signup", {
@@ -78,13 +83,13 @@ export default function SignupPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fullname, email, password: passwordValue, phone }),
+        body: JSON.stringify({ fullname, email, password: passwordValue, phone: fullPhone }),
       })
 
       const data = await response.json()
 
       if (data.success && data.requiresVerification) {
-        setFormData({ fullname, email, password: passwordValue, phone })
+        setFormData({ fullname, email, password: passwordValue, phone: fullPhone })
         setStep("verify")
         setResendTimer(60) // 60 seconds before allowing resend
         toast({
@@ -426,22 +431,29 @@ export default function SignupPage() {
               <label htmlFor="phone" className="block text-[#6D4530] text-sm font-medium mb-2">
                 Phone Number <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B5A3C]">
-                  <Phone className="h-5 w-5" />
-                </div>
+              <div className="flex gap-2">
+                <CountryCodeSelect
+                  id="signup-country-code"
+                  value={countryCode}
+                  onChange={setCountryCode}
+                  disabled={isLoading}
+                  className="h-12 w-44 rounded-md border border-[#E5D5C5] bg-white px-3 text-sm text-[#6D4530] focus:border-[#8B5A3C] focus:outline-none"
+                />
+                <div className="relative flex-1">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B5A3C]">
+                    <Phone className="h-5 w-5" />
+                  </div>
                 <Input
                   id="phone"
                   name="phone"
                   type="tel"
-                  placeholder="10-digit mobile number"
+                  placeholder="Phone number"
                   className="pl-12 h-12 bg-white border-[#E5D5C5] text-[#6D4530] placeholder:text-[#B8A396] focus:border-[#8B5A3C] focus:ring-[#8B5A3C]"
                   required
                   inputMode="numeric"
-                  pattern="^(?:\+91[\s-]?)?[6-9]\d{9}$"
-                  title="Enter a valid 10-digit Indian mobile number"
                   disabled={isLoading}
                 />
+                </div>
               </div>
             </div>
 

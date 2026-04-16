@@ -22,6 +22,10 @@ interface Order {
   customerEmail: string
   customerPhone: string
   shippingAddress?: {
+    houseNumber?: string
+    crossStreet?: string
+    locality?: string
+    landmark?: string
     fullAddress?: string
     city?: string
     state?: string
@@ -126,6 +130,17 @@ export default function TrackOrderPage() {
     setSearchQuery("")
     setOrder(null)
     setSearched(false)
+  }
+
+  const getAddressLines = (address?: Order["shippingAddress"]) => {
+    if (!address) return []
+    const line1 = [address.houseNumber, address.crossStreet].filter(Boolean).join(", ")
+    const line2 = [address.locality, address.landmark].filter(Boolean).join(", ")
+    const line3 = [address.city, address.state, address.zipCode, address.country].filter(Boolean).join(", ")
+    const fallback = [address.fullAddress, [address.city, address.state].filter(Boolean).join(", "), address.zipCode, address.country]
+      .filter(Boolean)
+      .join(", ")
+    return [line1, line2, line3].filter(Boolean).length > 0 ? [line1, line2, line3].filter(Boolean) : fallback ? [fallback] : []
   }
 
   return (
@@ -322,18 +337,14 @@ export default function TrackOrderPage() {
                           Delivery Address
                         </h2>
                         <div className="bg-[#F5F1ED] rounded-lg p-3 sm:p-4 text-sm">
-                          {order.shippingAddress.fullAddress && (
-                            <p className="text-[#6D4530] font-medium">{order.shippingAddress.fullAddress}</p>
-                          )}
-                          <div className="flex flex-wrap gap-2 mt-2 text-xs sm:text-sm text-[#8B5A3C]">
-                            {order.shippingAddress.city && <span>{order.shippingAddress.city}</span>}
-                            {order.shippingAddress.state && <span>-</span>}
-                            {order.shippingAddress.state && <span>{order.shippingAddress.state}</span>}
-                            {order.shippingAddress.zipCode && <span>-</span>}
-                            {order.shippingAddress.zipCode && <span>{order.shippingAddress.zipCode}</span>}
-                            {order.shippingAddress.country && <span>-</span>}
-                            {order.shippingAddress.country && <span>{order.shippingAddress.country}</span>}
-                          </div>
+                          {getAddressLines(order.shippingAddress).map((line, idx) => (
+                            <p
+                              key={`delivery-address-line-${idx}`}
+                              className={idx === 0 ? "text-[#6D4530] font-medium" : "text-[#8B5A3C] mt-1"}
+                            >
+                              {line}
+                            </p>
+                          ))}
                         </div>
                       </CardContent>
                     </Card>

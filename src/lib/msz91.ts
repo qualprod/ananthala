@@ -28,21 +28,27 @@ export function validateMsg91Config(): void {
  * Converts to format with country code (91 for India)
  */
 export function normalizePhoneNumber(phone: string): string {
-  // Remove all non-digit characters
-  const digits = phone.replace(/\D/g, "")
+  const value = phone.trim()
+  const digits = value.replace(/\D/g, "")
 
-  // Check if minimum length is met (10 digits for India)
-  if (digits.length < 10) {
-    throw new Error("Invalid phone number. Please provide at least 10 digits.")
+  if (digits.length < 6 || digits.length > 15) {
+    throw new Error("Invalid phone number. Please provide a valid number with country code.")
   }
 
-  // If already starts with 91, return as is
-  if (digits.startsWith("91")) {
+  if (value.startsWith("+")) {
     return digits
   }
 
-  // Take last 10 digits and add country code
-  return "91" + digits.slice(-10)
+  if (digits.startsWith("00")) {
+    return digits.slice(2)
+  }
+
+  // Backward compatibility: local 10-digit numbers default to India.
+  if (digits.length === 10) {
+    return "91" + digits
+  }
+
+  return digits
 }
 
 /**

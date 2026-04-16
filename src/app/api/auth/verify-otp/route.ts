@@ -31,7 +31,11 @@ export async function POST(request: Request) {
       // Normalize phone number before lookup
       const normalizedPhone = normalizePhoneNumber(phone)
       console.log(`[v0] Looking up user by phone. Original: ${phone}, Normalized: ${normalizedPhone}`)
-      user = await User.findOne({ phone: normalizedPhone })
+      const phoneCandidates = [normalizedPhone]
+      if (normalizedPhone.startsWith("91")) {
+        phoneCandidates.push(normalizedPhone.slice(2))
+      }
+      user = await User.findOne({ phone: { $in: phoneCandidates } })
     }
 
     if (!user) {
