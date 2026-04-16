@@ -450,7 +450,7 @@ export async function sendOrderConfirmationEmail(
         <div class="container">
           <!-- Header -->
           <div class="header">
-            <div class="header-logo">🏠 Ananthala</div>
+            <div class="header-logo"></div>
             <div class="header-subtitle">Order Confirmation</div>
           </div>
 
@@ -886,7 +886,7 @@ export async function sendOrderCancellationEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="header-logo">🏠 Ananthala</div>
+            <div class="header-logo"> <img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span> </div>
             <div class="header-subtitle">Order Cancelled</div>
           </div>
 
@@ -1269,7 +1269,7 @@ export async function sendOrderStatusUpdateEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="header-logo">🏠 Ananthala</div>
+           <div class="header-logo"> <img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span> </div>
           </div>
 
           <div class="content">
@@ -1647,7 +1647,7 @@ export async function sendOTPEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="header-logo">🏠 Ananthala</div>
+            <div class="header-logo"> <img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span> </div>
           </div>
           <div class="content">
             <p class="greeting">Hello ${userName},</p>
@@ -1877,7 +1877,7 @@ export async function sendPasswordResetConfirmationEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="header-logo">🏠 Ananthala</div>
+            <div class="header-logo"> <img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span> </div>
             <div class="header-subtitle">Password Reset Confirmation</div>
           </div>
           <div class="content">
