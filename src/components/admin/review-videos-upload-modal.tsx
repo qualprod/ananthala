@@ -46,6 +46,13 @@ export default function ReviewVideoUploadModal({ isOpen, onClose, onSuccess }: R
       setLoading(true)
       setError("")
 
+      // Validate file before upload
+      if (file.size > 100 * 1024 * 1024) {
+        setError("File size exceeds 100MB limit")
+        setLoading(false)
+        return
+      }
+
       // Upload video to Blob
       const formData = new FormData()
       formData.append("file", file)
@@ -54,6 +61,15 @@ export default function ReviewVideoUploadModal({ isOpen, onClose, onSuccess }: R
         method: "POST",
         body: formData,
       })
+
+      // Check if response is ok
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json().catch(() => ({
+          message: `Server error: ${uploadResponse.status}`,
+        }))
+        setError(errorData.message || "Failed to upload video")
+        return
+      }
 
       const uploadData = await uploadResponse.json()
 
@@ -73,6 +89,14 @@ export default function ReviewVideoUploadModal({ isOpen, onClose, onSuccess }: R
           blobUrl: uploadData.url,
         }),
       })
+
+      if (!videoResponse.ok) {
+        const errorData = await videoResponse.json().catch(() => ({
+          message: `Server error: ${videoResponse.status}`,
+        }))
+        setError(errorData.message || "Failed to save video")
+        return
+      }
 
       const videoData = await videoResponse.json()
 

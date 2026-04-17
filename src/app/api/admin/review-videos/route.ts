@@ -8,10 +8,13 @@ export async function GET() {
 
     const videos = await ReviewVideo.find().sort({ displayOrder: 1, createdAt: -1 })
 
+    // Convert MongoDB documents to plain objects to avoid serialization issues
+    const plainVideos = videos.map((video) => video.toObject())
+
     return NextResponse.json(
       {
         success: true,
-        data: videos,
+        data: plainVideos,
       },
       { status: 200 },
     )
@@ -29,9 +32,20 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB()
+    let body
+    try {
+      body = await request.json()
+    } catch (parseError: any) {
+      console.error("[v0] JSON parse error:", parseError)
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid JSON in request body",
+        },
+        { status: 400 },
+      )
+    }
 
-    const body = await request.json()
     const { title, description, blobUrl, customerName, thumbnail } = body
 
     if (!title || !blobUrl) {
@@ -44,26 +58,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    await connectDB()
+
     const lastVideo = await ReviewVideo.findOne().sort({ displayOrder: -1 })
     const displayOrder = (lastVideo?.displayOrder || 0) + 1
 
     const newVideo = new ReviewVideo({
-      title,
-      description,
-      blobUrl,
-      videoUrl: blobUrl,
-      customerName,
-      thumbnail,
+      title: String(title).trim(),
+      description: description ? String(description).trim() : "",
+      blobUrl: String(blobUrl).trim(),
+      videoUrl: String(blobUrl).trim(),
+      customerName: customerName ? String(customerName).trim() : "",
+      thumbnail: thumbnail ? String(thumbnail).trim() : "",
       displayOrder,
     })
 
     await newVideo.save()
 
+    // Convert MongoDB document to plain object to avoid serialization issues
+    const savedVideo = newVideo.toObject()
+
     return NextResponse.json(
       {
         success: true,
         message: "Review video created successfully",
-        data: newVideo,
+        data: savedVideo,
       },
       { status: 201 },
     )

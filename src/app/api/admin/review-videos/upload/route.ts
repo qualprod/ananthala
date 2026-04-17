@@ -1,78 +1,102 @@
-import { connectDB } from "@/lib/mongodb"
-import { ReviewVideo } from "@/models/reviewVideo"
+import { put } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
-
-export async function GET() {
-  try {
-    await connectDB()
-
-    const videos = await ReviewVideo.find().sort({ displayOrder: 1, createdAt: -1 })
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: videos,
-      },
-      { status: 200 },
-    )
-  } catch (error: any) {
-    console.error("[v0] Error fetching review videos:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: error.message || "Failed to fetch review videos",
-      },
-      { status: 500 },
-    )
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB()
-
-    const body = await request.json()
-    const { title, description, blobUrl, customerName, thumbnail } = body
-
-    if (!title || !blobUrl) {
+    // Parse form data without strict content-type check
+    // FormData sends multipart/form-data with boundary parameter
+    let formData
+    try {
+      formData = await request.formData()
+    } catch (parseError: any) {
+      console.error("[v0] FormData parse error:", parseError)
       return NextResponse.json(
         {
           success: false,
-          message: "Title and video URL are required",
+          message: "Failed to parse form data",
         },
         { status: 400 },
       )
     }
 
-    const lastVideo = await ReviewVideo.findOne().sort({ displayOrder: -1 })
-    const displayOrder = (lastVideo?.displayOrder || 0) + 1
+    const file = formData.get("file") as File | null
 
-    const newVideo = new ReviewVideo({
-      title,
-      description,
-      blobUrl,
-      videoUrl: blobUrl,
-      customerName,
-      thumbnail,
-      displayOrder,
-    })
+    if (!file) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "No file provided",
+        },
+        { status: 400 },
+      )
+    }
 
-    await newVideo.save()
+    // Validate file
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid file object",
+        },
+        { status: 400 },
+      )
+    }
+
+    // Check file size (100MB limit)
+    const maxSize = 100 * 1024 * 1024
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "File size exceeds 100MB limit",
+        },
+        { status: 413 },
+      )
+    }
+
+    // Check file type
+    if (!file.type.startsWith("video/")) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid file type. Expected video file",
+        },
+        { status: 400 },
+      )
+    }
+
+    const filename = `review-videos/${Date.now()}-${file.name}`
+
+    let blob
+    try {
+      blob = await put(filename, file, {
+        access: "public",
+      })
+    } catch (blobError: any) {
+      console.error("[v0] Blob upload error:", blobError)
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Failed to upload to storage service",
+        },
+        { status: 500 },
+      )
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: "Review video created successfully",
-        data: newVideo,
+        message: "Video uploaded successfully",
+        url: blob.url,
       },
-      { status: 201 },
+      { status: 200 },
     )
   } catch (error: any) {
-    console.error("[v0] Error creating review video:", error)
+    console.error("[v0] Unexpected error in upload route:", error)
     return NextResponse.json(
       {
         success: false,
-        message: error.message || "Failed to create review video",
+        message: "An unexpected error occurred",
       },
       { status: 500 },
     )
