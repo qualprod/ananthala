@@ -42,13 +42,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check file size (100MB limit)
-    const maxSize = 100 * 1024 * 1024
+    // Check file size (20MB limit - optimized for Vercel serverless and storage efficiency)
+    const maxSize = 20 * 1024 * 1024
     if (file.size > maxSize) {
       return NextResponse.json(
         {
           success: false,
-          message: "File size exceeds 100MB limit",
+          message: "File size exceeds 20MB limit. Please upload a smaller video.",
         },
         { status: 413 },
       )

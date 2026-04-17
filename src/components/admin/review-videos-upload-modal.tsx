@@ -46,9 +46,9 @@ export default function ReviewVideoUploadModal({ isOpen, onClose, onSuccess }: R
       setLoading(true)
       setError("")
 
-      // Validate file before upload
-      if (file.size > 100 * 1024 * 1024) {
-        setError("File size exceeds 100MB limit")
+      // Validate file before upload (20MB limit)
+      if (file.size > 20 * 1024 * 1024) {
+        setError("File size exceeds 20MB limit. Please upload a smaller video.")
         setLoading(false)
         return
       }
