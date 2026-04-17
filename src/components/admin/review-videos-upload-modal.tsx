@@ -144,7 +144,7 @@ export default function ReviewVideoUploadModal({ isOpen, onClose, onSuccess }: R
                 ) : (
                   <p className="text-sm text-[#8B5A3C]/60">Click to select or drag and drop</p>
                 )}
-                <p className="text-xs text-[#B8A396] mt-1">MP4, WebM, MOV (Max 100MB)</p>
+                <p className="text-xs text-[#B8A396] mt-1">MP4, WebM, MOV (Max 20MB)</p>
               </label>
             </div>
           </div>
