@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F5F1ED] via-[#EDE6DD] to-[#F5F1ED] flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F1ED] via-[#EDE6DD] to-[#F5F1ED] flex items-center justify-center p-4 md:p-8 relative overflow-hidden font-cormorant">
       <div className="absolute top-4 right-4 md:top-8 md:right-8 z-20">
         <Link
           href="/"
@@ -118,7 +118,7 @@ export default function AdminLoginPage() {
           {/* Logo/Icon */}
           <div className="flex justify-center lg:justify-start">
             <img
-              src="/logo.png"
+              src="/logo1.png"
               alt="Ananthala Admin"
               className="h-24 md:h-28 w-auto mix-blend-darken"
             />
@@ -151,8 +151,8 @@ export default function AdminLoginPage() {
                 <Award className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="text-2xl font-medium text-foreground mb-1">Complete Control</h3>
-                <p className="text-lg text-foreground/70 leading-relaxed">
+                <h3 className="text-xl font-medium text-foreground mb-1">Complete Control</h3>
+                <p className="text-base text-foreground/70 leading-relaxed">
                   Manage orders, products, and customers with ease
                 </p>
               </div>
@@ -163,8 +163,8 @@ export default function AdminLoginPage() {
                 <LockIcon className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="text-2xl font-medium text-foreground mb-1">Secure Access</h3>
-                <p className="text-lg text-foreground/70 leading-relaxed">
+                <h3 className="text-xl font-medium text-foreground mb-1">Secure Access</h3>
+                <p className="text-base text-foreground/70 leading-relaxed">
                   Enterprise-grade security for your business data
                 </p>
               </div>
@@ -175,8 +175,8 @@ export default function AdminLoginPage() {
                 <Users className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="text-2xl font-medium text-foreground mb-1">Real-time Analytics</h3>
-                <p className="text-lg text-foreground/70 leading-relaxed">Track performance and insights instantly</p>
+                <h3 className="text-xl font-medium text-foreground mb-1">Real-time Analytics</h3>
+                <p className="text-base text-foreground/70 leading-relaxed">Track performance and insights instantly</p>
               </div>
             </div>
           </div>

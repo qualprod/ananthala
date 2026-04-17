@@ -286,7 +286,7 @@ export default function ProductManagementPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#4A2F1F]">Product Management</h1>
+        <h1 className="text-2xl sm:text-2xl font-bold text-[#4A2F1F]">Product Management</h1>
       </div>
 
       {/* Product Stock Section */}

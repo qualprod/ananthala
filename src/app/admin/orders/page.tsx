@@ -267,7 +267,7 @@ export default function OrderManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Order Management</h1>
+          <h1 className="text-2xl sm:text-2xl font-semibold text-foreground">Order Management</h1>
           <p className="text-foreground/70 mt-1">Track and manage all customer orders</p>
         </div>
         <Button className="bg-[#8B5A3C] hover:bg-[#6D4530] text-white">
@@ -285,7 +285,7 @@ export default function OrderManagementPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-foreground/70 text-sm font-medium">{stat.label}</p>
-                  <p className={`text-3xl font-bold mt-2 ${stat.textColor}`}>{stat.value}</p>
+                  <p className={`text-2xl font-bold mt-2 ${stat.textColor}`}>{stat.value}</p>
                 </div>
                 <Icon className={`w-8 h-8 ${stat.textColor}/30`} />
               </div>

@@ -186,7 +186,7 @@ export default function ReviewVideosPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Customer Review Videos</h1>
+          <h1 className="text-2xl font-bold text-foreground">Customer Review Videos</h1>
           <p className="text-foreground/60 mt-1">Manage customer testimonial videos displayed on homepage</p>
         </div>
         <Button

@@ -8,6 +8,7 @@ import { isHomepageCardGifUrl, isHomepageCardVideoUrl } from "@/lib/homepage-car
 interface HomepageCard {
   _id: string
   name: string
+  tagline?: string
   backgroundUrl?: string
   position: "center" | "bottom-left" | "bottom-right"
   isActive: boolean
@@ -53,8 +54,11 @@ export default function HomepageCardsPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [uploadingCardId, setUploadingCardId] = useState<string | null>(null)
+  const [savingTextCardId, setSavingTextCardId] = useState<string | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>({})
   const [inputKeys, setInputKeys] = useState<Record<string, number>>({})
+  const [editedNames, setEditedNames] = useState<Record<string, string>>({})
+  const [editedTaglines, setEditedTaglines] = useState<Record<string, string>>({})
 
   const fetchCards = useCallback(async () => {
     try {
@@ -64,6 +68,14 @@ export default function HomepageCardsPage() {
 
       if (data.success) {
         setCards(data.data)
+        const initialNames: Record<string, string> = {}
+        const initialTaglines: Record<string, string> = {}
+        for (const card of data.data as HomepageCard[]) {
+          initialNames[card._id] = card.name
+          initialTaglines[card._id] = card.tagline || ""
+        }
+        setEditedNames(initialNames)
+        setEditedTaglines(initialTaglines)
       }
     } catch (error) {
       console.error("[v0] Error fetching homepage cards:", error)
@@ -123,6 +135,41 @@ export default function HomepageCardsPage() {
     }
   }
 
+  const handleTextSave = async (cardId: string) => {
+    const nextName = (editedNames[cardId] || "").trim()
+    const nextTagline = (editedTaglines[cardId] || "").trim()
+    if (!nextName) {
+      setError("Card name cannot be empty")
+      return
+    }
+
+    try {
+      setSavingTextCardId(cardId)
+      setError(null)
+      const response = await fetch(`/api/admin/homepage-cards/${cardId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: nextName, tagline: nextTagline }),
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        setCards(cards.map((card) => (card._id === cardId ? data.data : card)))
+        setEditedNames((prev) => ({ ...prev, [cardId]: data.data.name }))
+        setEditedTaglines((prev) => ({ ...prev, [cardId]: data.data.tagline || "" }))
+        setSuccess("Card text updated successfully")
+        setTimeout(() => setSuccess(null), 3000)
+      } else {
+        setError(data.message || "Failed to update card text")
+      }
+    } catch (saveError: any) {
+      console.error("[v0] Error updating homepage card text:", saveError)
+      setError(saveError.message || "Failed to update card text. Please try again.")
+    } finally {
+      setSavingTextCardId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -149,8 +196,8 @@ export default function HomepageCardsPage() {
 
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Homepage Cards</h1>
-          <p className="text-foreground/60 mt-1">Update background media (GIF or MP4) for the existing homepage cards</p>
+          <h1 className="text-2xl font-bold text-foreground">Homepage Cards</h1>
+          <p className="text-foreground/60 mt-1">Update card name, tagline, and background media (GIF or MP4)</p>
         </div>
       </div>
 
@@ -175,7 +222,7 @@ export default function HomepageCardsPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-foreground">{card.name}</h3>
+                      <h3 className="font-semibold text-foreground">Card</h3>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
                           card.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
@@ -183,6 +230,44 @@ export default function HomepageCardsPage() {
                       >
                         {card.isActive ? "Active" : "Inactive"}
                       </span>
+                    </div>
+                    <div className="mt-2 flex flex-col sm:flex-row gap-2 sm:items-center">
+                      <Input
+                        value={editedNames[card._id] ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setEditedNames((prev) => ({ ...prev, [card._id]: value }))
+                        }}
+                        className="border-[#D9CFC7] text-foreground max-w-sm"
+                        disabled={savingTextCardId === card._id}
+                        maxLength={100}
+                        placeholder="Card name"
+                      />
+                      <Input
+                        value={editedTaglines[card._id] ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setEditedTaglines((prev) => ({ ...prev, [card._id]: value }))
+                        }}
+                        className="border-[#D9CFC7] text-foreground max-w-sm"
+                        disabled={savingTextCardId === card._id}
+                        maxLength={120}
+                        placeholder="Card tagline"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => handleTextSave(card._id)}
+                        disabled={
+                          savingTextCardId === card._id ||
+                          (
+                            (editedNames[card._id] ?? "").trim() === card.name.trim() &&
+                            (editedTaglines[card._id] ?? "").trim() === (card.tagline || "").trim()
+                          )
+                        }
+                        className="bg-[#6D4530] hover:bg-[#4E3222] text-white"
+                      >
+                        {savingTextCardId === card._id ? "Saving..." : "Save Text"}
+                      </Button>
                     </div>
                     <p className="text-sm text-foreground/70">Position: {card.position}</p>
                     <p className="text-xs text-foreground/70">{new Date(card.createdAt).toLocaleDateString()}</p>

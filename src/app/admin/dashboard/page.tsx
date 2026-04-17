@@ -220,7 +220,7 @@ const fetchDashboardData = async (timeframe: string = orderTimeframe) => {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-2">Dashboard Overview</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard Overview</h2>
         <p className="text-foreground">Real-time insights and analytics for your Ananthala store</p>
       </div>
 

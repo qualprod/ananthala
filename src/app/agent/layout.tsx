@@ -129,16 +129,7 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
   }
 
   if (!agent || pathname === "/agent") {
-    return (
-      <div className={googleSans.variable}>
-        <style jsx global>{`
-          .agent-login * {
-            font-family: var(--font-google-sans) !important;
-          }
-        `}</style>
-        <div className="agent-login">{children}</div>
-      </div>
-    )
+    return children
   }
 
   return (

@@ -33,6 +33,7 @@ const categories = [
 interface HomepageCard {
   _id: string
   name: string
+  tagline?: string
   backgroundUrl?: string
   position: "center" | "bottom-right" | "bottom-left"
   isActive?: boolean
@@ -60,7 +61,7 @@ function HomepageRangeProductCard({
   const backgroundImage = card.backgroundUrl || "/placeholder.svg"
   const isPlaceholder = backgroundImage === "/placeholder.svg"
   const isVideo = !isPlaceholder && isHomepageCardVideoUrl(backgroundImage)
-  const rangeLabel = rangeLabelForCard(card.name)
+  const rangeLabel = card.tagline?.trim() || rangeLabelForCard(card.name)
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(hover: none), (pointer: coarse)")

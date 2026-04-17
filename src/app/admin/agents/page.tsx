@@ -75,7 +75,7 @@ function AgentManagementContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Agent Management</h1>
+          <h1 className="text-2xl sm:text-2xl font-semibold text-foreground">Agent Management</h1>
           <p className="text-foreground/70 mt-1">View and manage all registered agents</p>
         </div>
         <Button onClick={fetchAgents} disabled={isLoading} className="bg-[#8B5A3C] hover:bg-[#6D4530] text-white">
@@ -92,7 +92,7 @@ function AgentManagementContent() {
           </div>
           <div>
             <h3 className="text-foreground text-sm font-medium">Total Agents</h3>
-            <p className="text-3xl font-bold text-foreground">{agents.length}</p>
+            <p className="text-2xl font-bold text-foreground">{agents.length}</p>
           </div>
         </div>
       </div>

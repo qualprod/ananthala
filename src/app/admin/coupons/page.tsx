@@ -259,7 +259,7 @@ export default function AdminCouponManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Coupon Management</h1>
+          <h1 className="text-2xl sm:text-2xl font-bold text-foreground">Coupon Management</h1>
           <p className="text-foreground/70 mt-1">Generate and manage discount coupons</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -487,7 +487,7 @@ export default function AdminCouponManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-foreground/70 font-medium">Total Coupons</p>
-              <p className="text-3xl font-bold text-foreground mt-2">{totalCoupons}</p>
+              <p className="text-2xl font-bold text-foreground mt-2">{totalCoupons}</p>
             </div>
             <div className="w-12 h-12 rounded-full bg-[#8B5A3C]/10 flex items-center justify-center">
               <Tag className="h-6 w-6 text-foreground" />
@@ -498,7 +498,7 @@ export default function AdminCouponManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-foreground/70 font-medium">Active Coupons</p>
-              <p className="text-3xl font-bold text-foreground mt-2">{activeCoupons}</p>
+              <p className="text-2xl font-bold text-foreground mt-2">{activeCoupons}</p>
             </div>
             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
               <Check className="h-6 w-6 text-green-600" />
@@ -509,7 +509,7 @@ export default function AdminCouponManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-foreground/70 font-medium">Expired Coupons</p>
-              <p className="text-3xl font-bold text-foreground mt-2">{expiredCoupons}</p>
+              <p className="text-2xl font-bold text-foreground mt-2">{expiredCoupons}</p>
             </div>
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
               <X className="h-6 w-6 text-red-600" />

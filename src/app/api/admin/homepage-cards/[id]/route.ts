@@ -8,13 +8,34 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params
     const body = await request.json()
-    const { backgroundUrl } = body
+    const { backgroundUrl, name, tagline } = body
 
-    if (!backgroundUrl) {
+    if (!backgroundUrl && !name && !tagline) {
       return NextResponse.json(
         {
           success: false,
-          message: "Background URL is required",
+          message: "At least one field (name, tagline, or backgroundUrl) is required",
+        },
+        { status: 400 },
+      )
+    }
+
+    const updateData: Record<string, string> = {}
+    if (typeof backgroundUrl === "string" && backgroundUrl.trim().length > 0) {
+      updateData.backgroundUrl = backgroundUrl
+    }
+    if (typeof name === "string" && name.trim().length > 0) {
+      updateData.name = name.trim()
+    }
+    if (typeof tagline === "string") {
+      updateData.tagline = tagline.trim()
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Provided fields are invalid",
         },
         { status: 400 },
       )
@@ -22,9 +43,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const card = await HomepageCard.findByIdAndUpdate(
       id,
-      {
-        backgroundUrl,
-      },
+      updateData,
       { new: true, runValidators: true },
     )
 

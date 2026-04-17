@@ -294,7 +294,7 @@ export default function EditPress() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl md:text-4xl font-semibold text-[#1a1a1a]">Edit Press Release</h1>
+            <h1 className="text-2xl md:text-2xl font-semibold text-[#1a1a1a]">Edit Press Release</h1>
             <p className="text-gray-600 mt-1">Update the press release details</p>
           </div>
         </div>

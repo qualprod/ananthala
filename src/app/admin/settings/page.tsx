@@ -85,7 +85,7 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-semibold text-foreground mb-2">Settings</h1>
+          <h1 className="text-2xl sm:text-2xl font-semibold text-foreground mb-2">Settings</h1>
           <p className="text-foreground/70">Manage your admin account security</p>
         </div>
 

@@ -13,7 +13,7 @@ export default function LoginPage() {
         <div className="text-center mb-4 md:mb-8">
           <Link href="/" className="inline-block transition-transform hover:scale-[1.01]">
             <img
-              src="/logo.png"
+              src="/logo1.png"
               alt="Ananthala"
               className="h-24 md:h-28 w-auto mx-auto mix-blend-multiply"
             />

@@ -90,7 +90,7 @@ export default function AgentLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F5F1ED] via-[#EDE6DD] to-[#F5F1ED] flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F1ED] via-[#EDE6DD] to-[#F5F1ED] flex items-center justify-center p-4 md:p-8 relative overflow-hidden font-cormorant">
       {/* Back to Ananthala Button */}
       <div className="absolute top-4 right-4 md:top-8 md:right-8 z-20">
         <Link
@@ -119,7 +119,7 @@ export default function AgentLoginPage() {
           {/* Logo/Icon */}
           <div className="flex justify-center lg:justify-start">
             <img
-              src="/logo.png"
+              src="/logo1.png"
               alt="Ananthala Agent"
               className="h-20 md:h-24 w-auto mix-blend-multiply"
             />
@@ -127,7 +127,7 @@ export default function AgentLoginPage() {
 
           {/* Welcome Message */}
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-foreground tracking-wide leading-tight font-cormorant">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-normal text-foreground tracking-wide leading-tight font-cormorant">
               Welcome to Agent Portal
             </h1>
             <p className="text-2xl md:text-3xl text-foreground font-light tracking-wider">
@@ -146,34 +146,34 @@ export default function AgentLoginPage() {
           </blockquote>
 
           {/* Features List */}
-          <div className="space-y-4 pt-4">
+          <div className="space-y-5 pt-0 -mt-2">
             <div className="flex items-start gap-4 justify-center lg:justify-start">
-              <div className="w-10 h-10 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
-                <Headphones className="w-5 h-5 text-[#8B5A3C]" />
+              <div className="w-12 h-12 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
+                <Headphones className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-foreground mb-1">Customer Support</h3>
-                <p className="text-sm text-[#B8A396] leading-relaxed">Assist customers with orders and inquiries</p>
+                <h3 className="text-xl font-medium text-foreground mb-1">Customer Support</h3>
+                <p className="text-base text-foreground/70 leading-relaxed">Assist customers with orders and inquiries</p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 justify-center lg:justify-start">
-              <div className="w-10 h-10 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
-                <ShieldCheck className="w-5 h-5 text-[#8B5A3C]" />
+              <div className="w-12 h-12 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-foreground mb-1">Secure Access</h3>
-                <p className="text-sm text-[#B8A396] leading-relaxed">Protected workspace for agent operations</p>
+                <h3 className="text-xl font-medium text-foreground mb-1">Secure Access</h3>
+                <p className="text-base text-foreground/70 leading-relaxed">Protected workspace for agent operations</p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 justify-center lg:justify-start">
-              <div className="w-10 h-10 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-5 h-5 text-[#8B5A3C]" />
+              <div className="w-12 h-12 rounded-full bg-white shadow-md border border-[#E5D5C5] flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-6 h-6 text-[#8B5A3C]" />
               </div>
               <div className="text-left flex-1">
-                <h3 className="font-medium text-foreground mb-1">Performance Tracking</h3>
-                <p className="text-sm text-[#B8A396] leading-relaxed">Monitor your support metrics and progress</p>
+                <h3 className="text-xl font-medium text-foreground mb-1">Performance Tracking</h3>
+                <p className="text-base text-foreground/70 leading-relaxed">Monitor your support metrics and progress</p>
               </div>
             </div>
           </div>
@@ -246,7 +246,7 @@ export default function AgentLoginPage() {
             </form>
 
             <div className="mt-6 pt-6 border-t border-[#E5D5C5]">
-              <p className="text-xs text-[#B8A396] text-center leading-relaxed">
+              <p className="text-sm text-foreground/70 text-center leading-relaxed font-semibold">
                 This is a secure area for authorized agents only. All activities are monitored and logged.
               </p>
             </div>

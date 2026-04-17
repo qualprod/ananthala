@@ -249,7 +249,7 @@ export default function CreatePress() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl md:text-4xl font-semibold text-[#1a1a1a]">Create Press Release</h1>
+            <h1 className="text-2xl md:text-2xl font-semibold text-[#1a1a1a]">Create Press Release</h1>
             <p className="text-gray-600 mt-1">Add a new press release to share with your audience</p>
           </div>
         </div>

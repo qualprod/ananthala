@@ -8,6 +8,12 @@ const HomepageCardSchema = new mongoose.Schema(
       trim: true,
       maxlength: [100, "Name cannot exceed 100 characters"],
     },
+    tagline: {
+      type: String,
+      trim: true,
+      maxlength: [120, "Tagline cannot exceed 120 characters"],
+      default: "",
+    },
     backgroundUrl: {
       type: String,
       required: [true, "Please provide a background URL"],

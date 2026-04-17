@@ -206,7 +206,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div key={item.label}>
           <button
             onClick={() => toggleDropdown(item.label)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-xl transition-all duration-200 ${
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-lg transition-all duration-200 ${
               hasActiveSubItem || isOpen
                 ? "bg-[#8B5A3C] text-white"
                 : "text-foreground hover:bg-[#8B5A3C]/10 hover:text-foreground"
@@ -227,7 +227,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     key={subItem.href}
                     href={subItem.href}
                     onClick={() => isMobile && setIsSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg text-xl transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg text-lg transition-all duration-200 ${
                       isActive
                         ? "bg-[#8B5A3C]/20 text-foreground font-medium"
                         : "text-foreground hover:bg-[#8B5A3C]/10 hover:text-foreground"
@@ -250,7 +250,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         key={item.href}
         href={item.href}
         onClick={() => isMobile && setIsSidebarOpen(false)}
-        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-xl transition-all duration-200 ${
+        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-lg transition-all duration-200 ${
           isActive ? "bg-[#8B5A3C] text-white" : "text-foreground hover:bg-[#8B5A3C]/10 hover:text-foreground"
         }`}
       >
@@ -279,7 +279,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-[#F5F1ED] text-foreground">
-      <div className="text-2xl">
+      <div>
         {/* Header */}
         <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: "#D9CFC7" }}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -295,7 +295,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </Button>
                 <Link
                   href="/admin/dashboard"
-                  className="text-foreground text-3xl font-normal tracking-wide hover:text-foreground transition-colors"
+                  className="text-foreground text-2xl font-normal tracking-wide hover:text-foreground transition-colors"
                 >
                   Ananthala Admin
                 </Link>
@@ -322,9 +322,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5 text-2xl text-foreground">
+                  <div className="px-2 py-1.5 text-base text-foreground">
                     <div className="font-semibold">{getFirstName(admin.fullname)}</div>
-                    <div className="text-xl text-foreground/70 truncate">{admin.email}</div>
+                    <div className="text-sm text-foreground/70 truncate">{admin.email}</div>
                   </div>
                   <DropdownMenuItem asChild className="text-foreground cursor-pointer">
                     <Link href="/admin/dashboard">
