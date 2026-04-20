@@ -9,19 +9,16 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SearchDropdown } from "@/components/search/search-dropdown"
+import { DEFAULT_NAVIGATION_MENU_ITEMS } from "@/lib/navigation-menu-defaults"
 
   
-const getMenuItems = (isLoggedIn: boolean) => [
-  { label: "Shop", href: "/#find-your-perfect-mattress" },
-  { label: "Babies and Kids - Joy", href: "/category/joy#shop" },
-  { label: "Adults - Bliss", href: "/category/bliss#shop" },
-  { label: "Seniors – Grace", href: "/category/grace#shop" },
-
-  { label: "My Account", href: isLoggedIn ? "/customer/dashboard" : "/login" },
-  { label: "About Ananthala", href: "/about" },
-  { label: "Blog", href: "/blog" },
-  { label: "Search", onClick: "search" as const },
-]
+interface NavigationMenuItem {
+  _id?: string
+  label: string
+  href: string
+  isActive?: boolean
+  displayOrder?: number
+}
 
 const handleShopClick = (e: React.MouseEvent<HTMLAnchorElement>, router: any, pathname: string) => {
   const targetPath = "/#find-your-perfect-mattress"
@@ -50,6 +47,7 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const { cartItems } = useCart()
   const [user, setUser] = useState<AuthenticatedUser | null>(null)
+  const [menuItems, setMenuItems] = useState<NavigationMenuItem[]>(DEFAULT_NAVIGATION_MENU_ITEMS)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -64,6 +62,26 @@ export function Header() {
       }
     }
     checkAuth()
+  }, [])
+
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        const response = await fetch("/api/navigation-menu")
+        const data = await response.json()
+        if (data.success && Array.isArray(data.data)) {
+          const activeItems = data.data
+            .filter((item: NavigationMenuItem) => item.isActive !== false)
+            .sort((a: NavigationMenuItem, b: NavigationMenuItem) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+          if (activeItems.length > 0) {
+            setMenuItems(activeItems)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load navigation menu:", error)
+      }
+    }
+    fetchMenuItems()
   }, [])
 
   const getFirstName = (fullname: string) => {
@@ -101,6 +119,13 @@ export function Header() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
+  }
+
+  const resolveMenuHref = (href: string) => {
+    if (href === "/my-account") {
+      return user ? "/customer/dashboard" : "/login"
+    }
+    return href
   }
 
   return (
@@ -235,35 +260,20 @@ export function Header() {
                 </Link>
               </div>
               <ul className="space-y-1">
-                {getMenuItems(!!user).map((item, index) => (
+                {menuItems.map((item, index) => (
                   <li key={index}>
-                    {item.href ? (
-                      <Link
-                        href={item.href}
-                        className="block py-2.5 px-4 text-foreground text-base font-medium uppercase tracking-wide hover:text-[#8B5A3C] transition-all duration-300 rounded-md"
-                        onClick={(e) => {
-                          setIsMenuOpen(false)
-                          if (item.label === "Shop") {
-                            handleShopClick(e, router, pathname)
-                          }
-                        }}
-                      >
-                        {item.label}
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        className="w-full text-left py-2.5 px-4 text-foreground text-base font-medium uppercase tracking-wide hover:text-[#8B5A3C] transition-all duration-300 rounded-md"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          if (item.onClick === "search") {
-                            setIsSearchOpen(true)
-                          }
-                        }}
-                      >
-                        {item.label}
-                      </button>
-                    )}
+                    <Link
+                      href={resolveMenuHref(item.href)}
+                      className="block py-2.5 px-4 text-foreground text-base font-medium uppercase tracking-wide hover:text-[#8B5A3C] transition-all duration-300 rounded-md"
+                      onClick={(e) => {
+                        setIsMenuOpen(false)
+                        if (resolveMenuHref(item.href) === "/#find-your-perfect-mattress") {
+                          handleShopClick(e, router, pathname)
+                        }
+                      }}
+                    >
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

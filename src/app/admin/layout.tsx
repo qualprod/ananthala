@@ -20,6 +20,7 @@ import {
   Tag,
   Image,
   Palette,
+  Menu as MenuIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -51,6 +52,11 @@ const menuItems = [
     label: "Homepage Cards",
     href: "/admin/homepage-cards",
     icon: Image,
+  },
+  {
+    label: "Navigation Menu",
+    href: "/admin/navigation-menu",
+    icon: MenuIcon,
   },
   {
     label: "User Management",

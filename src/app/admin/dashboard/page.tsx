@@ -312,23 +312,23 @@ const fetchDashboardData = async (timeframe: string = orderTimeframe) => {
         {orderStats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-[#F5F1ED] rounded-lg p-3 text-center">
-              <p className="text-xs text-[#8B5A3C] mb-1">Total Orders</p>
-              <p className="text-xl font-bold text-[#6D4530]">{orderStats.totalOrders}</p>
+              <p className="text-sm text-[#8B5A3C] mb-1">Total Orders</p>
+              <p className="text-2xl font-bold text-[#6D4530]">{orderStats.totalOrders}</p>
             </div>
             <div className="bg-[#F5F1ED] rounded-lg p-3 text-center">
-              <p className="text-xs text-[#8B5A3C] mb-1">Revenue</p>
-              <p className="text-xl font-bold text-[#6D4530] flex items-center justify-center">
+              <p className="text-sm text-[#8B5A3C] mb-1">Revenue</p>
+              <p className="text-2xl font-bold text-[#6D4530] flex items-center justify-center">
                 <IndianRupee className="w-4 h-4" />
                 {orderStats.totalRevenue.toLocaleString("en-IN")}
               </p>
             </div>
             <div className="bg-yellow-50 rounded-lg p-3 text-center">
-              <p className="text-xs text-yellow-700 mb-1">Pending</p>
-              <p className="text-xl font-bold text-yellow-700">{orderStats.pendingOrders}</p>
+              <p className="text-sm text-yellow-700 mb-1">Pending</p>
+              <p className="text-2xl font-bold text-yellow-700">{orderStats.pendingOrders}</p>
             </div>
             <div className="bg-green-50 rounded-lg p-3 text-center">
-              <p className="text-xs text-green-700 mb-1">Delivered</p>
-              <p className="text-xl font-bold text-green-700">{orderStats.completedOrders}</p>
+              <p className="text-sm text-green-700 mb-1">Delivered</p>
+              <p className="text-2xl font-bold text-green-700">{orderStats.completedOrders}</p>
             </div>
           </div>
         )}
