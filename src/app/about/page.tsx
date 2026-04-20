@@ -79,7 +79,7 @@ export default function AboutPage() {
         </section>
 
         {/* Brand Story */}
-        <section className="py-24 px-4 bg-white">
+        <section className="py-14 md:py-24 px-4 bg-white">
           <div className="max-w-6xl mx-auto">
             {/* TITLE SECTION */}
             <div className="mb-8 md:mb-12 text-center">
@@ -177,7 +177,7 @@ export default function AboutPage() {
         </section>
 
         {/* Mission & Vision (With Dark Overlay Background) */}
-        <section className="relative py-12 px-4 bg-[#F5F1ED] overflow-hidden">
+        <section className="relative py-10 md:py-12 px-4 bg-[#F5F1ED] overflow-hidden">
           <div className="relative max-w-7xl mx-auto text-foreground pb-8">
             <div className="text-center mb-8">
               <p className="text-foreground text-4xl font-semibold mb-2">What We Stand For</p>
@@ -236,7 +236,7 @@ export default function AboutPage() {
         </section>
 
         {/* Values */}
-        <section className="py-24 px-4 bg-white">
+        <section className="py-14 md:py-24 px-4 bg-white">
           <div className="max-w-[1400px] mx-auto">
             <div className="text-center mb-16">
               <p className="text-foreground text-4xl font-semibold mb-2">What Drives Us</p>
@@ -283,7 +283,7 @@ export default function AboutPage() {
         </section>
 
         {/* Commitment Section */}
-        <section className="py-24 px-4 bg-[#F5F1ED]">
+        <section className="py-14 md:py-24 px-4 bg-[#F5F1ED]">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="mb-6 text-3xl font-semibold text-foreground">Our Commitment to Sustainability</h2>
@@ -357,7 +357,7 @@ export default function AboutPage() {
                 </div>
               </div>
               {/* Legacy Card */}
-              <div className="relative rounded-lg overflow-hidden shadow-sm min-h-[250px] group">
+              <div className="relative rounded-lg overflow-hidden shadow-sm min-h-[320px] md:min-h-[250px] group">
                 <Image
                   src="/Sustainability - Legacy BG.png"
                   alt="Legacy"

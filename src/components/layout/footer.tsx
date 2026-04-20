@@ -5,9 +5,9 @@ import Link from "next/link"
 
 export function Footer() {
   return (
-    <footer className="bg-stone-100 border-t border-gray-800 py-4 sm:py-6 md:py-8 px-3 sm:px-4">
+    <footer className="bg-stone-100 border-t py-4 sm:py-6 md:py-8 px-3 sm:px-4" style={{ borderColor: "#D9CFC7" }}>
       {/* Bottom Bar */}
-      <div className="pt-4 sm:pt-6 md:pt-8 border-t border-amber-100">
+      <div className="pt-4 sm:pt-6 md:pt-8">
         <div className="max-w-6xl mx-auto flex flex-col gap-4 sm:gap-6 text-foreground">
           {/* Copyright */}
           <p className="font-medium text-xs sm:text-sm md:text-base text-center">

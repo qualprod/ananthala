@@ -758,7 +758,7 @@ export default function ProductDetailPage() {
                         <h2 className="text-center text-3xl sm:text-4xl font-medium text-foreground">
                           Product Traits
                         </h2>
-                        <div className="space-y-28">
+                        <div className="space-y-12 lg:space-y-28">
                         {detailSections.map((section, index) => {
                           const isImageLeft =
                             section.imagePosition ? section.imagePosition === "left" : index % 2 === 1
@@ -767,7 +767,7 @@ export default function ProductDetailPage() {
                           return (
                             <div
                               key={`${section.title}-${index}`}
-                              className={`grid gap-y-32 gap-x-32 items-center ${
+                              className={`grid gap-y-8 lg:gap-y-32 gap-x-8 lg:gap-x-32 items-center ${
                                 isImageLeft ? "lg:grid-cols-[1.1fr_0.9fr]" : "lg:grid-cols-[0.9fr_1.1fr]"
                               }`}
                               
@@ -824,9 +824,9 @@ export default function ProductDetailPage() {
                 />
               )}
 
-              <CustomerTestimonialVideos />
             </>
           )}
+          <CustomerTestimonialVideos />
         </div>
       </main>
       <Footer />

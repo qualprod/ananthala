@@ -300,22 +300,22 @@ export default function JoyPage() {
               priority
             />
             {/* Overlay content on the left */}
-            <div className="absolute inset-0 z-10 flex items-center">
-              <div className="pl-4 sm:pl-6 lg:pl-8 xl:pl-12 pt-12 sm:pt-14 md:pt-0">
-                <div className="max-w-md space-y-6">
-                  <div className="bg-white/10 backdrop-blur-sm p-4 md:p-8 rounded-lg">
+            <div className="absolute inset-0 z-10 flex items-end md:items-center">
+              <div className="pl-4 sm:pl-6 lg:pl-8 xl:pl-12 pb-8 sm:pb-10 md:pb-0">
+                <div className="max-w-md space-y-5">
+                  <div className="bg-white/10 backdrop-blur-sm p-3 md:p-8 rounded-lg max-w-[260px] sm:max-w-sm md:max-w-md">
                     <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-white font-cormorant">
                       Joy
                     </h1>
                   
-                    <p className="text-white text-base md:text-lg mt-4 leading-relaxed font-medium">
+                    <p className="text-white text-sm md:text-lg mt-3 md:mt-4 leading-relaxed font-medium max-w-[220px] sm:max-w-xs md:max-w-none">
                       Baby and Kids products focused on nurturing the young
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Button 
                       onClick={scrollToShop}
-                      className="bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground px-8 py-6 text-lg rounded-md w-full sm:w-auto sm:min-w-[140px]"
+                      className="bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground px-8 py-4 text-lg rounded-md w-full sm:w-auto sm:min-w-[140px]"
                       style={{ fontFamily: '"Playfair Display", serif' }}
                     >
                       Shop
@@ -323,7 +323,7 @@ export default function JoyPage() {
                     <Button
                       onClick={scrollToAboutUs}
                       variant="outline"
-                      className="border-2 border-white text-white hover:bg-white hover:text-[#8B5A3C] px-8 py-6 text-lg bg-transparent rounded-md w-full sm:w-auto sm:min-w-[140px]"
+                      className="border-2 border-white text-white hover:bg-white hover:text-[#8B5A3C] px-8 py-4 text-lg bg-transparent rounded-md w-full sm:w-auto sm:min-w-[140px]"
                       style={{ fontFamily: '"Playfair Display", serif' }}
                     >
                       Learn More

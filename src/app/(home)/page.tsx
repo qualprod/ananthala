@@ -304,7 +304,7 @@ export default function Home() {
         </section>
 
         {/* Experience The Difference Section */}
-        <div className="py-24 md:py-16 bg-white">
+        <div className="py-14 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto text-center px-4">
             <h2 className="mb-4 text-4xl font-medium text-foreground">
               Experience Infinity, Experience Ananthala
@@ -314,7 +314,7 @@ export default function Home() {
 
         {/* Category Slider Section */}
         <section className="relative w-full overflow-hidden">
-          <div className="relative w-full aspect-video">
+          <div className="relative w-full h-[420px] md:h-auto md:aspect-video">
             {categories.map((category, index) => (
               <div
                 key={category.id}
@@ -360,7 +360,7 @@ export default function Home() {
                         window.history.pushState({}, "", "/#find-your-perfect-mattress")
                       }
                     }}
-                    className={`px-8 py-3 bg-white/95 hover:bg-white text-foreground text-sm tracking-[0.3em] uppercase font-sans shadow-lg transition-all duration-300 hover:scale-105 ${
+                    className={`px-8 py-3 bg-white/95 hover:bg-white text-foreground text-sm tracking-[0.3em] uppercase font-sans shadow-lg transition-all duration-300 hover:scale-105 absolute bottom-10 md:static ${
                       currentSlide === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
                     }`}
                     style={{ fontWeight: 400, transitionDelay: "320ms" }}
@@ -375,17 +375,17 @@ export default function Home() {
           {/* Navigation Arrows */}
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/80 hover:bg-white rounded-full flex items-center justify-center transition-colors"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white/80 hover:bg-white rounded-full flex items-center justify-center transition-colors"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-6 h-6" style={{ color: "#6B563F" }} />
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" style={{ color: "#6B563F" }} />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/80 hover:bg-white rounded-full flex items-center justify-center transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white/80 hover:bg-white rounded-full flex items-center justify-center transition-colors"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-6 h-6" style={{ color: "#6B563F" }} />
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" style={{ color: "#6B563F" }} />
           </button>
 
           {/* Dots Indicator */}
@@ -406,7 +406,7 @@ export default function Home() {
         </section>
 
         {/* Products Section */}
-        <section id="find-your-perfect-mattress" className="py-24 px-4 bg-white">
+        <section id="find-your-perfect-mattress" className="py-14 md:py-24 px-4 bg-white">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="mb-4 text-4xl font-medium text-foreground">Find your perfect Ananthala product</h2>
@@ -424,7 +424,7 @@ export default function Home() {
         </section>
 
         {/* Comfort Section */}
-        <section id="comfort" className="py-24 px-4 bg-stone-50">
+        <section id="comfort" className="py-14 md:py-24 px-4 bg-stone-50">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="order-2 lg:order-1">

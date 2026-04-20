@@ -78,12 +78,12 @@ export default function BlissPage() {
               priority
             />
             {/* Overlay content with right-aligned text and left CTA */}
-            <div className="absolute inset-0 z-10 flex items-center">
-              <div className="flex w-full flex-col gap-6 px-4 sm:px-6 lg:px-8 xl:px-12 pt-12 sm:pt-14 md:pt-0 md:flex-row md:items-start md:justify-between">
+            <div className="absolute inset-0 z-10 flex items-end md:items-center">
+              <div className="flex w-full flex-col gap-5 px-4 sm:px-6 lg:px-8 xl:px-12 pb-8 sm:pb-10 md:pb-0 md:flex-row md:items-start md:justify-between">
                 <div className="order-2 flex flex-col sm:flex-row gap-4 md:order-1 md:pt-44">
                   <Button 
                     onClick={scrollToShop}
-                    className="bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground px-8 py-6 text-lg rounded-md w-full sm:w-auto sm:min-w-[140px]"
+                    className="bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground px-8 py-4 text-lg rounded-md w-full sm:w-auto sm:min-w-[140px]"
                     style={{ fontFamily: '"Playfair Display", serif' }}
                   >
                     Shop
@@ -91,18 +91,18 @@ export default function BlissPage() {
                   <Button
                     onClick={scrollToAboutUs}
                     variant="outline"
-                    className="border-2 border-white text-white hover:bg-white hover:text-[#8B5A3C] px-8 py-6 text-lg bg-transparent rounded-md w-full sm:w-auto sm:min-w-[140px]"
+                    className="border-2 border-white text-white hover:bg-white hover:text-[#8B5A3C] px-8 py-4 text-lg bg-transparent rounded-md w-full sm:w-auto sm:min-w-[140px]"
                     style={{ fontFamily: '"Playfair Display", serif' }}
                   >
                     Learn More
                   </Button>
                 </div>
-                <div className="order-1 max-w-md space-y-6 md:order-2 md:text-left">
-                  <div className="bg-white/10 backdrop-blur-sm p-4 md:p-8 rounded-lg">
+                <div className="order-1 max-w-[260px] sm:max-w-sm md:max-w-md space-y-5 md:order-2 md:text-left">
+                  <div className="bg-white/10 backdrop-blur-sm p-3 md:p-8 rounded-lg">
                     <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-white font-cormorant">
                       Bliss
                     </h1>
-                    <p className="text-white text-base md:text-lg mt-4 leading-relaxed font-medium">
+                    <p className="text-white text-sm md:text-lg mt-3 md:mt-4 leading-relaxed font-medium max-w-[220px] sm:max-w-xs md:max-w-none">
                       Our Active range for the ones in their prime
                     </p>
                   </div>

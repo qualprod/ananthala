@@ -146,6 +146,9 @@ export function MagnifyImage({
           className={imageClassName}
           draggable={false}
         />
+        <div className="absolute bottom-2 right-2 rounded-md bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-foreground md:hidden">
+          Tap to zoom
+        </div>
       </div>
       {isHovering && (
         <>
