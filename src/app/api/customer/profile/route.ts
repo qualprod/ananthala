@@ -84,36 +84,71 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
     
-    // Process addresses with proper validation
-    if (Array.isArray(addresses)) {
-      user.addresses = addresses.map((addr: any) => ({
-        _id: addr._id || new mongoose.Types.ObjectId(),
-        label: addr.label,
-        houseNumber: addr.houseNumber?.trim() || "",
-        crossStreet: addr.crossStreet?.trim() || "",
-        locality: addr.locality?.trim() || "",
-        landmark: addr.landmark?.trim() || "",
-        city: addr.city?.trim() || "",
-        state: addr.state?.trim() || "",
-        pincode: addr.pincode?.trim() || "",
-        country: addr.country?.trim() || "India",
-        isDefault: addr.isDefault || false,
-        latitude: addr.latitude || null,
-        longitude: addr.longitude || null,
-      }))
-
+    // Process addresses with proper validation and storage
+    if (Array.isArray(addresses) && addresses.length > 0) {
+      const processedAddresses: any[] = []
+      
+      for (const addr of addresses) {
+        // Validate required fields
+        if (!addr.label || !addr.houseNumber || !addr.crossStreet || !addr.locality || !addr.city || !addr.state || !addr.pincode) {
+          return NextResponse.json({ 
+            success: false, 
+            message: "All address fields are required (except landmark)" 
+          }, { status: 400 })
+        }
+        
+        // Validate pincode format (6 digits)
+        if (!/^\d{6}$/.test(addr.pincode?.toString().trim())) {
+          return NextResponse.json({ 
+            success: false, 
+            message: "Pincode must be 6 digits" 
+          }, { status: 400 })
+        }
+        
+        const addressObject: any = {
+          label: addr.label?.trim(),
+          houseNumber: addr.houseNumber?.trim(),
+          crossStreet: addr.crossStreet?.trim(),
+          locality: addr.locality?.trim(),
+          landmark: addr.landmark?.trim() || "",
+          city: addr.city?.trim(),
+          state: addr.state?.trim(),
+          pincode: addr.pincode?.toString().trim(),
+          country: addr.country?.trim() || "India",
+          isDefault: addr.isDefault === true ? true : false,
+          latitude: typeof addr.latitude === 'number' ? addr.latitude : null,
+          longitude: typeof addr.longitude === 'number' ? addr.longitude : null,
+        }
+        
+        // Generate ObjectId for new addresses, preserve existing ones
+        if (addr._id && mongoose.Types.ObjectId.isValid(addr._id)) {
+          addressObject._id = new mongoose.Types.ObjectId(addr._id)
+        } else {
+          addressObject._id = new mongoose.Types.ObjectId()
+        }
+        
+        processedAddresses.push(addressObject)
+      }
+      
       // Ensure only one default address
       let hasDefault = false
-      for (let i = 0; i < user.addresses.length; i++) {
-        if (user.addresses[i].isDefault && !hasDefault) {
+      for (const addr of processedAddresses) {
+        if (addr.isDefault && !hasDefault) {
           hasDefault = true
         } else {
-          user.addresses[i].isDefault = false
+          addr.isDefault = false
         }
       }
+      
+      user.addresses = processedAddresses
+    } else {
+      user.addresses = []
     }
 
     await user.save()
+    
+    // Log for debugging
+    console.log("[PROFILE_UPDATE] User ID:", decoded.userId, "Addresses saved:", user.addresses?.length)
 
     return NextResponse.json({
       success: true,

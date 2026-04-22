@@ -58,6 +58,8 @@ const [couponCode, setCouponCode] = useState("")
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
   const [useNewAddress, setUseNewAddress] = useState(false)
+  const [saveNewAddress, setSaveNewAddress] = useState(false)
+  const [addressLabel, setAddressLabel] = useState("Home")
   
   // Billing address states
   const [billingDifferent, setBillingDifferent] = useState(false)
@@ -202,7 +204,7 @@ useEffect(() => {
   }
 
   // Apply selected address to form
-  const applySelectedAddress = (address: SavedAddress) => {
+  const applySelectedAddress = async (address: SavedAddress) => {
     const fullAddress = buildFullAddress({
       houseNumber: address.houseNumber,
       crossStreet: address.crossStreet,
@@ -222,6 +224,9 @@ useEffect(() => {
       zipCode: address.pincode,
       country: address.country || "India",
     }))
+    
+    // Update billing states if needed
+    setBillingAllStates(await getAllStates())
   }
 
   // Handle saved address selection
@@ -520,6 +525,43 @@ const handleSubmit = async (e: React.FormEvent) => {
         },
         handler: async (response: any) => {
           try {
+            // Save new address if user selected that option
+            if (useNewAddress && saveNewAddress && userProfile) {
+              try {
+                const newAddressData = {
+                  label: addressLabel,
+                  houseNumber: formData.houseNumber,
+                  crossStreet: formData.crossStreet,
+                  locality: formData.locality,
+                  landmark: formData.landmark || "",
+                  city: formData.city,
+                  state: formData.state,
+                  pincode: formData.zipCode,
+                  country: formData.country,
+                  isDefault: false,
+                }
+                
+                const saveAddressResponse = await fetch("/api/customer/profile", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    phone: userProfile.phone,
+                    addresses: [...(userProfile.addresses || []), newAddressData],
+                  }),
+                })
+                
+                if (saveAddressResponse.ok) {
+                  toast({
+                    title: "Address Saved",
+                    description: `${addressLabel} address has been saved for future orders.`,
+                  })
+                }
+              } catch (addressError) {
+                console.error("[v0] Error saving address:", addressError)
+                // Continue with order even if address save fails
+              }
+            }
+
             const verifyResponse = await fetch("/api/payments/razorpay/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -826,62 +868,78 @@ shippingAddress: {
                   {/* Saved Addresses */}
                   {userProfile?.addresses && userProfile.addresses.length > 0 && (
                     <div className="mb-6">
-                      <p className="text-black font-medium mb-3 flex items-center gap-2">
-                        <MapPin className="w-5 h-5 text-[#8B5A3C]" />
-                        Select from saved addresses
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {userProfile.addresses.map((addr) => (
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="text-black font-medium flex items-center gap-2">
+                          <MapPin className="w-5 h-5 text-[#8B5A3C]" />
+                          Your Saved Addresses ({userProfile.addresses.length}/3)
+                        </p>
+                      </div>
+                      <div className={`grid grid-cols-1 ${userProfile.addresses.length >= 2 ? 'md:grid-cols-2' : ''} ${userProfile.addresses.length === 3 ? 'lg:grid-cols-3' : ''} gap-3`}>
+                        {userProfile.addresses.map((addr, idx) => (
                           <div
                             key={addr._id}
-                            onClick={() => handleAddressSelection(addr._id)}
-                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                            onClick={() => {
+                              handleAddressSelection(addr._id)
+                              setUseNewAddress(false)
+                            }}
+                            className={`p-4 border rounded-lg cursor-pointer transition-all overflow-hidden ${
                               selectedAddressId === addr._id && !useNewAddress
-                                ? "border-[#8B5A3C] bg-[#F5F1ED] ring-2 ring-[#8B5A3C]"
-                                : "border-[#D9CFC7] hover:border-[#8B5A3C]"
+                                ? "border-[#8B5A3C] bg-[#F5F1ED] ring-2 ring-[#8B5A3C] shadow-md"
+                                : "border-[#D9CFC7] hover:border-[#8B5A3C] hover:shadow-sm"
                             }`}
                           >
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <span className={`inline-block px-2 py-1 text-xs font-medium rounded mb-2 ${
-                                  addr.label === "Home" ? "bg-blue-100 text-blue-700" :
-                                  addr.label === "Office" ? "bg-purple-100 text-purple-700" :
-                                  "bg-gray-100 text-gray-700"
-                                }`}>
-                                  {addr.label}
-                                  {addr.isDefault && " (Default)"}
-                                </span>
-                                <p className="text-sm text-black">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
+                                    addr.label === "Home" ? "bg-blue-100 text-blue-700" :
+                                    addr.label === "Office" ? "bg-purple-100 text-purple-700" :
+                                    "bg-gray-100 text-gray-700"
+                                  }`}>
+                                    {addr.label}
+                                  </span>
+                                  {addr.isDefault && (
+                                    <span className="inline-block px-2.5 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-700 whitespace-nowrap">
+                                      Default
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm font-medium text-black">
                                   {addr.houseNumber}, {addr.crossStreet}
                                 </p>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-xs text-gray-600">
                                   {addr.locality}{addr.landmark ? `, ${addr.landmark}` : ""}
                                 </p>
-                                <p className="text-sm text-gray-600">
-                                  {addr.city}, {addr.state} - {addr.pincode}
+                                <p className="text-xs text-gray-600">
+                                  {addr.city}, {addr.state} {addr.pincode}
                                 </p>
                               </div>
                               {selectedAddressId === addr._id && !useNewAddress && (
-                                <Check className="w-5 h-5 text-[#8B5A3C]" />
+                                <div className="flex-shrink-0">
+                                  <Check className="w-5 h-5 text-[#8B5A3C] flex-shrink-0" />
+                                </div>
                               )}
                             </div>
                           </div>
                         ))}
                         
-                        {/* Add New Address Option */}
-                        <div
-                          onClick={() => handleAddressSelection("new")}
-                          className={`p-4 border rounded-lg cursor-pointer transition-all flex items-center justify-center ${
-                            useNewAddress
-                              ? "border-[#8B5A3C] bg-[#F5F1ED] ring-2 ring-[#8B5A3C]"
-                              : "border-dashed border-[#D9CFC7] hover:border-[#8B5A3C]"
-                          }`}
-                        >
-                          <div className="text-center">
-                            <MapPin className="w-8 h-8 text-[#8B5A3C] mx-auto mb-2" />
-                            <p className="text-sm font-medium text-black">Use a different address</p>
+                        {/* Add New Address Option - Always show if less than 3 addresses */}
+                        {userProfile.addresses.length < 3 && (
+                          <div
+                            onClick={() => handleAddressSelection("new")}
+                            className={`p-4 border rounded-lg cursor-pointer transition-all flex items-center justify-center min-h-[140px] ${
+                              useNewAddress
+                                ? "border-[#8B5A3C] bg-[#F5F1ED] ring-2 ring-[#8B5A3C] shadow-md"
+                                : "border-dashed border-[#D9CFC7] hover:border-[#8B5A3C] hover:bg-gray-50"
+                            }`}
+                          >
+                            <div className="text-center">
+                              <MapPin className="w-8 h-8 text-[#8B5A3C] mx-auto mb-2 opacity-70" />
+                              <p className="text-sm font-medium text-black">Add New Address</p>
+                              <p className="text-xs text-gray-500 mt-1">for this order</p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1038,6 +1096,46 @@ shippingAddress: {
                           <option value="India">India</option>
                         </select>
                       </div>
+
+                      {/* Save Address Option */}
+                      {useNewAddress && (
+                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                id="saveAddress"
+                                checked={saveNewAddress}
+                                onChange={(e) => setSaveNewAddress(e.target.checked)}
+                                className="w-5 h-5 cursor-pointer"
+                                style={{ accentColor: "#8B5A3C" }}
+                              />
+                              <label htmlFor="saveAddress" className="text-black font-medium cursor-pointer">
+                                Save this address for future orders
+                              </label>
+                            </div>
+                            
+                            {saveNewAddress && (
+                              <div>
+                                <label className="block text-black mb-2 text-sm font-medium">
+                                  Address Label <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                  value={addressLabel}
+                                  onChange={(e) => setAddressLabel(e.target.value)}
+                                  className="w-full px-4 py-2 border text-black bg-white text-sm"
+                                  style={{ borderColor: "#D9CFC7" }}
+                                >
+                                  <option value="Home">Home</option>
+                                  <option value="Office">Office</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                                <p className="text-xs text-gray-600 mt-1">This helps you identify the address later</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 

@@ -105,6 +105,29 @@ export default function ProfilePage() {
 
     setSaving(true)
     try {
+      // Remove _id from new addresses without ObjectId format to let MongoDB create them
+      const addressesForSave = addresses.map(addr => {
+        const addressObj: any = {
+          label: addr.label,
+          houseNumber: addr.houseNumber,
+          crossStreet: addr.crossStreet,
+          locality: addr.locality,
+          landmark: addr.landmark,
+          city: addr.city,
+          state: addr.state,
+          pincode: addr.pincode,
+          country: addr.country,
+          isDefault: addr.isDefault || false,
+          latitude: addr.latitude || null,
+          longitude: addr.longitude || null,
+        }
+        // Only include _id if it's a valid MongoDB ObjectId (24 hex chars)
+        if (addr._id && /^[0-9a-f]{24}$/i.test(addr._id)) {
+          addressObj._id = addr._id
+        }
+        return addressObj
+      })
+
       const response = await fetch("/api/customer/profile", {
         method: "POST",
         headers: {
@@ -112,7 +135,7 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           phone: withCountryCode(`${countryCode}${phone}`, countryCode),
-          addresses: addresses,
+          addresses: addressesForSave,
         }),
       })
 
@@ -160,7 +183,7 @@ export default function ProfilePage() {
         toast.error("Maximum 3 addresses allowed")
         return
       }
-      setAddresses([...addresses, { ...newAddress, _id: Math.random().toString() }])
+      setAddresses([...addresses, newAddress])
     }
 
     setNewAddress({
