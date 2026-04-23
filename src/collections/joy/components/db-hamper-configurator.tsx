@@ -16,7 +16,9 @@ export interface DbHamperItemVariant {
   length: number
   width: number
   height: number
+  fabric: string
   stock: number
+  imageUrls?: string[]
 }
 
 export interface DbHamperItem {
@@ -76,9 +78,27 @@ export function DbHamperConfigurator({
       }))
   }, [hamperItems])
 
+  useEffect(() => {
+    // When overall hamper fabric changes, restart each item at first matching variant/image.
+    setSelectedVariantIndices({})
+    setSelectedImageIndices({})
+  }, [selectedFabric])
+
   const handleAddToCart = () => {
     const cover = product.images?.[0] || "/placeholder.svg"
+    const selectedVariantFabrics = normalizedItems
+      .map((item, itemIndex) => {
+        const variants = item.variants || []
+        const selectedVariantIndex = selectedVariantIndices[itemIndex] ?? 0
+        const variantFabric = variants[selectedVariantIndex]?.fabric
+        return typeof variantFabric === "string" && variantFabric.trim() ? variantFabric : null
+      })
+      .filter(Boolean) as string[]
+    const joinedVariantFabrics = Array.from(new Set(selectedVariantFabrics))
+      .map((fabricId) => fabricOptions.find((f) => f.id === fabricId)?.name || fabricId)
+      .join(", ")
     const fabricLabel =
+      joinedVariantFabrics ||
       fabricOptions.find((f) => f.id === selectedFabric)?.name ||
       selectedFabric ||
       availableHamperFabrics[0] ||
@@ -104,11 +124,20 @@ export function DbHamperConfigurator({
       {/* Left Content - Items */}
       <div className="lg:col-span-9 space-y-8">
         {normalizedItems.map((item, itemIndex) => {
-          const images = item.imageUrls
-          const imageIndex = selectedImageIndices[itemIndex] ?? 0
           const variants = item.variants
+          const variantsForSelectedFabric =
+            selectedFabric && variants.length > 0
+              ? variants.filter((variant) => (variant.fabric || "").trim() === selectedFabric)
+              : variants
+          const hasFabricFilteredVariants = variantsForSelectedFabric.length > 0
+          const visibleVariants = hasFabricFilteredVariants ? variantsForSelectedFabric : variants
           const selectedVariantIndex = selectedVariantIndices[itemIndex] ?? 0
-          const selectedVariant = variants[selectedVariantIndex]
+          const selectedVariant = visibleVariants[selectedVariantIndex]
+          const images =
+            Array.isArray(selectedVariant?.imageUrls) && selectedVariant.imageUrls.length > 0
+              ? selectedVariant.imageUrls
+              : item.imageUrls
+          const imageIndex = selectedImageIndices[itemIndex] ?? 0
           const isCustom = Boolean(useCustomDimensions[itemIndex])
           const custom = customDimensions[itemIndex] || { length: "", width: "", height: "" }
 
@@ -176,17 +205,22 @@ export function DbHamperConfigurator({
                     <div className="text-sm text-foreground/70 border border-[#EED9C4] rounded-md p-3">
                       No variants available for this item.
                     </div>
+                  ) : selectedFabric && !hasFabricFilteredVariants ? (
+                    <div className="text-sm text-foreground/70 border border-[#EED9C4] rounded-md p-3">
+                      No {fabricOptions.find((fabric) => fabric.id === selectedFabric)?.name || selectedFabric} variants available for this item.
+                    </div>
                   ) : !isCustom ? (
                     <div className="space-y-3">
                       <label className="block mb-1 text-black text-lg">Select Size</label>
                       <select
                         className="w-full border border-[#EED9C4] rounded-md px-3 py-2 bg-white text-sm"
                         value={selectedVariantIndex}
-                        onChange={(event) =>
+                        onChange={(event) => {
                           setSelectedVariantIndices((prev) => ({ ...prev, [itemIndex]: Number(event.target.value) }))
-                        }
+                          setSelectedImageIndices((prev) => ({ ...prev, [itemIndex]: 0 }))
+                        }}
                       >
-                        {variants.map((v, vIdx) => {
+                        {visibleVariants.map((v, vIdx) => {
                           const label = `${v.length}x${v.width}x${v.height} cm`
                           return (
                             <option key={`${label}-${vIdx}`} value={vIdx}>

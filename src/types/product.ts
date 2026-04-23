@@ -43,7 +43,12 @@ export interface HamperItemVariantInput {
   length: string
   width: string
   height: string
+  fabric: string
   stock: string
+  imageUrls?: string[]
+  imageFiles?: File[]
+  imagePreviews?: string[]
+  imageKeys?: string[]
 }
 
 export interface ProductFormData {

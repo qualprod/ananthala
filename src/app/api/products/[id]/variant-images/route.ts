@@ -59,13 +59,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         variant.fabric === fabric && Array.isArray(variant.imageUrls) && variant.imageUrls.length > 0,
     )
 
+    const productPrimaryImage = (product as any).primaryImage
+    const productImageUrls = Array.isArray((product as any).imageUrls) ? (product as any).imageUrls : []
+    const productFallbackImages = productPrimaryImage
+      ? [productPrimaryImage, ...productImageUrls.filter((url: string) => url !== productPrimaryImage)]
+      : productImageUrls
+
     const imageUrls =
-      exactVariant?.imageUrls ||
-      fallbackVariant?.imageUrls ||
-      colorOption?.imageUrls ||
-      ((product as any).primaryImage
-        ? [(product as any).primaryImage, ...(((product as any).imageUrls || []).filter((url: string) => url !== (product as any).primaryImage)]
-        : (product as any).imageUrls || [])
+      exactVariant?.imageUrls || fallbackVariant?.imageUrls || colorOption?.imageUrls || productFallbackImages
 
     return NextResponse.json(
       {

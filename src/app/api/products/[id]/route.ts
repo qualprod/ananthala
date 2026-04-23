@@ -79,7 +79,10 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     // Delete associated images from Vercel Blob
     const hamperImageUrls = Array.isArray(product.hamperItems)
-      ? product.hamperItems.flatMap((item: any) => item.imageUrls || [])
+      ? product.hamperItems.flatMap((item: any) => [
+          ...(Array.isArray(item.imageUrls) ? item.imageUrls : []),
+          ...((Array.isArray(item.variants) ? item.variants : []).flatMap((variant: any) => variant.imageUrls || [])),
+        ])
       : []
     const allImageUrls = [...product.imageUrls, ...hamperImageUrls]
     console.log(`[v0] Deleting ${allImageUrls.length} images from Vercel Blob...`)
@@ -258,6 +261,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         fabric?: string
         price?: number | string
         stock?: number | string
+        imageUrls?: string[]
+        imageKeys?: string[]
       }>
     }> = []
 
@@ -565,14 +570,48 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       )
     }
 
+    if (hamperItems.length > 0) {
+      await Promise.all(
+        hamperItems.map(async (item) => {
+          const itemVariants = Array.isArray(item.variants) ? item.variants : []
+          await Promise.all(
+            itemVariants.map(async (variant) => {
+              const imageKeys = Array.isArray(variant.imageKeys) ? variant.imageKeys : []
+              const existingUrls = Array.isArray(variant.imageUrls)
+                ? variant.imageUrls.filter((url) => typeof url === "string" && !!url.trim())
+                : []
+              const uploadedUrls: string[] = []
+
+              await Promise.all(
+                imageKeys.map(async (imageKey) => {
+                  const file = formData.get(imageKey)
+                  if (!isFileLike(file)) return
+
+                  const timestamp = Date.now()
+                  const filename = `products/${sellerEmail}/hamper-variants/${timestamp}_${(file as any).name ?? "image"}`
+
+                  const blob = await put(filename, file, {
+                    access: "public",
+                    addRandomSuffix: true,
+                    token: process.env.BLOB_READ_WRITE_TOKEN,
+                  })
+
+                  uploadedUrls.push(blob.url)
+                }),
+              )
+
+              variant.imageUrls = [...existingUrls, ...uploadedUrls]
+            }),
+          )
+        }),
+      )
+    }
+
     const processedHamperItems = hamperItems.map((item, index) => {
       if (!item.name) {
         throw new Error(`Hamper item ${index + 1} requires a name.`)
       }
       const imageUrls = Array.isArray(item.imageUrls) ? item.imageUrls : []
-      if (productType === "hamper" && imageUrls.length === 0) {
-        throw new Error(`Hamper item ${index + 1} requires at least one image.`)
-      }
 
       const rawVariants = Array.isArray(item.variants) ? item.variants : []
       if (productType === "hamper" && rawVariants.length === 0) {
@@ -584,7 +623,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         const length = Number.parseFloat(String(variant.length ?? ""))
         const width = Number.parseFloat(String(variant.width ?? ""))
         const height = Number.parseFloat(String(variant.height ?? ""))
+        const fabric = typeof variant.fabric === "string" ? variant.fabric.trim() : ""
         const stock = Number.parseInt(String(variant.stock ?? "0"), 10)
+        const variantImageUrls = Array.isArray(variant.imageUrls)
+          ? variant.imageUrls.filter((url) => typeof url === "string" && !!url.trim())
+          : []
 
         if (isNaN(weight) || isNaN(length) || isNaN(width) || isNaN(height) || isNaN(stock)) {
           throw new Error(
@@ -597,13 +640,21 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             `Hamper item ${index + 1} variant ${variantIndex + 1} has values that are too small or negative.`,
           )
         }
+        if (!fabric) {
+          throw new Error(`Hamper item ${index + 1} variant ${variantIndex + 1} requires fabric.`)
+        }
+        if (variantImageUrls.length === 0) {
+          throw new Error(`Hamper item ${index + 1} variant ${variantIndex + 1} requires at least one image.`)
+        }
 
         return {
           weight,
           length,
           width,
           height,
+          fabric,
           stock,
+          imageUrls: variantImageUrls,
         }
       })
 
@@ -661,9 +712,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     )
 
     const previousHamperImageUrls = Array.isArray(existingProduct.hamperItems)
-      ? existingProduct.hamperItems.flatMap((item: any) => item.imageUrls || []).filter(Boolean)
+      ? existingProduct.hamperItems
+          .flatMap((item: any) => [
+            ...(Array.isArray(item.imageUrls) ? item.imageUrls : []),
+            ...((Array.isArray(item.variants) ? item.variants : []).flatMap((variant: any) => variant.imageUrls || [])),
+          ])
+          .filter(Boolean)
       : []
-    const nextHamperImageUrls = processedHamperItems.flatMap((item) => item.imageUrls || []).filter(Boolean)
+    const nextHamperImageUrls = processedHamperItems
+      .flatMap((item) => [
+        ...(item.imageUrls || []),
+        ...((item.variants || []).flatMap((variant: any) => variant.imageUrls || [])),
+      ])
+      .filter(Boolean)
     const removedHamperImageUrls = previousHamperImageUrls.filter((url: string) => !nextHamperImageUrls.includes(url))
 
     const removedImageUrls = existingProduct.imageUrls.filter((url: string) => !resolvedImageUrls.includes(url))

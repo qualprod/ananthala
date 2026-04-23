@@ -36,7 +36,9 @@ export interface IHamperItemVariant {
   length: number
   width: number
   height: number
+  fabric: string
   stock: number
+  imageUrls: string[]
 }
 
 export interface IProduct {
@@ -190,8 +192,8 @@ const HamperItemSchema = new Schema<IHamperItem>(
       type: [String],
       default: [],
       validate: {
-        validator: (v: string[]) => Array.isArray(v) && v.length > 0 && v.length <= 6,
-        message: "Hamper items must have between 1 and 6 images",
+        validator: (v: string[]) => Array.isArray(v) && v.length <= 6,
+        message: "Hamper items can have up to 6 images",
       },
     },
     variants: {
@@ -218,11 +220,24 @@ const HamperItemSchema = new Schema<IHamperItem>(
               required: [true, "Hamper item variant height is required"],
               min: [0, "Height must be positive"],
             },
+            fabric: {
+              type: String,
+              required: [true, "Hamper item variant fabric is required"],
+              trim: true,
+            },
             stock: {
               type: Number,
               required: [true, "Hamper item variant stock is required"],
               min: [0, "Hamper item variant stock must be positive"],
               default: 0,
+            },
+            imageUrls: {
+              type: [String],
+              default: [],
+              validate: {
+                validator: (v: string[]) => Array.isArray(v) && v.length > 0 && v.length <= 6,
+                message: "Hamper item variant images must be between 1 and 6",
+              },
             },
           },
           { _id: false },

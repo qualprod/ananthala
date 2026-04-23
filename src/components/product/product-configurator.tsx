@@ -73,7 +73,7 @@ export function ProductConfigurator({
 
   const parsedSelectedSize = useMemo(() => {
     if (!selectedSize || useCustomDimensions) return null
-    const sizeMatch = selectedSize.match(/(\d+)x(\d+)x(\d+)(?:\s*cm)?/)
+    const sizeMatch = selectedSize.match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)(?:\s*cm)?/i)
     if (!sizeMatch) return null
     return {
       length: Number(sizeMatch[1]),

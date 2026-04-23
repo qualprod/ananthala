@@ -63,8 +63,8 @@ interface ApiHamperItemVariant {
   length: number
   width: number
   height: number
-  fabric: string
-  price: number
+  fabric?: string
+  imageUrls?: string[]
   stock: number
 }
 
@@ -501,6 +501,8 @@ export default function ProductDetailPage() {
                           length: v.length,
                           width: v.width,
                           height: v.height,
+                          fabric: v.fabric,
+                          imageUrls: v.imageUrls || [],
                           stock: v.stock,
                         })),
                       })),
