@@ -57,10 +57,21 @@ export default function GoogleMapsPicker({
   const mapRef = useRef<google.maps.Map | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  const [apiKeyMissing, setApiKeyMissing] = useState(false)
+
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
+  useEffect(() => {
+    if (!apiKey) {
+      console.error("[v0] Google Maps API key is not configured. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable.")
+      setApiKeyMissing(true)
+    }
+  }, [apiKey])
 
   const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: apiKey || "",
     libraries,
+    preventGoogleFontsLoading: true,
   })
 
   useEffect(() => {
@@ -247,6 +258,32 @@ export default function GoogleMapsPicker({
     onClose()
   }
 
+  if (apiKeyMissing) {
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Maps Configuration Error</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-8 space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-700 font-medium mb-2">Google Maps API Key Not Configured</p>
+              <p className="text-sm text-red-600 mb-3">
+                The Google Maps feature requires an API key to function properly.
+              </p>
+              <p className="text-xs text-gray-600">
+                Please contact support to enable this feature, or manually enter your address details.
+              </p>
+            </div>
+            <Button onClick={onClose} variant="outline">
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
   if (loadError) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
@@ -254,8 +291,16 @@ export default function GoogleMapsPicker({
           <DialogHeader>
             <DialogTitle className="text-foreground">Error Loading Maps</DialogTitle>
           </DialogHeader>
-          <div className="text-center py-8">
-            <p className="text-red-500">Failed to load Google Maps. Please try again later.</p>
+          <div className="text-center py-8 space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-700 font-medium mb-2">Failed to Load Google Maps</p>
+              <p className="text-sm text-red-600">
+                {loadError?.message || "An error occurred while loading Google Maps. Please try again later."}
+              </p>
+            </div>
+            <Button onClick={onClose} variant="outline">
+              Close
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
