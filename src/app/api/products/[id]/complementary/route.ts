@@ -19,7 +19,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Fetch the product with populated complementary products
     const product = await Product.findById(id).populate({
       path: "complementaryProductIds",
-      select: "_id productTitle imageUrls variants",
+      select: "_id productTitle primaryImage imageUrls variants",
       match: { status: "visible" },
     })
 
@@ -31,7 +31,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const complementaryProducts = (product.complementaryProductIds || []).map((cp: any) => ({
       _id: cp._id.toString(),
       productTitle: cp.productTitle,
-      image: cp.imageUrls?.[0] || null,
+      image: cp.primaryImage || cp.imageUrls?.[0] || null,
       basePrice: cp.variants?.[0]?.price || 0,
     }))
 

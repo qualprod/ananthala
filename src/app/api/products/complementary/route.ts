@@ -23,12 +23,12 @@ export async function GET(request: Request) {
       query._id = { $ne: new mongoose.Types.ObjectId(excludeId) }
     }
 
-    const products = await Product.find(query).select("_id productTitle imageUrls variants productRole").limit(100)
+    const products = await Product.find(query).select("_id productTitle primaryImage imageUrls variants productRole").limit(100)
 
     const productsWithPrice = products.map((product) => ({
       _id: product._id.toString(),
       productTitle: product.productTitle,
-      image: product.imageUrls?.[0] || null,
+      image: product.primaryImage || product.imageUrls?.[0] || null,
       basePrice: product.variants?.[0]?.price || 0,
       productRole: product.productRole || "complementary",
     }))

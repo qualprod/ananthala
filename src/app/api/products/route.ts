@@ -45,6 +45,7 @@ export async function POST(request: Request) {
     const hamperItemsJson = formData.get("hamperItems") as string
     const hamperPriceRaw = formData.get("hamperPrice") as string | null
     const hamperFabric = (formData.get("hamperFabric") as string | null) ?? ""
+    const hamperFabricOptionsJson = (formData.get("hamperFabricOptions") as string | null) ?? "[]"
 
     console.log("[v0] Received form data:", {
       productType,
@@ -100,7 +101,18 @@ export async function POST(request: Request) {
     }
 
     // Parse variants
-    let variants: any[] = []
+    let variants: Array<{
+      id?: string
+      weight?: number | string
+      length?: number | string
+      width?: number | string
+      height?: number | string
+      fabric?: string
+      price?: number | string
+      stock?: number | string
+      imageUrls?: string[]
+      imageKeys?: string[]
+    }> = []
     if (variantsJson) {
       try {
         variants = JSON.parse(variantsJson)
@@ -181,11 +193,29 @@ export async function POST(request: Request) {
         ? Number.parseFloat(String(hamperPriceRaw))
         : undefined
     if (productType === "hamper") {
-      if (!hamperFabric || !hamperFabric.trim()) {
-        return NextResponse.json({ success: false, message: "Hamper fabric is required" }, { status: 400 })
-      }
       if (!hamperPrice || !Number.isFinite(hamperPrice) || hamperPrice <= 0) {
         return NextResponse.json({ success: false, message: "Hamper price is required" }, { status: 400 })
+      }
+    }
+
+    let hamperFabricOptions: string[] = []
+    if (productType === "hamper") {
+      try {
+        const parsed = JSON.parse(hamperFabricOptionsJson)
+        hamperFabricOptions = Array.isArray(parsed)
+          ? parsed.filter((option) => typeof option === "string" && !!option.trim()).map((option) => option.trim())
+          : []
+      } catch {
+        hamperFabricOptions = []
+      }
+
+      if (hamperFabric.trim()) {
+        hamperFabricOptions = [hamperFabric.trim(), ...hamperFabricOptions]
+      }
+      hamperFabricOptions = Array.from(new Set(hamperFabricOptions))
+
+      if (hamperFabricOptions.length === 0) {
+        return NextResponse.json({ success: false, message: "At least one hamper fabric option is required" }, { status: 400 })
       }
     }
 
@@ -220,6 +250,42 @@ export async function POST(request: Request) {
       }
     }
 
+    // Upload variant-specific images before validation so each variant can own its gallery.
+    for (const variant of variants) {
+      const imageKeys = Array.isArray(variant.imageKeys) ? variant.imageKeys : []
+      const existingUrls = Array.isArray(variant.imageUrls)
+        ? variant.imageUrls.filter((url) => typeof url === "string" && !!url.trim())
+        : []
+      const uploadedUrls: string[] = []
+
+      for (const imageKey of imageKeys) {
+        const file = formData.get(imageKey)
+        if (!isFileLike(file)) continue
+
+        const timestamp = Date.now()
+        const filename = `products/${sellerEmail}/variants/${timestamp}_${(file as any).name ?? "image"}`
+        try {
+          const blob = await put(filename, file, {
+            access: "public",
+            addRandomSuffix: true,
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+          })
+          uploadedUrls.push(blob.url)
+        } catch (uploadError: any) {
+          console.error("[v0] Error uploading variant image:", uploadError)
+          return NextResponse.json(
+            {
+              success: false,
+              message: `Failed to upload variant image: ${uploadError.message || "Unknown error"}`,
+            },
+            { status: 500 },
+          )
+        }
+      }
+
+      variant.imageUrls = [...existingUrls, ...uploadedUrls]
+    }
+
     // Process variants - convert string values to numbers and validate
     const processedVariants =
       productType === "single"
@@ -247,6 +313,10 @@ export async function POST(request: Request) {
               throw new Error(`Variant ${index + 1} has values that are too small or negative.`)
             }
 
+            const imageUrls = Array.isArray(variant.imageUrls)
+              ? variant.imageUrls.filter((url) => typeof url === "string" && !!url.trim())
+              : []
+
             return {
               variantId: variant.id,
               weight,
@@ -256,9 +326,41 @@ export async function POST(request: Request) {
               fabric,
               price,
               stock,
+              imageUrls,
             }
           })
         : []
+
+    const colorOptionsMap = new Map<string, string[]>()
+    if (productType === "single") {
+      for (const variant of processedVariants) {
+        const existing = colorOptionsMap.get(variant.fabric) || []
+        const merged = [...existing, ...(variant.imageUrls || [])].filter(
+          (url, idx, arr) => typeof url === "string" && !!url.trim() && arr.indexOf(url) === idx,
+        )
+        if (merged.length > 0) {
+          colorOptionsMap.set(variant.fabric, merged.slice(0, 6))
+        }
+      }
+
+      const uniqueFabrics = Array.from(new Set(processedVariants.map((variant) => variant.fabric)))
+      const missingFabric = uniqueFabrics.find((fabric) => (colorOptionsMap.get(fabric) || []).length === 0)
+      if (missingFabric) {
+        throw new Error(`At least one image is required for fabric "${missingFabric}".`)
+      }
+    }
+
+    const colorOptions = Array.from(colorOptionsMap.entries()).map(([fabric, imageUrls]) => ({
+      fabric,
+      imageUrls,
+    }))
+    const normalizedVariants =
+      productType === "single"
+        ? processedVariants.map((variant) => ({
+            ...variant,
+            imageUrls: [],
+          }))
+        : processedVariants
 
     console.log("[v0] Processed variants:", processedVariants)
 
@@ -271,10 +373,6 @@ export async function POST(request: Request) {
     }
 
     console.log("[v0] Found", imageFiles.length, "images")
-
-    if (productType === "single" && imageFiles.length === 0) {
-      return NextResponse.json({ success: false, message: "At least one product image is required" }, { status: 400 })
-    }
 
     if (imageFiles.length > 6) {
       return NextResponse.json({ success: false, message: "Maximum 6 images allowed" }, { status: 400 })
@@ -427,6 +525,18 @@ export async function POST(request: Request) {
     console.log("[v0] Connecting to database...")
     await connectDB()
 
+    const primaryImage =
+      imageUrls[0] ||
+      colorOptions[0]?.imageUrls?.[0] ||
+      (productType === "single" ? processedVariants[0]?.imageUrls?.[0] : undefined) ||
+      ""
+    const resolvedImageUrls =
+      imageUrls.length > 0
+        ? imageUrls
+        : productType === "single"
+          ? (processedVariants[0]?.imageUrls?.slice(0, 1) ?? [])
+          : []
+
     const productData = {
       productType,
       productTitle,
@@ -437,13 +547,16 @@ export async function POST(request: Request) {
       location,
       category: categoryLower,
       subCategory: subCategory || undefined,
+      primaryImage,
       productRole: productRole === "complementary" ? "complementary" : "normal",
-      imageUrls,
-      variants: processedVariants,
+      imageUrls: resolvedImageUrls,
+      variants: normalizedVariants,
+      colorOptions: productType === "single" ? colorOptions : [],
       detailSections,
       hamperItems: productType === "hamper" ? processedHamperItems : [],
       hamperPrice: productType === "hamper" ? hamperPrice : undefined,
-      hamperFabric: productType === "hamper" ? hamperFabric.trim() : undefined,
+      hamperFabric: productType === "hamper" ? hamperFabricOptions[0] : undefined,
+      hamperFabricOptions: productType === "hamper" ? hamperFabricOptions : [],
       status: "visible",
     }
 
@@ -462,6 +575,7 @@ export async function POST(request: Request) {
       title: product.productTitle,
       variants: product.variants.length,
       images: product.imageUrls.length,
+      primaryImage: product.primaryImage,
     })
 
     return NextResponse.json(
@@ -472,6 +586,7 @@ export async function POST(request: Request) {
           id: product._id,
           productTitle: product.productTitle,
           category: product.category,
+          primaryImage: product.primaryImage,
           variantsCount: product.variants.length,
           imagesCount: product.imageUrls.length,
           status: product.status,
@@ -495,6 +610,7 @@ export async function GET(request: Request) {
     const category = searchParams.get("category")
     const sellerEmail = searchParams.get("sellerEmail")
     const status = searchParams.get("status")
+    const includeVariantImages = searchParams.get("includeVariantImages") === "true"
 
     await connectDB()
 
@@ -510,7 +626,15 @@ export async function GET(request: Request) {
       query.status = status
     }
 
-    const products = await Product.find(query).sort({ displayOrder: 1, createdAt: -1 }).lean()
+    const projection = includeVariantImages
+      ? {}
+      : {
+          detailSections: 0,
+          hamperItems: 0,
+          "variants.imageUrls": 0,
+        }
+
+    const products = await Product.find(query, projection).sort({ displayOrder: 1, createdAt: -1 }).lean()
 
     return NextResponse.json(
       {

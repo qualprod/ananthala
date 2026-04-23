@@ -17,6 +17,7 @@ interface ApiProduct {
   productTitle: string
   category: string
   subCategory?: string
+  primaryImage?: string
   imageUrls: string[]
   variants: ApiProductVariant[]
   hamperPrice?: number
@@ -144,7 +145,7 @@ function SearchContent() {
                     >
                       <div className="relative aspect-square overflow-hidden mb-3 cursor-pointer">
                         <Image
-                          src={product.imageUrls?.[0] || "/placeholder.svg"}
+                          src={product.primaryImage || product.imageUrls?.[0] || "/placeholder.svg"}
                           alt={product.productTitle}
                           fill
                           className="object-cover"

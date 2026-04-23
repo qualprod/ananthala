@@ -26,9 +26,11 @@ interface ApiProductVariant {
   fabric: string
   price: number
   stock: number
+  imageUrls?: string[]
 }
 
 interface ProductConfiguratorProps {
+  productId?: string
   product: ProductDetail
   variants?: ApiProductVariant[]
   onAddToCart: (item: CartItem) => void
@@ -37,6 +39,7 @@ interface ProductConfiguratorProps {
 }
 
 export function ProductConfigurator({
+  productId,
   product,
   variants = [],
   onAddToCart,
@@ -55,6 +58,8 @@ export function ProductConfigurator({
   const [pendingCartItem, setPendingCartItem] = useState<CartItem | null>(null)
   const [isLoadingComplementary, setIsLoadingComplementary] = useState(false)
   const [dynamicFabrics, setDynamicFabrics] = useState<ApiFabric[]>([])
+  const [variantImageCache, setVariantImageCache] = useState<Record<string, string[]>>({})
+  const [lazyVariantImages, setLazyVariantImages] = useState<string[] | null>(null)
 
 
 
@@ -102,7 +107,7 @@ export function ProductConfigurator({
     return Array.from(new Set(matchingVariants.map((v) => v.fabric).filter(Boolean)))
   }, [matchingVariants, variants, selectedSize, useCustomDimensions])
 
-  // Find the variant that matches the selected size and fabric
+  // Find the variant that matches selected size and fabric first
   const selectedVariant = useMemo(() => {
     if (!parsedSelectedSize || !variants.length) return null
 
@@ -114,6 +119,33 @@ export function ProductConfigurator({
     // Otherwise, return the first matching variant
     return matchingVariants[0] || null
   }, [parsedSelectedSize, selectedFabric, matchingVariants])
+
+  // Fallback: if exact size+fabric variant is not available, use any variant for selected fabric.
+  const fallbackVariantByFabric = useMemo(() => {
+    if (!selectedFabric || !variants.length) return null
+    return variants.find((v) => v.fabric === selectedFabric) || null
+  }, [selectedFabric, variants])
+
+  const variantImageKey = useMemo(() => {
+    if (!selectedFabric) return ""
+    const sizeKey = parsedSelectedSize
+      ? `${parsedSelectedSize.length}x${parsedSelectedSize.width}x${parsedSelectedSize.height}`
+      : "any-size"
+    return `${selectedFabric}::${sizeKey}`
+  }, [selectedFabric, parsedSelectedSize])
+
+  const activeImages = useMemo(() => {
+    if (lazyVariantImages && lazyVariantImages.length > 0) {
+      return lazyVariantImages
+    }
+    if (selectedVariant?.imageUrls && selectedVariant.imageUrls.length > 0) {
+      return selectedVariant.imageUrls
+    }
+    if (fallbackVariantByFabric?.imageUrls && fallbackVariantByFabric.imageUrls.length > 0) {
+      return fallbackVariantByFabric.imageUrls
+    }
+    return productImages
+  }, [selectedVariant, fallbackVariantByFabric, productImages, lazyVariantImages])
 
   const price = selectedVariant?.price ?? minVariantPrice ?? 0
   const totalPrice = price * quantity
@@ -172,6 +204,54 @@ export function ProductConfigurator({
     }
   }, [matchingVariants, selectedFabric, useCustomDimensions])
 
+  useEffect(() => {
+    setSelectedImageIndex(0)
+  }, [activeImages, setSelectedImageIndex])
+
+  useEffect(() => {
+    if (!productId || !selectedFabric || !variantImageKey) {
+      setLazyVariantImages(null)
+      return
+    }
+
+    const cachedImages = variantImageCache[variantImageKey]
+    if (cachedImages && cachedImages.length > 0) {
+      setLazyVariantImages(cachedImages)
+      return
+    }
+
+    let isMounted = true
+    const params = new URLSearchParams()
+    params.set("fabric", selectedFabric)
+    if (parsedSelectedSize) {
+      params.set("length", String(parsedSelectedSize.length))
+      params.set("width", String(parsedSelectedSize.width))
+      params.set("height", String(parsedSelectedSize.height))
+    }
+
+    const fetchVariantImages = async () => {
+      try {
+        const response = await fetch(`/api/products/${productId}/variant-images?${params.toString()}`)
+        const data = await response.json()
+        if (!isMounted || !response.ok || !data?.success) return
+        const fetchedImages = Array.isArray(data.imageUrls)
+          ? data.imageUrls.filter((url: unknown) => typeof url === "string" && !!url.trim())
+          : []
+        if (fetchedImages.length === 0) return
+        setVariantImageCache((prev) => ({ ...prev, [variantImageKey]: fetchedImages }))
+        setLazyVariantImages(fetchedImages)
+      } catch (error) {
+        console.error("[v0] Error fetching variant images:", error)
+      }
+    }
+
+    fetchVariantImages()
+
+    return () => {
+      isMounted = false
+    }
+  }, [productId, selectedFabric, parsedSelectedSize, variantImageKey, variantImageCache])
+
   const handleAddToCart = async () => {
     if (!canAddToCart) return
 
@@ -229,7 +309,7 @@ export function ProductConfigurator({
           .map((res) => ({
             id: res.product._id,
             name: res.product.productTitle,
-            image: res.product.imageUrls?.[0] || null,
+            image: res.product.primaryImage || res.product.imageUrls?.[0] || null,
           }))
       } catch (error) {
         console.error("[v0] Error fetching complementary product details:", error)
@@ -263,14 +343,14 @@ export function ProductConfigurator({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-4">
               <MagnifyImage
-                src={productImages[selectedImageIndex] || "/placeholder.svg"}
+                src={activeImages[selectedImageIndex] || "/placeholder.svg"}
                 alt={product.name}
                 className="rounded-lg bg-gray-50"
               />
 
-              {productImages.length > 1 && (
+              {activeImages.length > 1 && (
                 <div className="grid grid-cols-5 gap-2 max-w-[320px] sm:max-w-[360px]">
-                  {productImages.map((image, index) => (
+                  {activeImages.map((image, index) => (
                     <button
                       key={`${image}-${index}`}
                       onClick={() => setSelectedImageIndex(index)}

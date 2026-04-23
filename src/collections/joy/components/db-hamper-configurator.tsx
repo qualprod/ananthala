@@ -30,6 +30,7 @@ interface DbHamperConfiguratorProps {
   hamperItems: DbHamperItem[]
   hamperPrice: number
   hamperFabric: string
+  hamperFabricOptions?: string[]
   onAddToCart: (items: CartItem[]) => void
   isAddingToCart: boolean
 }
@@ -39,6 +40,7 @@ export function DbHamperConfigurator({
   hamperItems,
   hamperPrice,
   hamperFabric,
+  hamperFabricOptions = [],
   onAddToCart,
   isAddingToCart,
 }: DbHamperConfiguratorProps) {
@@ -50,11 +52,19 @@ export function DbHamperConfigurator({
   >({})
   const [selectedFabric, setSelectedFabric] = useState<string>("")
 
+  const availableHamperFabrics = useMemo(
+    () =>
+      Array.from(
+        new Set([...(hamperFabricOptions || []), ...(hamperFabric ? [hamperFabric] : [])].filter(Boolean)),
+      ),
+    [hamperFabric, hamperFabricOptions],
+  )
+
   useEffect(() => {
-    if (!selectedFabric && hamperFabric) {
-      setSelectedFabric(hamperFabric)
+    if (!selectedFabric && availableHamperFabrics.length > 0) {
+      setSelectedFabric(availableHamperFabrics[0])
     }
-  }, [hamperFabric, selectedFabric])
+  }, [availableHamperFabrics, selectedFabric])
 
   const normalizedItems = useMemo(() => {
     return (hamperItems || [])
@@ -68,7 +78,11 @@ export function DbHamperConfigurator({
 
   const handleAddToCart = () => {
     const cover = product.images?.[0] || "/placeholder.svg"
-    const fabricLabel = fabricOptions.find((f) => f.id === selectedFabric)?.name || selectedFabric || hamperFabric
+    const fabricLabel =
+      fabricOptions.find((f) => f.id === selectedFabric)?.name ||
+      selectedFabric ||
+      availableHamperFabrics[0] ||
+      hamperFabric
     const sizeParts = [normalizedItems.map((i) => i.name).join(", ")].filter(Boolean)
     const sizeInfo = sizeParts.join(" | ") || "Hamper"
     const items: CartItem[] = [
@@ -242,7 +256,7 @@ export function DbHamperConfigurator({
 
           <div className="mt-6 space-y-5">
             {/* Fabric (single option behaves like single products with 1 available fabric) */}
-            {hamperFabric && (
+            {availableHamperFabrics.length > 0 && (
               <div>
                 <label className="text-base font-medium text-foreground mb-2 block">Fabric</label>
                 <Select value={selectedFabric || undefined} onValueChange={setSelectedFabric}>
@@ -250,9 +264,7 @@ export function DbHamperConfigurator({
                     <SelectValue placeholder="Select fabric" />
                   </SelectTrigger>
                   <SelectContent>
-                    {[
-                      hamperFabric,
-                    ].map((fabricId) => {
+                    {availableHamperFabrics.map((fabricId) => {
                       const fabricOption = fabricOptions.find((fabric) => fabric.id === fabricId)
                       return (
                         <SelectItem key={fabricId} value={fabricId}>

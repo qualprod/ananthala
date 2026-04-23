@@ -33,6 +33,7 @@ interface BabyHamperProductTemplateProps {
     hamperItems: DbHamperItem[]
     hamperPrice: number
     hamperFabric: string
+    hamperFabricOptions?: string[]
   }
   detailSections?: BackendDetailSection[]
   shippingInformation?: string
@@ -85,6 +86,7 @@ export function BabyHamperProductTemplate({
           hamperItems={dbHamper.hamperItems}
           hamperPrice={dbHamper.hamperPrice}
           hamperFabric={dbHamper.hamperFabric}
+          hamperFabricOptions={dbHamper.hamperFabricOptions}
           onAddToCart={handleAddToCartWithBedsheet}
           isAddingToCart={isAddingToCart}
         />

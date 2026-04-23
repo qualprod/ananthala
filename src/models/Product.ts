@@ -9,6 +9,12 @@ export interface IProductVariant {
   fabric: string // fabric type/id
   price: number
   stock: number
+  imageUrls: string[]
+}
+
+export interface IColorOption {
+  fabric: string
+  imageUrls: string[]
 }
 
 export interface IProductDetailSection {
@@ -43,12 +49,15 @@ export interface IProduct {
   location: string
   category: string
   subCategory: string
+  primaryImage?: string
   imageUrls: string[] // Array of Vercel Blob URLs
   variants: IProductVariant[]
+  colorOptions?: IColorOption[]
   detailSections?: IProductDetailSection[]
   hamperItems?: IHamperItem[]
   hamperPrice?: number
   hamperFabric?: string
+  hamperFabricOptions?: string[]
   productRole?: "normal" | "complementary" // Type of product: normal or can be offered as free
   complementaryProductIds?: string[] // MongoDB IDs of free products
   displayOrder?: number
@@ -108,6 +117,33 @@ const ProductVariantSchema = new Schema<IProductVariant>(
       required: [true, "Stock is required"],
       min: [0, "Stock cannot be negative"],
       default: 0,
+    },
+    imageUrls: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (v: string[]) => Array.isArray(v) && v.length <= 6,
+        message: "Each variant can have up to 6 images",
+      },
+    },
+  },
+  { _id: false },
+)
+
+const ColorOptionSchema = new Schema<IColorOption>(
+  {
+    fabric: {
+      type: String,
+      required: [true, "Fabric is required for color options"],
+      trim: true,
+    },
+    imageUrls: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (v: string[]) => Array.isArray(v) && v.length > 0 && v.length <= 6,
+        message: "Each color option must have between 1 and 6 images",
+      },
     },
   },
   { _id: false },
@@ -260,6 +296,11 @@ const ProductSchema = new Schema<IProduct>(
       required: false,
       trim: true,
     },
+    primaryImage: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     imageUrls: {
       type: [String],
       default: [],
@@ -284,6 +325,18 @@ const ProductSchema = new Schema<IProduct>(
           return Array.isArray(v) && v.length > 0
         },
         message: "At least one product variant is required",
+      },
+    },
+    colorOptions: {
+      type: [ColorOptionSchema],
+      default: [],
+      validate: {
+        validator: function (this: any, v: IColorOption[]) {
+          const productType = getProductTypeForValidation(this)
+          if (productType === "hamper") return true
+          return Array.isArray(v) && v.length > 0
+        },
+        message: "At least one color option is required",
       },
     },
     detailSections: {
@@ -321,9 +374,29 @@ const ProductSchema = new Schema<IProduct>(
         validator: function (this: any, v: string) {
           const productType = getProductTypeForValidation(this)
           if (productType !== "hamper") return true
-          return typeof v === "string" && v.trim().length > 0
+          const options =
+            Array.isArray(this?.hamperFabricOptions) && this.hamperFabricOptions.length > 0
+              ? this.hamperFabricOptions
+              : Array.isArray(this?.getUpdate?.()?.$set?.hamperFabricOptions)
+                ? this.getUpdate().$set.hamperFabricOptions
+                : Array.isArray(this?.getUpdate?.()?.hamperFabricOptions)
+                  ? this.getUpdate().hamperFabricOptions
+                  : []
+          return (typeof v === "string" && v.trim().length > 0) || options.length > 0
         },
-        message: "Hamper fabric is required for hamper products",
+        message: "At least one hamper fabric option is required for hamper products",
+      },
+    },
+    hamperFabricOptions: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: function (this: any, v: string[]) {
+          const productType = getProductTypeForValidation(this)
+          if (productType !== "hamper") return true
+          return Array.isArray(v) && v.length > 0 && v.every((option) => typeof option === "string" && !!option.trim())
+        },
+        message: "At least one hamper fabric option is required for hamper products",
       },
     },
     productRole: {

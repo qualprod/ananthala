@@ -50,6 +50,7 @@ interface EditableProduct {
   imageUrls: string[]
   hamperPrice?: number
   hamperFabric?: string
+  hamperFabricOptions?: string[]
   variants: Array<{
     variantId?: string
     weight: number
@@ -64,6 +65,11 @@ interface EditableProduct {
     fabric?: string
     price: number
     stock: number
+    imageUrls?: string[]
+  }>
+  colorOptions?: Array<{
+    fabric: string
+    imageUrls: string[]
   }>
   detailSections?: Array<{
     title?: string
@@ -100,6 +106,7 @@ const createEmptyFormData = (): ProductFormData => ({
     productRole: "normal",
     hamperPrice: "",
     hamperFabric: "",
+    hamperFabricOptions: [],
     variants: [
       {
         id: crypto.randomUUID(),
@@ -110,6 +117,9 @@ const createEmptyFormData = (): ProductFormData => ({
         fabric: "",
         price: "",
         stock: "",
+        imageUrls: [],
+        imageFiles: [],
+        imagePreviews: [],
       },
     ],
     detailSections: [],
@@ -129,6 +139,9 @@ export default function AddProductModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const isEditMode = mode === "edit" && !!productToEdit
+
+  const getVariantImageCount = (variant: ProductVariant) =>
+    (variant.imageUrls?.length || 0) + (variant.imageFiles?.length || 0)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -174,11 +187,62 @@ export default function AddProductModal({
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const addHamperFabricOption = () => {
+    const option = (formData.hamperFabric || "").trim()
+    if (!option) return
+    setFormData((prev) => ({
+      ...prev,
+      hamperFabricOptions: Array.from(new Set([...(prev.hamperFabricOptions || []), option])),
+    }))
+  }
+
+  const removeHamperFabricOption = (optionToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      hamperFabricOptions: (prev.hamperFabricOptions || []).filter((option) => option !== optionToRemove),
+      hamperFabric:
+        prev.hamperFabric === optionToRemove ? (prev.hamperFabricOptions || []).find((option) => option !== optionToRemove) || "" : prev.hamperFabric,
+    }))
+  }
+
   const handleVariantChange = (variantId: string, field: keyof ProductVariant, value: string) => {
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.map((variant) => (variant.id === variantId ? { ...variant, [field]: value } : variant)),
     }))
+  }
+
+  const handleVariantImageChange = (variantId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const nextFiles = Array.from(files).filter((file) => {
+      if (file.size > 25 * 1024 * 1024) {
+        alert(`File ${file.name} size exceeds 25 MB`)
+        return false
+      }
+      return true
+    })
+
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.map((variant) => {
+        if (variant.id !== variantId) return variant
+        const existingFiles = variant.imageFiles || []
+        const existingPreviews = variant.imagePreviews || []
+        const existingUrls = variant.imageUrls || []
+        const availableSlots = Math.max(0, 6 - (existingFiles.length + existingUrls.length))
+        const filesToAdd = nextFiles.slice(0, availableSlots)
+        const previewsToAdd = filesToAdd.map((file) => URL.createObjectURL(file))
+        return {
+          ...variant,
+          imageFiles: [...existingFiles, ...filesToAdd],
+          imagePreviews: [...existingPreviews, ...previewsToAdd],
+        }
+      }),
+    }))
+
+    e.target.value = ""
   }
 
   const handleDetailSectionChange = (
@@ -289,6 +353,9 @@ export default function AddProductModal({
           fabric: "",
           price: "",
           stock: "",
+          imageUrls: [],
+          imageFiles: [],
+          imagePreviews: [],
         },
       ],
     }))
@@ -380,6 +447,8 @@ export default function AddProductModal({
       alert("At least one variant is required")
       return
     }
+    const variantToRemove = formData.variants.find((variant) => variant.id === variantId)
+    ;(variantToRemove?.imagePreviews || []).forEach((preview) => URL.revokeObjectURL(preview))
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.filter((variant) => variant.id !== variantId),
@@ -421,8 +490,36 @@ export default function AddProductModal({
       return
     }
 
-    if (formData.productType === "single" && productImages.length === 0) {
-      setSubmitError("Please upload at least one product image")
+    if (formData.productType === "hamper" && (formData.hamperFabricOptions || []).length === 0) {
+      setSubmitError("Please add at least one hamper fabric option")
+      setIsSubmitting(false)
+      return
+    }
+
+    if (formData.productType === "single") {
+      const hasAllVariantFabrics = formData.variants.every((variant) => !!variant.fabric?.trim())
+      if (!hasAllVariantFabrics) {
+        setSubmitError("Please select fabric for all variants before uploading images")
+        setIsSubmitting(false)
+        return
+      }
+      const uniqueFabrics = Array.from(new Set(formData.variants.map((variant) => variant.fabric.trim()).filter(Boolean)))
+      const missingFabric = uniqueFabrics.find((fabric) => {
+        const representative = formData.variants.find((variant) => variant.fabric.trim() === fabric)
+        return !representative || getVariantImageCount(representative) === 0
+      })
+      if (missingFabric) {
+        setSubmitError(`Please upload at least one image for fabric "${missingFabric}"`)
+        setIsSubmitting(false)
+        return
+      }
+    }
+
+    if (
+      formData.productType === "single" &&
+      formData.variants.some((variant) => !variant.fabric?.trim())
+    ) {
+      setSubmitError("Please select fabric for all variants")
       setIsSubmitting(false)
       return
     }
@@ -467,6 +564,25 @@ export default function AddProductModal({
             (item.variants && item.variants.length > 0),
         )
 
+      const cleanedVariants =
+        formData.productType === "hamper"
+          ? []
+          : formData.variants.map((variant) => {
+              const imageKeys = (variant.imageFiles || []).map((_, index) => `variantImage_${variant.id}_${index}`)
+              return {
+                id: variant.id,
+                weight: variant.weight,
+                length: variant.length,
+                width: variant.width,
+                height: variant.height,
+                fabric: variant.fabric,
+                price: variant.price,
+                stock: variant.stock,
+                imageUrls: variant.imageUrls || [],
+                imageKeys,
+              }
+            })
+
       formDataToSend.append("productType", formData.productType)
       formDataToSend.append("productRole", formData.productRole || "normal")
       formDataToSend.append("productTitle", formData.productTitle)
@@ -479,7 +595,8 @@ export default function AddProductModal({
       formDataToSend.append("subCategory", formData.subCategory)
       if (formData.productType === "hamper") {
         formDataToSend.append("hamperPrice", String(formData.hamperPrice || ""))
-        formDataToSend.append("hamperFabric", String(formData.hamperFabric || ""))
+        formDataToSend.append("hamperFabric", String(formData.hamperFabric || formData.hamperFabricOptions?.[0] || ""))
+        formDataToSend.append("hamperFabricOptions", JSON.stringify(formData.hamperFabricOptions || []))
       }
       formDataToSend.append("detailSections", JSON.stringify(cleanedDetailSections))
       formDataToSend.append("hamperItems", JSON.stringify(cleanedHamperItems))
@@ -502,8 +619,15 @@ export default function AddProductModal({
         })
       })
 
-      const variantsToSend = formData.productType === "hamper" ? [] : formData.variants
-      formDataToSend.append("variants", JSON.stringify(variantsToSend))
+      formData.variants.forEach((variant) => {
+        if (!variant.imageFiles || variant.imageFiles.length === 0) return
+        variant.imageFiles.forEach((file, index) => {
+          const imageKey = `variantImage_${variant.id}_${index}`
+          formDataToSend.append(imageKey, file)
+        })
+      })
+
+      formDataToSend.append("variants", JSON.stringify(cleanedVariants))
 
       // For hampers, we use a single cover image (image_0). For singles, up to 6 images (image_0..image_5).
       productImages.forEach((image, index) => {
@@ -573,6 +697,11 @@ export default function AddProductModal({
         item.imagePreviews.forEach((preview) => URL.revokeObjectURL(preview))
       }
     })
+    formData.variants.forEach((variant) => {
+      if (variant.imagePreviews && variant.imagePreviews.length > 0) {
+        variant.imagePreviews.forEach((preview) => URL.revokeObjectURL(preview))
+      }
+    })
     productImages.forEach((image) => {
       if (image.file && image.preview) {
         URL.revokeObjectURL(image.preview)
@@ -594,19 +723,27 @@ export default function AddProductModal({
       return
     }
 
+    const colorOptionByFabric = new Map(
+      (productToEdit.colorOptions || []).map((option) => [option.fabric, option.imageUrls || []]),
+    )
+
     const mappedVariants = (productToEdit.variants || []).map((variant) => {
       const length = variant.dimensions?.length ?? variant.length ?? 0
       const width = variant.dimensions?.width ?? variant.width ?? 0
       const height = variant.dimensions?.height ?? variant.height ?? 0
+      const fabricId = variant.fabric || ""
       return {
         id: variant.variantId || crypto.randomUUID(),
         weight: String(variant.weight ?? ""),
         length: String(length || ""),
         width: String(width || ""),
         height: String(height || ""),
-        fabric: variant.fabric || "",
+        fabric: fabricId,
         price: String(variant.price ?? ""),
         stock: String(variant.stock ?? ""),
+        imageUrls: variant.imageUrls?.length ? variant.imageUrls : colorOptionByFabric.get(fabricId) || [],
+        imageFiles: [],
+        imagePreviews: [],
       }
     })
 
@@ -624,6 +761,17 @@ export default function AddProductModal({
       productRole: productToEdit.productRole || "normal",
       hamperPrice: productToEdit.productType === "hamper" ? String(productToEdit.hamperPrice ?? "") : "",
       hamperFabric: productToEdit.productType === "hamper" ? String(productToEdit.hamperFabric ?? "") : "",
+      hamperFabricOptions:
+        productToEdit.productType === "hamper"
+          ? Array.from(
+              new Set(
+                [
+                  ...(productToEdit.hamperFabricOptions || []),
+                  ...(productToEdit.hamperFabric ? [productToEdit.hamperFabric] : []),
+                ].filter((option) => typeof option === "string" && !!option.trim()),
+              ),
+            )
+          : [],
       variants:
         mappedVariants.length > 0
           ? mappedVariants
@@ -637,6 +785,9 @@ export default function AddProductModal({
                 fabric: "",
                 price: "",
                 stock: "",
+                imageUrls: [],
+                imageFiles: [],
+                imagePreviews: [],
               },
             ],
       detailSections: (productToEdit.detailSections || []).map((section) => ({
@@ -838,28 +989,55 @@ export default function AddProductModal({
                   <FabricSelector
                     value={formData.hamperFabric || ""}
                     onValueChange={(value) => handleInputChange("hamperFabric", value)}
-                    label="Hamper Fabric"
+                    label="Hamper Fabric Picker"
                     htmlFor="hamperFabric"
                     triggerClassName="border-[#D9CFC7] h-11 sm:h-12"
                   />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={addHamperFabricOption}
+                      className="bg-[#6D4530] hover:bg-[#8B5A3C] text-white"
+                    >
+                      Add Fabric Option
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(formData.hamperFabricOptions || []).map((option) => (
+                      <span
+                        key={option}
+                        className="inline-flex items-center gap-2 rounded-full border border-[#D9CFC7] bg-white px-3 py-1 text-sm text-[#6D4530]"
+                      >
+                        {fabricOptions.find((fabric) => fabric.id === option)?.name || option}
+                        <button
+                          type="button"
+                          onClick={() => removeHamperFabricOption(option)}
+                          className="text-red-600 hover:text-red-700"
+                          aria-label={`Remove ${option}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Product Images / Hamper Cover Image */}
-            {(formData.productType === "single" || formData.productType === "hamper") && (
+            {/* Hamper Cover Image */}
+            {formData.productType === "hamper" && (
               <div className="space-y-4 sm:space-y-5">
                 <div className="flex items-center justify-between border-b border-[#D9CFC7] pb-2">
                   <h3 className="text-base sm:text-lg font-semibold text-[#6D4530]">
-                    {formData.productType === "hamper" ? "Hamper Cover Image" : "Product Images"}
+                    Hamper Cover Image
                   </h3>
                   <span className="text-xs sm:text-sm text-[#8B5A3C]/70">
-                    {productImages.length}/{formData.productType === "hamper" ? 1 : 6} images
+                    {productImages.length}/1 images
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                  {productImages.length < (formData.productType === "hamper" ? 1 : 6) && (
+                  {productImages.length < 1 && (
                     <label
                       htmlFor="imageUpload"
                       className="border-2 border-dashed border-[#D9CFC7] rounded-lg aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-[#8B5A3C] hover:bg-[#F5F1ED]/50 transition-colors"
@@ -873,7 +1051,7 @@ export default function AddProductModal({
                         id="imageUpload"
                         type="file"
                         accept="image/*"
-                        multiple={formData.productType !== "hamper"}
+                        multiple={false}
                         className="hidden"
                         onChange={handleImageUpload}
                       />
@@ -1499,6 +1677,93 @@ export default function AddProductModal({
                         className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3"
                         required
                       />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`variant-image-${variant.id}`} className="text-sm text-[#6D4530]">
+                        Variant Images*
+                      </Label>
+                      <span className="text-xs text-[#8B5A3C]/70">{getVariantImageCount(variant)}/6</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {getVariantImageCount(variant) < 6 && (
+                        <label
+                          htmlFor={`variant-image-${variant.id}`}
+                          className="border-2 border-dashed border-[#D9CFC7] rounded-lg aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-[#8B5A3C] hover:bg-[#F5F1ED]/50 transition-colors"
+                        >
+                          <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-[#8B5A3C]/50 mb-2" />
+                          <p className="text-[10px] sm:text-xs font-medium text-[#8B5A3C] text-center px-1">Click to Upload</p>
+                          <p className="text-[9px] sm:text-[10px] text-[#8B5A3C]/70 mt-1">(Max 25 Mb)</p>
+                          <input
+                            id={`variant-image-${variant.id}`}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleVariantImageChange(variant.id, e)}
+                          />
+                        </label>
+                      )}
+
+                      {(variant.imageUrls || []).map((url, imageIndex) => (
+                        <div key={`${variant.id}-existing-${imageIndex}`} className="relative aspect-square group">
+                          <img
+                            src={url || "/placeholder.svg"}
+                            alt={`Variant ${index + 1}`}
+                            className="w-full h-full object-cover rounded-lg border border-[#D9CFC7]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                variants: prev.variants.map((entry) => {
+                                  if (entry.id !== variant.id) return entry
+                                  const nextUrls = (entry.imageUrls || []).filter((_, idx) => idx !== imageIndex)
+                                  return { ...entry, imageUrls: nextUrls }
+                                }),
+                              }))
+                            }
+                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Remove image"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+
+                      {(variant.imagePreviews || []).map((preview, imageIndex) => (
+                        <div key={`${variant.id}-preview-${imageIndex}`} className="relative aspect-square group">
+                          <img
+                            src={preview}
+                            alt={`Variant ${index + 1}`}
+                            className="w-full h-full object-cover rounded-lg border border-[#D9CFC7]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                variants: prev.variants.map((entry) => {
+                                  if (entry.id !== variant.id) return entry
+                                  const nextFiles = (entry.imageFiles || []).filter((_, idx) => idx !== imageIndex)
+                                  const nextPreviews = (entry.imagePreviews || []).filter((_, idx) => idx !== imageIndex)
+                                  if (entry.imagePreviews?.[imageIndex]) {
+                                    URL.revokeObjectURL(entry.imagePreviews[imageIndex]!)
+                                  }
+                                  return { ...entry, imageFiles: nextFiles, imagePreviews: nextPreviews }
+                                }),
+                              }))
+                            }
+                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Remove image"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
 

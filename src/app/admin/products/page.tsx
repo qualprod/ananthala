@@ -15,6 +15,8 @@ interface Product {
   subCategory: string
   hamperPrice?: number
   productRole?: "normal" | "complementary"
+  hamperFabric?: string
+  hamperFabricOptions?: string[]
   variants: Array<{
     variantId: string
     weight: number
@@ -37,6 +39,7 @@ interface Product {
       stock?: number
     }>
   }>
+  primaryImage?: string
   imageUrls: string[]
   detailSections?: Array<{
     title?: string
@@ -76,7 +79,7 @@ export default function ProductManagementPage() {
   const fetchProducts = async () => {
     try {
       setIsRefreshing(true)
-      const response = await fetch("/api/products")
+      const response = await fetch("/api/products?includeVariantImages=true")
       const data = await response.json()
 
       if (data.success) {
@@ -383,7 +386,7 @@ export default function ProductManagementPage() {
                   >
                     <GripVertical className="h-4 w-4 text-foreground cursor-grab" />
                     <img
-                      src={product.imageUrls[0] || "/placeholder.svg"}
+                      src={product.primaryImage || product.imageUrls[0] || "/placeholder.svg"}
                       alt={product.productTitle}
                       className="w-10 h-10 rounded object-cover"
                     />
@@ -421,7 +424,7 @@ export default function ProductManagementPage() {
                   <tr key={product._id} className="border-b border-[#D9CFC7] hover:bg-[#F5F1ED]/50">
                     <td className="py-4 px-4">
                       <img
-                        src={product.imageUrls[0] || "/placeholder.svg"}
+                        src={product.primaryImage || product.imageUrls[0] || "/placeholder.svg"}
                         alt={product.productTitle}
                         className="w-12 h-12 object-cover rounded"
                       />
@@ -500,7 +503,7 @@ export default function ProductManagementPage() {
               <div key={product._id} className="border border-[#D9CFC7] rounded-lg p-4 space-y-3">
                 <div className="flex gap-3">
                   <img
-                    src={product.imageUrls[0] || "/placeholder.svg"}
+                    src={product.primaryImage || product.imageUrls[0] || "/placeholder.svg"}
                     alt={product.productTitle}
                     className="w-16 h-16 object-cover rounded flex-shrink-0"
                   />

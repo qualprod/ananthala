@@ -20,6 +20,8 @@ function isValidObjectId(id: string): boolean {
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
+    const { searchParams } = new URL(request.url)
+    const includeVariantImages = searchParams.get("includeVariantImages") === "true"
 
     // Validate if the ID is a valid MongoDB ObjectId
     if (!isValidObjectId(id)) {
@@ -31,7 +33,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     await connectDB()
 
-    const product = await Product.findById(id).lean()
+    const projection = includeVariantImages ? {} : { "variants.imageUrls": 0 }
+    const product = await Product.findById(id, projection).lean()
 
     if (!product) {
       return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 })
@@ -181,6 +184,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const hamperItemsJson = (formData.get("hamperItems") as string) ?? ""
     const hamperPriceRaw = formData.get("hamperPrice") as string | null
     const hamperFabric = (formData.get("hamperFabric") as string | null) ?? ""
+    const hamperFabricOptionsJson = (formData.get("hamperFabricOptions") as string | null) ?? "[]"
 
     if (
       !productTitle ||
@@ -222,7 +226,18 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       )
     }
 
-    let variants: any[] = []
+    let variants: Array<{
+      id?: string
+      weight?: number | string
+      length?: number | string
+      width?: number | string
+      height?: number | string
+      fabric?: string
+      price?: number | string
+      stock?: number | string
+      imageUrls?: string[]
+      imageKeys?: string[]
+    }> = []
     if (variantsJson) {
       try {
         variants = JSON.parse(variantsJson)
@@ -298,11 +313,29 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         ? Number.parseFloat(String(hamperPriceRaw))
         : undefined
     if (productType === "hamper") {
-      if (!hamperFabric || !hamperFabric.trim()) {
-        return NextResponse.json({ success: false, message: "Hamper fabric is required" }, { status: 400 })
-      }
       if (!hamperPrice || !Number.isFinite(hamperPrice) || hamperPrice <= 0) {
         return NextResponse.json({ success: false, message: "Hamper price is required" }, { status: 400 })
+      }
+    }
+
+    let hamperFabricOptions: string[] = []
+    if (productType === "hamper") {
+      try {
+        const parsed = JSON.parse(hamperFabricOptionsJson)
+        hamperFabricOptions = Array.isArray(parsed)
+          ? parsed.filter((option) => typeof option === "string" && !!option.trim()).map((option) => option.trim())
+          : []
+      } catch {
+        hamperFabricOptions = []
+      }
+
+      if (hamperFabric.trim()) {
+        hamperFabricOptions = [hamperFabric.trim(), ...hamperFabricOptions]
+      }
+      hamperFabricOptions = Array.from(new Set(hamperFabricOptions))
+
+      if (hamperFabricOptions.length === 0) {
+        return NextResponse.json({ success: false, message: "At least one hamper fabric option is required" }, { status: 400 })
       }
     }
 
@@ -335,6 +368,30 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       }
     }
 
+    for (const variant of variants) {
+      const imageKeys = Array.isArray(variant.imageKeys) ? variant.imageKeys : []
+      const existingUrls = Array.isArray(variant.imageUrls)
+        ? variant.imageUrls.filter((url) => typeof url === "string" && !!url.trim())
+        : []
+      const uploadedUrls: string[] = []
+
+      for (const imageKey of imageKeys) {
+        const file = formData.get(imageKey)
+        if (!isFileLike(file)) continue
+
+        const timestamp = Date.now()
+        const filename = `products/${sellerEmail}/variants/${timestamp}_${(file as any).name ?? "image"}`
+        const blob = await put(filename, file, {
+          access: "public",
+          addRandomSuffix: true,
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        })
+        uploadedUrls.push(blob.url)
+      }
+
+      variant.imageUrls = [...existingUrls, ...uploadedUrls]
+    }
+
     const processedVariants =
       productType === "single"
         ? variants.map((variant, index) => {
@@ -358,6 +415,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
               throw new Error(`Variant ${index + 1} has values that are too small or negative.`)
             }
 
+            const imageUrls = Array.isArray(variant.imageUrls)
+              ? variant.imageUrls.filter((url) => typeof url === "string" && !!url.trim())
+              : []
+
             return {
               variantId: variant.id,
               weight,
@@ -367,9 +428,41 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
               fabric,
               price,
               stock,
+              imageUrls,
             }
           })
         : []
+
+    const colorOptionsMap = new Map<string, string[]>()
+    if (productType === "single") {
+      for (const variant of processedVariants) {
+        const existing = colorOptionsMap.get(variant.fabric) || []
+        const merged = [...existing, ...(variant.imageUrls || [])].filter(
+          (url, idx, arr) => typeof url === "string" && !!url.trim() && arr.indexOf(url) === idx,
+        )
+        if (merged.length > 0) {
+          colorOptionsMap.set(variant.fabric, merged.slice(0, 6))
+        }
+      }
+
+      const uniqueFabrics = Array.from(new Set(processedVariants.map((variant) => variant.fabric)))
+      const missingFabric = uniqueFabrics.find((fabric) => (colorOptionsMap.get(fabric) || []).length === 0)
+      if (missingFabric) {
+        throw new Error(`At least one image is required for fabric "${missingFabric}".`)
+      }
+    }
+
+    const colorOptions = Array.from(colorOptionsMap.entries()).map(([fabric, imageUrls]) => ({
+      fabric,
+      imageUrls,
+    }))
+    const normalizedVariants =
+      productType === "single"
+        ? processedVariants.map((variant) => ({
+            ...variant,
+            imageUrls: [],
+          }))
+        : processedVariants
 
     let existingImageUrls: string[] = []
     try {
@@ -388,16 +481,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       }
     }
 
-    if (productType === "single" && existingImageUrls.length + newImageFiles.length === 0) {
-      return NextResponse.json({ success: false, message: "At least one product image is required" }, { status: 400 })
-    }
-
     if (existingImageUrls.length + newImageFiles.length > 6) {
       return NextResponse.json({ success: false, message: "Maximum 6 images allowed" }, { status: 400 })
     }
 
     const needsUploads =
       newImageFiles.length > 0 ||
+      variants.some((variant) => Array.isArray(variant.imageKeys) && variant.imageKeys.length > 0) ||
       detailSections.some((section) => section.imageKey) ||
       hamperItems.some((item) => Array.isArray(item.imageKeys) && item.imageKeys.length > 0)
     if (needsUploads && !process.env.BLOB_READ_WRITE_TOKEN) {
@@ -532,6 +622,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     const nextImageUrls = [...existingImageUrls, ...uploadedImageUrls]
+    const primaryImage =
+      nextImageUrls[0] ||
+      colorOptions[0]?.imageUrls?.[0] ||
+      (productType === "single" ? processedVariants[0]?.imageUrls?.[0] : undefined) ||
+      ""
+    const resolvedImageUrls =
+      nextImageUrls.length > 0
+        ? nextImageUrls
+        : productType === "single"
+          ? (processedVariants[0]?.imageUrls?.slice(0, 1) ?? [])
+          : []
 
     const product = await Product.findByIdAndUpdate(
       id,
@@ -546,12 +647,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         category: categoryLower,
         subCategory: subCategory || undefined,
         productRole: productRole === "complementary" ? "complementary" : "normal",
-        imageUrls: nextImageUrls,
-        variants: processedVariants,
+        primaryImage,
+        imageUrls: resolvedImageUrls,
+        variants: normalizedVariants,
+        colorOptions: productType === "single" ? colorOptions : [],
         detailSections,
         hamperItems: productType === "hamper" ? processedHamperItems : [],
         hamperPrice: productType === "hamper" ? hamperPrice : undefined,
-        hamperFabric: productType === "hamper" ? hamperFabric.trim() : undefined,
+        hamperFabric: productType === "hamper" ? hamperFabricOptions[0] : undefined,
+        hamperFabricOptions: productType === "hamper" ? hamperFabricOptions : [],
       },
       { new: true, runValidators: true },
     )
@@ -562,9 +666,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const nextHamperImageUrls = processedHamperItems.flatMap((item) => item.imageUrls || []).filter(Boolean)
     const removedHamperImageUrls = previousHamperImageUrls.filter((url: string) => !nextHamperImageUrls.includes(url))
 
-    const removedImageUrls = existingProduct.imageUrls.filter((url: string) => !nextImageUrls.includes(url))
+    const removedImageUrls = existingProduct.imageUrls.filter((url: string) => !resolvedImageUrls.includes(url))
+    const previousVariantImageUrls = Array.isArray((existingProduct as any).variants)
+      ? (existingProduct as any).variants.flatMap((variant: any) => variant.imageUrls || []).filter(Boolean)
+      : []
+    const previousColorOptionImageUrls = Array.isArray((existingProduct as any).colorOptions)
+      ? (existingProduct as any).colorOptions.flatMap((option: any) => option.imageUrls || []).filter(Boolean)
+      : []
+    const nextColorOptionImageUrls = colorOptions.flatMap((option: any) => option.imageUrls || []).filter(Boolean)
+    const nextVariantImageUrls = normalizedVariants.flatMap((variant: any) => variant.imageUrls || []).filter(Boolean)
+    const removedVariantImageUrls = previousVariantImageUrls.filter(
+      (url: string) => !nextVariantImageUrls.includes(url) && !nextColorOptionImageUrls.includes(url),
+    )
+    const removedColorOptionImageUrls = previousColorOptionImageUrls.filter(
+      (url: string) => !nextColorOptionImageUrls.includes(url),
+    )
     if (process.env.BLOB_READ_WRITE_TOKEN) {
-      const urlsToDelete = [...removedImageUrls, ...removedHamperImageUrls]
+      const urlsToDelete = [
+        ...removedImageUrls,
+        ...removedHamperImageUrls,
+        ...removedVariantImageUrls,
+        ...removedColorOptionImageUrls,
+      ]
       if (urlsToDelete.length > 0) {
         await Promise.all(
           urlsToDelete.map(async (imageUrl) => {

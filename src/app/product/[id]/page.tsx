@@ -47,6 +47,7 @@ interface ApiProductVariant {
   fabric: string
   price: number
   stock: number
+  imageUrls?: string[]
 }
 
 interface ApiProductDetailSection {
@@ -84,12 +85,18 @@ interface ApiProduct {
   location: string
   category: string
   subCategory?: string
+  primaryImage?: string
   imageUrls: string[]
+  colorOptions?: Array<{
+    fabric: string
+    imageUrls: string[]
+  }>
   variants: ApiProductVariant[]
   detailSections?: ApiProductDetailSection[]
   hamperItems?: ApiHamperItem[]
   hamperPrice?: number
   hamperFabric?: string
+  hamperFabricOptions?: string[]
   status: "visible" | "hidden"
 }
 
@@ -102,6 +109,7 @@ const formatVariantSize = (variant: ApiProductVariant) => {
 
 const mapApiProductToDetail = (product: ApiProduct): ProductDetail => {
   const variants = Array.isArray(product.variants) ? product.variants : []
+  const colorOptions = Array.isArray(product.colorOptions) ? product.colorOptions : []
     const hamperItems = Array.isArray(product.hamperItems) ? product.hamperItems : []
     const dbHamperPrice = typeof product.hamperPrice === "number" && Number.isFinite(product.hamperPrice) ? product.hamperPrice : null
     const minVariantPrice = variants.reduce((currentMin, variant) => Math.min(currentMin, variant.price), Number.POSITIVE_INFINITY)
@@ -134,7 +142,14 @@ const mapApiProductToDetail = (product: ApiProduct): ProductDetail => {
     rating: 0,
     reviews: 0,
     description: product.description,
-    images: product.imageUrls?.length ? product.imageUrls : ["/placeholder.svg"],
+    images:
+      colorOptions[0]?.imageUrls?.length
+        ? colorOptions[0].imageUrls
+        : product.primaryImage
+      ? [product.primaryImage, ...(product.imageUrls || []).filter((url) => url !== product.primaryImage)]
+      : product.imageUrls?.length
+        ? product.imageUrls
+        : ["/placeholder.svg"],
     firmness: "Standard",
     height: variants[0]?.height ? `${variants[0].height} cm` : "Standard",
     materials: [
@@ -370,6 +385,7 @@ export default function ProductDetailPage() {
 
   const handleHamperAddToCart = async () => {
     const hamperImage =
+      rawApiProduct?.primaryImage ||
       rawApiProduct?.imageUrls?.[0] ||
       hamperItems.find((item) => item.imageUrls?.[0])?.imageUrls?.[0] ||
       "/placeholder.svg"
@@ -475,7 +491,7 @@ export default function ProductDetailPage() {
                 rawApiProduct?.productType === "hamper" &&
                 Array.isArray(rawApiProduct.hamperItems) &&
                 typeof rawApiProduct.hamperPrice === "number" &&
-                !!rawApiProduct.hamperFabric
+                (!!rawApiProduct.hamperFabric || (rawApiProduct.hamperFabricOptions || []).length > 0)
                   ? {
                       hamperItems: (rawApiProduct.hamperItems || []).map((item) => ({
                         name: item.name,
@@ -490,6 +506,7 @@ export default function ProductDetailPage() {
                       })),
                       hamperPrice: rawApiProduct.hamperPrice,
                       hamperFabric: rawApiProduct.hamperFabric,
+                      hamperFabricOptions: rawApiProduct.hamperFabricOptions || [],
                     }
                   : undefined
               }
@@ -724,6 +741,7 @@ export default function ProductDetailPage() {
                     </section>
                   ) : (
                     <ProductConfigurator
+                      productId={rawApiProduct?._id}
                       product={product}
                       variants={rawApiProduct?.variants || []}
                       onAddToCart={handleAddToCart}

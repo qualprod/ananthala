@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         { subCategory: { $regex: searchLower, $options: "i" } },
       ],
     })
-      .select("_id productTitle description category subCategory imageUrls variants hamperPrice")
+      .select("_id productTitle description category subCategory primaryImage imageUrls variants hamperPrice")
       .limit(limit)
       .lean()
 
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       description: product.description?.substring(0, 100) || "",
       category: product.category,
       subCategory: product.subCategory,
-      image: product.imageUrls?.[0] || "/placeholder.png",
+      image: product.primaryImage || product.imageUrls?.[0] || "/placeholder.png",
       price:
         typeof product.hamperPrice === "number"
           ? product.hamperPrice

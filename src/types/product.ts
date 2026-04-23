@@ -9,6 +9,10 @@ export interface ProductVariant {
   fabric: string // fabric type/id
   price: string
   stock: string
+  imageUrls?: string[]
+  imageFiles?: File[]
+  imagePreviews?: string[]
+  imageKeys?: string[]
 }
 
 export interface ProductDetailSectionInput {
@@ -55,6 +59,7 @@ export interface ProductFormData {
   productRole?: "normal" | "complementary"
   hamperPrice?: string
   hamperFabric?: string
+  hamperFabricOptions?: string[]
   variants: ProductVariant[]
   detailSections: ProductDetailSectionInput[]
   hamperItems: HamperItemInput[]
