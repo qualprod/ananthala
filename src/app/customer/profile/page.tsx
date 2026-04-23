@@ -14,6 +14,17 @@ import { splitPhoneNumber, withCountryCode } from "@/lib/phone"
 
 const GoogleMapsPicker = lazy(() => import("@/components/location/google-maps-picker"))
 
+// Suspense fallback for Maps
+function GoogleMapsPickerFallback() {
+  return (
+    <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-gray-600">Loading map...</p>
+      </div>
+    </div>
+  )
+}
+
 interface Address {
   _id?: string
   label: string
@@ -650,7 +661,7 @@ export default function ProfilePage() {
       </Card>
 
       {showMapPicker && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<GoogleMapsPickerFallback />}>
           <GoogleMapsPicker
             open={showMapPicker}
             onClose={() => setShowMapPicker(false)}
