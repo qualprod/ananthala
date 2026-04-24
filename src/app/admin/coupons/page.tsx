@@ -295,7 +295,9 @@ export default function AdminCouponManagementPage() {
                   placeholder="e.g., SAVE20"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold mb-3"
+                  className={`pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base mb-3 ${
+                    formData.code ? "!font-semibold" : "font-normal"
+                  }`}
                   disabled={isSubmitting}
                 />
               </div>
@@ -310,7 +312,9 @@ export default function AdminCouponManagementPage() {
                     placeholder="10"
                     value={formData.discount}
                     onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-                    className="border-[#D9CFC7] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C]"
+                    className={`border-[#D9CFC7] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C] ${
+                      formData.discount ? "!font-semibold" : "font-normal"
+                    }`}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -322,7 +326,10 @@ export default function AdminCouponManagementPage() {
                     value={formData.type}
                     onValueChange={(value) => setFormData({ ...formData, type: value as any })}
                   >
-                    <SelectTrigger className="border-[#D9CFC7] focus:border-[#8B5A3C]" disabled={isSubmitting}>
+                    <SelectTrigger
+                      className={`border-[#D9CFC7] focus:border-[#8B5A3C] ${formData.type ? "!font-semibold" : "font-normal"}`}
+                      disabled={isSubmitting}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -343,7 +350,9 @@ export default function AdminCouponManagementPage() {
                     placeholder="500"
                     value={formData.minPurchase}
                     onChange={(e) => setFormData({ ...formData, minPurchase: e.target.value })}
-                    className="border-[#D9CFC7] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C]"
+                    className={`border-[#D9CFC7] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C] ${
+                      formData.minPurchase ? "!font-semibold" : "font-normal"
+                    }`}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -357,7 +366,9 @@ export default function AdminCouponManagementPage() {
                     placeholder="100"
                     value={formData.maxDiscount}
                     onChange={(e) => setFormData({ ...formData, maxDiscount: e.target.value })}
-                    className="border-[#D9CFC7] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C]"
+                    className={`border-[#D9CFC7] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C] ${
+                      formData.maxDiscount ? "!font-semibold" : "font-normal"
+                    }`}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -373,7 +384,9 @@ export default function AdminCouponManagementPage() {
                     placeholder="100"
                     value={formData.usageLimit}
                     onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
-                    className="border-[#D9CFC7] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C]"
+                    className={`border-[#D9CFC7] placeholder:text-[#999999] placeholder:italic focus:border-[#8B5A3C] ${
+                      formData.usageLimit ? "!font-semibold" : "font-normal"
+                    }`}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -387,7 +400,9 @@ export default function AdminCouponManagementPage() {
                     value={formData.expiryDate}
                     onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
                     min={new Date().toISOString().split("T")[0]}
-                    className="border-[#D9CFC7] focus:border-[#8B5A3C]"
+                    className={`border-[#D9CFC7] focus:border-[#8B5A3C] ${
+                      formData.expiryDate ? "!font-semibold" : "font-normal"
+                    }`}
                     disabled={isSubmitting}
                   />
                 </div>

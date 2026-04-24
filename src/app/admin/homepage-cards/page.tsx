@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { isHomepageCardGifUrl, isHomepageCardVideoUrl } from "@/lib/homepage-card-media"
+import { Pencil } from "lucide-react"
 
 interface HomepageCard {
   _id: string
@@ -232,28 +233,42 @@ export default function HomepageCardsPage() {
                       </span>
                     </div>
                     <div className="mt-2 flex flex-col sm:flex-row gap-2 sm:items-center">
-                      <Input
-                        value={editedNames[card._id] ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          setEditedNames((prev) => ({ ...prev, [card._id]: value }))
-                        }}
-                        className="border-[#D9CFC7] text-foreground max-w-sm"
-                        disabled={savingTextCardId === card._id}
-                        maxLength={100}
-                        placeholder="Card name"
-                      />
-                      <Input
-                        value={editedTaglines[card._id] ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          setEditedTaglines((prev) => ({ ...prev, [card._id]: value }))
-                        }}
-                        className="border-[#D9CFC7] text-foreground max-w-sm"
-                        disabled={savingTextCardId === card._id}
-                        maxLength={120}
-                        placeholder="Card tagline"
-                      />
+                      <div className="relative max-w-sm w-full">
+                        <Pencil className="w-4 h-4 text-foreground/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <Input
+                          value={editedNames[card._id] ?? card.name ?? ""}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            setEditedNames((prev) => ({ ...prev, [card._id]: value }))
+                          }}
+                          className={`border-[#D9CFC7] text-foreground pl-9 ${
+                            ((editedNames[card._id] ?? card.name ?? "").trim() !== (card.name || "").trim())
+                              ? "!font-semibold"
+                              : "font-normal"
+                          }`}
+                          disabled={savingTextCardId === card._id}
+                          maxLength={100}
+                          placeholder="Card name"
+                        />
+                      </div>
+                      <div className="relative max-w-sm w-full">
+                        <Pencil className="w-4 h-4 text-foreground/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <Input
+                          value={editedTaglines[card._id] ?? card.tagline ?? ""}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            setEditedTaglines((prev) => ({ ...prev, [card._id]: value }))
+                          }}
+                          className={`border-[#D9CFC7] text-foreground pl-9 ${
+                            ((editedTaglines[card._id] ?? card.tagline ?? "").trim() !== (card.tagline || "").trim())
+                              ? "!font-semibold"
+                              : "font-normal"
+                          }`}
+                          disabled={savingTextCardId === card._id}
+                          maxLength={120}
+                          placeholder="Card tagline"
+                        />
+                      </div>
                       <Button
                         type="button"
                         onClick={() => handleTextSave(card._id)}
