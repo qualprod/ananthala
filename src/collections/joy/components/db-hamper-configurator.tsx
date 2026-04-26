@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import { Loader2 } from "lucide-react"
 import { MagnifyImage } from "@/components/product/MagnifyImage"
+import { ProductImageViewerModal } from "@/components/product/product-image-viewer-modal"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
@@ -53,6 +54,7 @@ export function DbHamperConfigurator({
     Record<number, { length: string; width: string; height: string }>
   >({})
   const [selectedFabric, setSelectedFabric] = useState<string>("")
+  const [activeViewerItemIndex, setActiveViewerItemIndex] = useState<number | null>(null)
 
   const availableHamperFabrics = useMemo(
     () =>
@@ -119,7 +121,13 @@ export function DbHamperConfigurator({
     onAddToCart(items)
   }
 
+  const activeViewerItem =
+    activeViewerItemIndex !== null && activeViewerItemIndex >= 0 && activeViewerItemIndex < normalizedItems.length
+      ? normalizedItems[activeViewerItemIndex]
+      : null
+
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Left Content - Items */}
       <div className="lg:col-span-9 space-y-8">
@@ -147,11 +155,16 @@ export function DbHamperConfigurator({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Side - Images */}
                 <div className="space-y-4">
-                <MagnifyImage
-                  src={images[imageIndex] || "/placeholder.svg"}
-                  alt={item.name}
-                  className="rounded-lg bg-gray-50"
-                />
+                <div className="cursor-pointer" onClick={() => setActiveViewerItemIndex(itemIndex)}>
+                  <MagnifyImage
+                    src={images[imageIndex] || "/placeholder.svg"}
+                    alt={item.name}
+                    className="rounded-lg bg-gray-50"
+                    enableHoverZoom={false}
+                    enableMobileTapZoom={false}
+                    showMobileHint={false}
+                  />
+                </div>
 
                   {images.length > 1 && (
                     <div className="grid grid-cols-5 gap-2">
@@ -345,6 +358,16 @@ export function DbHamperConfigurator({
         </div>
       </div>
     </div>
+    {activeViewerItem && (
+      <ProductImageViewerModal
+        images={activeViewerItem.imageUrls}
+        initialIndex={selectedImageIndices[activeViewerItemIndex as number] ?? 0}
+        productName={activeViewerItem.name}
+        isOpen={activeViewerItemIndex !== null}
+        onClose={() => setActiveViewerItemIndex(null)}
+      />
+    )}
+    </>
   )
 }
 

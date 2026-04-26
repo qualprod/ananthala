@@ -10,6 +10,7 @@ import { type CartItem } from "@/components/cart/cart-drawer"
 import type { ProductDetail } from "@/data/product-details"
 import { fabricOptions } from "@/data/fabric"
 import { MagnifyImage } from "@/components/product/MagnifyImage"
+import { ProductImageViewerModal } from "@/components/product/product-image-viewer-modal"
 import ComplementaryProductsModal from "@/components/product/complementary-products-modal"
 
 interface ApiFabric {
@@ -57,6 +58,7 @@ export function ProductConfigurator({
   const [showComplementaryModal, setShowComplementaryModal] = useState(false)
   const [pendingCartItem, setPendingCartItem] = useState<CartItem | null>(null)
   const [isLoadingComplementary, setIsLoadingComplementary] = useState(false)
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false)
   const [dynamicFabrics, setDynamicFabrics] = useState<ApiFabric[]>([])
   const [variantImageCache, setVariantImageCache] = useState<Record<string, string[]>>({})
   const [lazyVariantImages, setLazyVariantImages] = useState<string[] | null>(null)
@@ -342,11 +344,16 @@ export function ProductConfigurator({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <MagnifyImage
-                src={activeImages[selectedImageIndex] || "/placeholder.svg"}
-                alt={product.name}
-                className="rounded-lg bg-gray-50"
-              />
+              <div className="cursor-pointer" onClick={() => setIsImageViewerOpen(true)}>
+                <MagnifyImage
+                  src={activeImages[selectedImageIndex] || "/placeholder.svg"}
+                  alt={product.name}
+                  className="rounded-lg bg-gray-50"
+                  enableHoverZoom={false}
+                  enableMobileTapZoom={false}
+                  showMobileHint={false}
+                />
+              </div>
 
               {activeImages.length > 1 && (
                 <div className="grid grid-cols-5 gap-2 max-w-[320px] sm:max-w-[360px]">
@@ -575,6 +582,13 @@ export function ProductConfigurator({
           isLoading={isLoadingComplementary}
         />
       )}
+      <ProductImageViewerModal
+        images={activeImages}
+        initialIndex={selectedImageIndex}
+        productName={product.name}
+        isOpen={isImageViewerOpen}
+        onClose={() => setIsImageViewerOpen(false)}
+      />
     </div>
   )
 }

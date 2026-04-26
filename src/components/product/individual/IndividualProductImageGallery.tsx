@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { ChevronLeft, ChevronRight, Expand } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { ProductDetail } from "@/data/product-details"
 import { MagnifyImage } from "@/components/product/MagnifyImage"
 import { ProductImageViewerModal } from "@/components/product/product-image-viewer-modal"
@@ -42,35 +42,38 @@ export function IndividualProductImageGallery({
     <>
       <div className="space-y-4">
         {/* Main Image */}
-        <div className="relative aspect-square overflow-hidden rounded-lg group cursor-pointer">
+        <div
+          className="relative aspect-square overflow-hidden rounded-lg group cursor-pointer"
+          onClick={() => setIsModalOpen(true)}
+        >
           <MagnifyImage
             src={currentImages[selectedImageIndex]}
             alt={product.name}
             className="h-full w-full"
             imgClassName="h-full"
+            enableHoverZoom={false}
+            enableMobileTapZoom={false}
+            showMobileHint={false}
           />
-          
-          {/* Fullscreen Button */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors duration-200"
-            aria-label="Open fullscreen viewer"
-          >
-            <Expand className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
           
           {/* Navigation Arrows */}
           {currentImages.length > 1 && (
             <>
               <button
-                onClick={prevImage}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  prevImage()
+                }}
                 className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-colors"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="w-5 h-5 text-black" />
               </button>
               <button
-                onClick={nextImage}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  nextImage()
+                }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-colors"
                 aria-label="Next image"
               >

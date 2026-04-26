@@ -10,6 +10,9 @@ interface MagnifyImageProps {
   zoomScale?: number
   className?: string
   imgClassName?: string
+  enableHoverZoom?: boolean
+  enableMobileTapZoom?: boolean
+  showMobileHint?: boolean
 }
 
 export function MagnifyImage({
@@ -19,6 +22,9 @@ export function MagnifyImage({
   zoomScale = 1.8,
   className = "",
   imgClassName = "",
+  enableHoverZoom = true,
+  enableMobileTapZoom = true,
+  showMobileHint = true,
 }: MagnifyImageProps) {
   const [isHovering, setIsHovering] = useState(false)
   const [isMobileZoomOpen, setIsMobileZoomOpen] = useState(false)
@@ -114,6 +120,7 @@ export function MagnifyImage({
   }
 
   const openMobileZoom = () => {
+    if (!enableMobileTapZoom) return
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
       setIsMobileZoomOpen(true)
       setMobileScale(mobileZoomScale)
@@ -135,9 +142,9 @@ export function MagnifyImage({
     <>
       <div
         className={`relative aspect-square overflow-hidden ${className}`.trim()}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-        onMouseMove={handleMouseMove}
+        onMouseEnter={enableHoverZoom ? () => setIsHovering(true) : undefined}
+        onMouseLeave={enableHoverZoom ? () => setIsHovering(false) : undefined}
+        onMouseMove={enableHoverZoom ? handleMouseMove : undefined}
         onClick={openMobileZoom}
       >
         <img
@@ -146,11 +153,13 @@ export function MagnifyImage({
           className={imageClassName}
           draggable={false}
         />
-        <div className="absolute bottom-2 right-2 rounded-md bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-foreground md:hidden">
-          Tap to zoom
-        </div>
+        {enableMobileTapZoom && showMobileHint && (
+          <div className="absolute bottom-2 right-2 rounded-md bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-foreground md:hidden">
+            Tap to zoom
+          </div>
+        )}
       </div>
-      {isHovering && (
+      {enableHoverZoom && isHovering && (
         <>
           <div className="fixed inset-0 z-60 hidden md:block pointer-events-none bg-black/25 backdrop-blur-sm" aria-hidden />
           <div

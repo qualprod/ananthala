@@ -106,6 +106,18 @@ const menuItems = [
         label: "Privacy Policy",
         href: "/admin/policies/privacy",
       },
+      {
+        label: "Terms Policy",
+        href: "/admin/policies/terms",
+      },
+      {
+        label: "Refund Policy",
+        href: "/admin/policies/refund",
+      },
+      {
+        label: "Shipping Policy",
+        href: "/admin/policies/shipping",
+      },
     ],
   },
   

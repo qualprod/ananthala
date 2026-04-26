@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import { MagnifyImage } from "@/components/product/MagnifyImage"
+import { ProductImageViewerModal } from "@/components/product/product-image-viewer-modal"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
@@ -73,6 +74,7 @@ export function KidsHamperConfigurator({
     pillows: 0,
     
   })
+  const [activeViewerItemId, setActiveViewerItemId] = useState<string | null>(null)
   
   // Track whether custom dimensions are enabled for each item
   const [useCustomDimensions, setUseCustomDimensions] = useState<Record<string, boolean>>({
@@ -88,6 +90,10 @@ export function KidsHamperConfigurator({
   
   const setImageIndex = (itemId: string, index: number) => {
     setSelectedImageIndices(prev => ({ ...prev, [itemId]: index }))
+  }
+
+  const closeImageViewer = () => {
+    setActiveViewerItemId(null)
   }
   
   const toggleCustomDimensions = (itemId: string) => {
@@ -228,6 +234,7 @@ export function KidsHamperConfigurator({
   }, 0)
 
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Left Content - All Items Customization */}
       <div className="lg:col-span-9 space-y-8">
@@ -238,10 +245,15 @@ export function KidsHamperConfigurator({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Side - Images */}
               <div className="space-y-4">
-                <MagnifyImage
-                  src={getProductImages("mattress")[selectedImageIndices.mattress] || "/productmattress.jpg"}
-                  alt="JOY Mattress"
-                />
+                <div className="cursor-pointer" onClick={() => setActiveViewerItemId("mattress")}>
+                  <MagnifyImage
+                    src={getProductImages("mattress")[selectedImageIndices.mattress] || "/productmattress.jpg"}
+                    alt="JOY Mattress"
+                    enableHoverZoom={false}
+                    enableMobileTapZoom={false}
+                    showMobileHint={false}
+                  />
+                </div>
                 
                 {/* Thumbnail Gallery */}
                 {getProductImages("mattress").length > 1 && (
@@ -375,10 +387,15 @@ export function KidsHamperConfigurator({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Side - Images */}
               <div className="space-y-4">
-                <MagnifyImage
-                  src={getProductImages("pillows")[selectedImageIndices.pillows] || "/pillow.jpg"}
-                  alt="JOY Pillows"
-                />
+                <div className="cursor-pointer" onClick={() => setActiveViewerItemId("pillows")}>
+                  <MagnifyImage
+                    src={getProductImages("pillows")[selectedImageIndices.pillows] || "/pillow.jpg"}
+                    alt="JOY Pillows"
+                    enableHoverZoom={false}
+                    enableMobileTapZoom={false}
+                    showMobileHint={false}
+                  />
+                </div>
                 
                 {/* Thumbnail Gallery */}
                 {getProductImages("pillows").length > 1 && (
@@ -582,5 +599,15 @@ export function KidsHamperConfigurator({
         </div>
       </div>
     </div>
+    {activeViewerItemId && (
+      <ProductImageViewerModal
+        images={getProductImages(activeViewerItemId)}
+        initialIndex={selectedImageIndices[activeViewerItemId] ?? 0}
+        productName={kidsProducts.find((item) => item.id === activeViewerItemId)?.name || product.name}
+        isOpen={Boolean(activeViewerItemId)}
+        onClose={closeImageViewer}
+      />
+    )}
+    </>
   )
 }

@@ -1,10 +1,12 @@
 "use client"
 
 import { useSimpleProduct } from "@/hooks/use-simple-product"
+import { useState } from "react"
 import type { ProductDetail } from "@/data/product-details"
 import type { CartItem } from "@/components/cart/cart-drawer"
 import Image from "next/image"
 import { MagnifyImage } from "@/components/product/MagnifyImage"
+import { ProductImageViewerModal } from "@/components/product/product-image-viewer-modal"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart, Loader2, IndianRupee } from "lucide-react"
 
@@ -35,6 +37,7 @@ export function SimpleProductConfigurator({
   colors,
 }: SimpleProductConfiguratorProps) {
   const { selectedSize, setSelectedSize, quantity, setQuantity, selectedImage, setSelectedImage, price } = useSimpleProduct(product)
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false)
   
   const handleAddToCart = async () => {
     const cartItem: CartItem = {
@@ -49,17 +52,25 @@ export function SimpleProductConfigurator({
   }
   
   return (
+    <>
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Image Gallery */}
         <div>
         {/* Main Image */}
-        <div className="mb-4" style={{ backgroundColor: colors.bg50 }}>
+        <div
+          className="mb-4 cursor-pointer"
+          style={{ backgroundColor: colors.bg50 }}
+          onClick={() => setIsImageViewerOpen(true)}
+        >
           <MagnifyImage
             src={product.images[selectedImage]}
             alt={product.name}
             className="w-full"
             imgClassName="h-full"
+            enableHoverZoom={false}
+            enableMobileTapZoom={false}
+            showMobileHint={false}
           />
         </div>
         
@@ -211,5 +222,13 @@ export function SimpleProductConfigurator({
         </div>
       </div>
     </div>
+    <ProductImageViewerModal
+      images={product.images}
+      initialIndex={selectedImage}
+      productName={product.name}
+      isOpen={isImageViewerOpen}
+      onClose={() => setIsImageViewerOpen(false)}
+    />
+    </>
   )
 }
