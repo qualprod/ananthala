@@ -48,7 +48,7 @@ export function ProductImageViewerModal({
       onClick={onClose}
     >
       <div
-        className="w-full md:w-2/3 max-w-6xl h-[88vh] md:h-[82vh] bg-white rounded-xl border border-gray-200 shadow-2xl flex flex-col overflow-hidden"
+        className="w-[94vw] md:w-[80vw] max-w-[1450px] h-[90vh] md:h-[86vh] bg-white rounded-xl border border-gray-200 shadow-2xl flex flex-col overflow-hidden"
         onClick={(event) => event.stopPropagation()}
       >
         {/* Header */}
@@ -67,12 +67,12 @@ export function ProductImageViewerModal({
         {/* Main Content */}
         <div className="flex-1 min-h-0 flex items-center justify-center relative overflow-hidden">
           {/* Main Image Container */}
-          <div className="relative w-full h-full flex items-center justify-center px-10 py-4 md:px-16">
-            <div className="w-full max-w-4xl">
+          <div className="relative w-full h-full flex items-center justify-center px-4 py-4 md:px-8">
+            <div className="w-full max-w-6xl">
               <MagnifyImage
                 src={images[selectedImageIndex]}
                 alt={`${productName} - image ${selectedImageIndex + 1}`}
-                className="mx-auto max-h-[55vh] md:max-h-[58vh] bg-white rounded-lg"
+                className="mx-auto max-h-[78vh] md:max-h-[82vh] bg-white rounded-lg"
                 imgClassName="object-contain"
                 enableHoverZoom
                 enableMobileTapZoom

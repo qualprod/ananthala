@@ -90,7 +90,7 @@ export default function ComplementaryProductsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white p-0">
+      <DialogContent className="w-[94vw] max-w-5xl max-h-[92vh] overflow-y-auto bg-white p-0">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-[#D9CFC7] p-6 z-10">
           <div className="flex items-center justify-between">
@@ -138,7 +138,7 @@ export default function ComplementaryProductsModal({
               </div>
 
               {/* Products Grid - Under Cards Layout */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                 {complementaryProducts.map((product) => (
                   <div
                     key={product._id}
@@ -150,11 +150,11 @@ export default function ComplementaryProductsModal({
                     onClick={() => handleSelectProduct(product._id)}
                   >
                     {/* Product Card */}
-                    <div className="p-5 space-y-4">
+                    <div className="p-6 space-y-4">
                       {/* Image and Checkbox Row */}
-                      <div className="flex gap-4 items-start">
+                      <div className="flex gap-5 items-start">
                         {/* Product Image */}
-                        <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-[#F5F1ED]">
+                        <div className="shrink-0 w-28 h-28 rounded-lg overflow-hidden bg-[#F5F1ED]">
                           {product.image ? (
                             <img
                               src={product.image}
