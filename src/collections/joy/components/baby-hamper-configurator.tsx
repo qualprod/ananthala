@@ -219,6 +219,7 @@ export function BabyHamperConfigurator({
     const items: CartItem[] = [
       {
         id: `joy-baby-hamper-${product.id}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+        productId: String(product.id),
         name: product.name,
         image: hamperImage,
         size: sizeInfo,

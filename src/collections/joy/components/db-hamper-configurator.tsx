@@ -110,6 +110,7 @@ export function DbHamperConfigurator({
     const items: CartItem[] = [
       {
         id: `hamper-${product.id}-${Date.now()}`,
+        productId: String(product.id),
         name: product.name,
         image: cover,
         size: sizeInfo,

@@ -260,6 +260,7 @@ export function ProductConfigurator({
     const finalSize = useCustomDimensions ? customSizeLabel : selectedSize
     const item: CartItem = {
       id: `${product.id}-${finalSize}-${Date.now()}`,
+      productId: String(product.id),
       name: product.name,
       image: productImages[0],
       size: finalSize,

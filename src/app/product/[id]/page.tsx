@@ -392,6 +392,7 @@ export default function ProductDetailPage() {
     const totalPrice = hamperTotal
     await handleAddToCart({
       id: `hamper-${rawApiProduct?._id ?? product.id}`,
+      productId: String(rawApiProduct?._id ?? product.id),
       name: product.name,
       image: hamperImage,
       size: "Hamper",

@@ -14,6 +14,7 @@ export interface ComplementaryItem {
 
 export interface CartItem {
   id: string
+  productId?: string
   name: string
   image: string
   size: string
@@ -34,9 +35,14 @@ interface CartDrawerProps {
 export function CartDrawer({ isOpen, onClose, cartItems = [] }: CartDrawerProps) {
   const router = useRouter()
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const getProductHref = (itemId: string) => {
-    const productId = itemId.split("-")[0]?.trim()
-    return productId ? `/product/${productId}` : null
+  const getProductHref = (item: CartItem) => {
+    const explicitProductId = item.productId?.trim()
+    if (explicitProductId) return `/product/${explicitProductId}`
+
+    const objectIdMatch = item.id.match(/[a-f0-9]{24}/i)
+    if (objectIdMatch) return `/product/${objectIdMatch[0]}`
+
+    return null
   }
 
   const handleCheckout = () => {
@@ -82,9 +88,9 @@ export function CartDrawer({ isOpen, onClose, cartItems = [] }: CartDrawerProps)
                 {cartItems.map((item) => (
                   <div key={item.id} className="pb-6 border-b border-gray-100 space-y-4">
                     {/* Main Item */}
-                    {getProductHref(item.id) ? (
+                    {getProductHref(item) ? (
                       <Link
-                        href={getProductHref(item.id)!}
+                        href={getProductHref(item)!}
                         onClick={onClose}
                         className="flex gap-4 hover:opacity-80 transition-opacity"
                         aria-label={`View ${item.name}`}

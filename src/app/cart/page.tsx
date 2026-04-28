@@ -22,9 +22,14 @@ export default function CartPage() {
     router.push("/checkout")
   }
 
-  const getProductHref = (itemId: string) => {
-    const productId = itemId.split("-")[0]?.trim()
-    return productId ? `/product/${productId}` : null
+  const getProductHref = (item: { id: string; productId?: string }) => {
+    const explicitProductId = item.productId?.trim()
+    if (explicitProductId) return `/product/${explicitProductId}`
+
+    const objectIdMatch = item.id.match(/[a-f0-9]{24}/i)
+    if (objectIdMatch) return `/product/${objectIdMatch[0]}`
+
+    return null
   }
 
   if (cartItems.length === 0) {
@@ -111,9 +116,9 @@ export default function CartPage() {
                     <div key={item.id} className="space-y-4">
                       {/* Main Item */}
                       <div className={containerClass}>
-                        {getProductHref(item.id) ? (
+                        {getProductHref(item) ? (
                           <Link
-                            href={getProductHref(item.id)!}
+                            href={getProductHref(item)!}
                             className="flex gap-5 flex-1 min-w-0 hover:opacity-80 transition-opacity"
                             aria-label={`View ${item.name}`}
                           >

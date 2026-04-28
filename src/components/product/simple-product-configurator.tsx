@@ -42,6 +42,7 @@ export function SimpleProductConfigurator({
   const handleAddToCart = async () => {
     const cartItem: CartItem = {
       id: `${product.id}-${selectedSize}`,
+      productId: String(product.id),
       name: product.name,
       image: product.images[0],
       size: selectedSize,

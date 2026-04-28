@@ -53,6 +53,7 @@ export function IndividualBabyProductConfigurator({
   const handleAddToCart = () => {
     const cartItem: CartItem = {
       id: `${product.id}-${selectedSize}`,
+      productId: String(product.id),
       name: product.name,
       image: product.images[0],
       size: selectedSize,
