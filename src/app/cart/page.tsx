@@ -22,6 +22,11 @@ export default function CartPage() {
     router.push("/checkout")
   }
 
+  const getProductHref = (itemId: string) => {
+    const productId = itemId.split("-")[0]?.trim()
+    return productId ? `/product/${productId}` : null
+  }
+
   if (cartItems.length === 0) {
     return (
       <div className="flex flex-col min-h-screen bg-white">
@@ -106,39 +111,83 @@ export default function CartPage() {
                     <div key={item.id} className="space-y-4">
                       {/* Main Item */}
                       <div className={containerClass}>
-                        <div className="relative w-28 h-28 shrink-0 bg-gray-100 overflow-hidden rounded">
-                          <Image
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-semibold text-foreground mb-2">
-                            {item.name}
-                            {item.productColor && (
-                              <span className="text-sm font-normal text-foreground/70 ml-2">({item.productColor})</span>
-                            )}
-                          </h3>
-                          <div className="space-y-2">
-                            <div className="inline-block px-3 py-1 text-base text-foreground">
-                              {item.fabric ? `Fabric: ${item.fabric}` : `Size: ${item.size}`}
+                        {getProductHref(item.id) ? (
+                          <Link
+                            href={getProductHref(item.id)!}
+                            className="flex gap-5 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                            aria-label={`View ${item.name}`}
+                          >
+                            <div className="relative w-28 h-28 shrink-0 bg-gray-100 overflow-hidden rounded">
+                              <Image
+                                src={item.image || "/placeholder.svg"}
+                                alt={item.name}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
                             </div>
-                            {item.productColor && (
-                              <div className="flex items-center gap-2 px-3 py-1 text-base text-foreground">
-                                <span>Color:</span>
-                                <div
-                                  className="w-4 h-4 rounded border border-gray-300"
-                                  style={{ backgroundColor: item.productColorHex || "transparent" }}
-                                  title={item.productColor}
-                                />
-                                <span>{item.productColor}</span>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-xl font-semibold text-foreground mb-2">
+                                {item.name}
+                                {item.productColor && (
+                                  <span className="text-sm font-normal text-foreground/70 ml-2">({item.productColor})</span>
+                                )}
+                              </h3>
+                              <div className="space-y-2">
+                                <div className="inline-block px-3 py-1 text-base text-foreground">
+                                  {item.fabric ? `Fabric: ${item.fabric}` : `Size: ${item.size}`}
+                                </div>
+                                {item.productColor && (
+                                  <div className="flex items-center gap-2 px-3 py-1 text-base text-foreground">
+                                    <span>Color:</span>
+                                    <div
+                                      className="w-4 h-4 rounded border border-gray-300"
+                                      style={{ backgroundColor: item.productColorHex || "transparent" }}
+                                      title={item.productColor}
+                                    />
+                                    <span>{item.productColor}</span>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </div>
+                            </div>
+                          </Link>
+                        ) : (
+                          <>
+                            <div className="relative w-28 h-28 shrink-0 bg-gray-100 overflow-hidden rounded">
+                              <Image
+                                src={item.image || "/placeholder.svg"}
+                                alt={item.name}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-xl font-semibold text-foreground mb-2">
+                                {item.name}
+                                {item.productColor && (
+                                  <span className="text-sm font-normal text-foreground/70 ml-2">({item.productColor})</span>
+                                )}
+                              </h3>
+                              <div className="space-y-2">
+                                <div className="inline-block px-3 py-1 text-base text-foreground">
+                                  {item.fabric ? `Fabric: ${item.fabric}` : `Size: ${item.size}`}
+                                </div>
+                                {item.productColor && (
+                                  <div className="flex items-center gap-2 px-3 py-1 text-base text-foreground">
+                                    <span>Color:</span>
+                                    <div
+                                      className="w-4 h-4 rounded border border-gray-300"
+                                      style={{ backgroundColor: item.productColorHex || "transparent" }}
+                                      title={item.productColor}
+                                    />
+                                    <span>{item.productColor}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
 
                         <div className="flex flex-col items-end gap-3">
                           <div className="flex items-center gap-2 border rounded-md px-2 py-1">

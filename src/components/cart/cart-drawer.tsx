@@ -34,6 +34,10 @@ interface CartDrawerProps {
 export function CartDrawer({ isOpen, onClose, cartItems = [] }: CartDrawerProps) {
   const router = useRouter()
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const getProductHref = (itemId: string) => {
+    const productId = itemId.split("-")[0]?.trim()
+    return productId ? `/product/${productId}` : null
+  }
 
   const handleCheckout = () => {
     onClose()
@@ -78,43 +82,88 @@ export function CartDrawer({ isOpen, onClose, cartItems = [] }: CartDrawerProps)
                 {cartItems.map((item) => (
                   <div key={item.id} className="pb-6 border-b border-gray-100 space-y-4">
                     {/* Main Item */}
-                    <div className="flex gap-4">
-                      <div className="relative w-24 h-24 flex-shrink-0 bg-gray-100 overflow-hidden">
-                        <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-serif text-black text-lg mb-2 leading-tight">
-                          {item.name}
-                          {item.productColor && (
-                            <span className="text-sm font-normal text-gray-600 ml-1">({item.productColor})</span>
+                    {getProductHref(item.id) ? (
+                      <Link
+                        href={getProductHref(item.id)!}
+                        onClick={onClose}
+                        className="flex gap-4 hover:opacity-80 transition-opacity"
+                        aria-label={`View ${item.name}`}
+                      >
+                        <div className="relative w-24 h-24 shrink-0 bg-gray-100 overflow-hidden">
+                          <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-serif text-black text-lg mb-2 leading-tight">
+                            {item.name}
+                            {item.productColor && (
+                              <span className="text-sm font-normal text-gray-600 ml-1">({item.productColor})</span>
+                            )}
+                          </h3>
+                          <p className="text-black text-sm mb-2">Size: {item.size}</p>
+                          {item.fabric && (
+                            <p className="text-black text-sm mb-2">Fabric: {item.fabric}</p>
                           )}
-                        </h3>
-                        <p className="text-black text-sm mb-2">Size: {item.size}</p>
-                        {item.fabric && (
-                          <p className="text-black text-sm mb-2">Fabric: {item.fabric}</p>
-                        )}
-                        {item.productColor && (
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-black text-sm">Color:</span>
-                            <div
-                              className="w-4 h-4 rounded border border-gray-300"
-                              style={{ backgroundColor: item.productColorHex || "transparent" }}
-                              title={item.productColor}
-                            />
-                            <span className="text-black text-sm">{item.productColor}</span>
-                          </div>
-                        )}
-                        <p className="text-black text-sm">Qty: {item.quantity}</p>
+                          {item.productColor && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-black text-sm">Color:</span>
+                              <div
+                                className="w-4 h-4 rounded border border-gray-300"
+                                style={{ backgroundColor: item.productColorHex || "transparent" }}
+                                title={item.productColor}
+                              />
+                              <span className="text-black text-sm">{item.productColor}</span>
+                            </div>
+                          )}
+                          <p className="text-black text-sm">Qty: {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-black font-medium text-lg">
+                            ₹{(item.price * item.quantity).toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="flex gap-4">
+                        <div className="relative w-24 h-24 shrink-0 bg-gray-100 overflow-hidden">
+                          <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-serif text-black text-lg mb-2 leading-tight">
+                            {item.name}
+                            {item.productColor && (
+                              <span className="text-sm font-normal text-gray-600 ml-1">({item.productColor})</span>
+                            )}
+                          </h3>
+                          <p className="text-black text-sm mb-2">Size: {item.size}</p>
+                          {item.fabric && (
+                            <p className="text-black text-sm mb-2">Fabric: {item.fabric}</p>
+                          )}
+                          {item.productColor && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-black text-sm">Color:</span>
+                              <div
+                                className="w-4 h-4 rounded border border-gray-300"
+                                style={{ backgroundColor: item.productColorHex || "transparent" }}
+                                title={item.productColor}
+                              />
+                              <span className="text-black text-sm">{item.productColor}</span>
+                            </div>
+                          )}
+                          <p className="text-black text-sm">Qty: {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-black font-medium text-lg">
+                            ₹{(item.price * item.quantity).toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-black font-medium text-lg">
-                          ₹{(item.price * item.quantity).toLocaleString("en-IN", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </p>
-                      </div>
-                    </div>
+                    )}
 
                     {/* Complementary Items */}
                     {item.complementaryItems && item.complementaryItems.length > 0 && (
