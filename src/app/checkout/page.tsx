@@ -458,6 +458,50 @@ const handleInputChange = (
     return true
   }
 
+  const saveAddressForFutureOrders = async (fullPhone: string) => {
+    const profileResponse = await fetch("/api/customer/profile", {
+      credentials: "include",
+    })
+    const profileData = await profileResponse.json()
+    if (!profileResponse.ok || !profileData?.success || !profileData?.user) {
+      throw new Error(profileData?.message || "Failed to load profile before saving address.")
+    }
+
+    const existingAddresses = Array.isArray(profileData.user.addresses) ? profileData.user.addresses : []
+    const normalizedAddressLabel = addressLabel?.trim() || "Home"
+    const newAddressData = {
+      label: normalizedAddressLabel,
+      houseNumber: formData.houseNumber,
+      crossStreet: formData.crossStreet,
+      locality: formData.locality,
+      landmark: formData.landmark || "",
+      city: formData.city,
+      state: formData.state,
+      pincode: formData.zipCode,
+      country: formData.country || "India",
+      isDefault: existingAddresses.length === 0,
+    }
+
+    const saveAddressResponse = await fetch("/api/customer/profile", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: fullPhone,
+        addresses: [...existingAddresses, newAddressData],
+      }),
+    })
+
+    const saveAddressData = await saveAddressResponse.json()
+    if (!saveAddressResponse.ok || !saveAddressData?.success) {
+      throw new Error(saveAddressData?.message || "Failed to save address.")
+    }
+
+    if (saveAddressData?.user) {
+      setUserProfile(saveAddressData.user)
+    }
+  }
+
 const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -526,39 +570,20 @@ const handleSubmit = async (e: React.FormEvent) => {
         handler: async (response: any) => {
           try {
             // Save new address if user selected that option
-            if (useNewAddress && saveNewAddress && userProfile) {
+            if (useNewAddress && saveNewAddress) {
               try {
-                const newAddressData = {
-                  label: addressLabel,
-                  houseNumber: formData.houseNumber,
-                  crossStreet: formData.crossStreet,
-                  locality: formData.locality,
-                  landmark: formData.landmark || "",
-                  city: formData.city,
-                  state: formData.state,
-                  pincode: formData.zipCode,
-                  country: formData.country,
-                  isDefault: false,
-                }
-                
-                const saveAddressResponse = await fetch("/api/customer/profile", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    phone: userProfile.phone,
-                    addresses: [...(userProfile.addresses || []), newAddressData],
-                  }),
+                await saveAddressForFutureOrders(fullPhone)
+                toast({
+                  title: "Address Saved",
+                  description: `${addressLabel} address has been saved for future orders.`,
                 })
-                
-                if (saveAddressResponse.ok) {
-                  toast({
-                    title: "Address Saved",
-                    description: `${addressLabel} address has been saved for future orders.`,
-                  })
-                }
               } catch (addressError) {
                 console.error("[v0] Error saving address:", addressError)
-                // Continue with order even if address save fails
+                toast({
+                  title: "Address not saved",
+                  description: "Your order will continue, but we could not save this address for future orders.",
+                  variant: "destructive",
+                })
               }
             }
 
@@ -915,8 +940,8 @@ shippingAddress: {
                                 </p>
                               </div>
                               {selectedAddressId === addr._id && !useNewAddress && (
-                                <div className="flex-shrink-0">
-                                  <Check className="w-5 h-5 text-[#8B5A3C] flex-shrink-0" />
+                                <div className="shrink-0">
+                                  <Check className="w-5 h-5 text-[#8B5A3C] shrink-0" />
                                 </div>
                               )}
                             </div>
