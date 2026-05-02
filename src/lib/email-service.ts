@@ -511,7 +511,7 @@ export async function sendOrderConfirmationEmail(
               }
               <div class="summary-row">
                 <span class="summary-label">Shipping</span>
-                <span>₹${order.shippingCost.toFixed(2)}</span>
+                <span>Free</span>
               </div>
               <div class="summary-row total">
                 <span class="summary-label">Total Amount</span>
@@ -588,7 +588,7 @@ Items:
 ${order.items.map((item: { productName: any; quantity: number; price: number }) => `- ${item.productName} x${item.quantity}: ₹${(item.price * item.quantity).toFixed(2)}`).join("\n")}
 
 Subtotal: ₹${order.subtotal.toFixed(2)}
-${order.discount > 0 ? `Discount: -₹${order.discount.toFixed(2)}\n` : ""}Shipping: ₹${order.shippingCost.toFixed(2)}
+${order.discount > 0 ? `Discount: -₹${order.discount.toFixed(2)}\n` : ""}Shipping: Free
 Total: ₹${order.totalAmount.toFixed(2)}
 
 Track your order here:
@@ -942,7 +942,7 @@ export async function sendOrderCancellationEmail(
               }
               <div class="summary-row">
                 <span class="summary-label">Shipping</span>
-                <span>₹${orderData.shippingCost.toFixed(2)}</span>
+                <span>Free</span>
               </div>
               <div class="summary-row total">
                 <span class="summary-label">Total Amount</span>
@@ -1001,7 +1001,7 @@ Cancelled Items:
 ${orderData.items.map((item) => `- ${item.productName} x${item.quantity}: ₹${(item.price * item.quantity).toFixed(2)}`).join("\n")}
 
 Subtotal: ₹${orderData.subtotal.toFixed(2)}
-${orderData.discount > 0 ? `Discount: ₹${orderData.discount.toFixed(2)}\n` : ""}Shipping: ₹${orderData.shippingCost.toFixed(2)}
+${orderData.discount > 0 ? `Discount: ₹${orderData.discount.toFixed(2)}\n` : ""}Shipping: Free
 Total Amount: ₹${orderData.totalAmount.toFixed(2)}
 
 REFUND INFORMATION:
