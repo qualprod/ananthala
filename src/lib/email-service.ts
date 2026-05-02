@@ -450,7 +450,7 @@ export async function sendOrderConfirmationEmail(
         <div class="container">
           <!-- Header -->
           <div class="header">
-            <div class="header-logo"></div>
+            <div class="header-logo"><img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span></div>
             <div class="header-subtitle">Order Confirmation</div>
           </div>
 
