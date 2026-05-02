@@ -21,6 +21,7 @@ import {
   Image,
   Palette,
   Menu as MenuIcon,
+  CreditCard,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -73,7 +74,11 @@ const menuItems = [
     href: "/admin/orders",
     icon: ShoppingCart,
   },
-  
+  {
+    label: "Payments",
+    href: "/admin/payments",
+    icon: CreditCard,
+  },
   {
     label: "Coupon Management",
     href: "/admin/coupons",
