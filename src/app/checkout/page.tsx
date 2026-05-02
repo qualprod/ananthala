@@ -400,7 +400,7 @@ const handleInputChange = (
     
     // Required shipping fields
     if (!formData.firstName.trim()) errors.firstName = "First name is required"
-    if (!formData.lastName.trim()) errors.lastName = "Last name is required"
+    // lastName is optional - no validation required
     if (!formData.email.trim()) errors.email = "Email is required"
     else if (!/^\S+@\S+\.\S+$/.test(formData.email)) errors.email = "Invalid email format"
     if (!formData.phone.trim()) errors.phone = "Phone number is required"
@@ -417,7 +417,7 @@ const handleInputChange = (
     // Billing address validation if different
     if (billingDifferent) {
       if (!billingData.firstName.trim()) errors.billing_firstName = "First name is required"
-      if (!billingData.lastName.trim()) errors.billing_lastName = "Last name is required"
+      // billing lastName is optional - no validation required
       if (!billingData.houseNumber.trim()) errors.billing_houseNumber = "House number is required"
       if (!billingData.crossStreet.trim()) errors.billing_crossStreet = "Street is required"
       if (!billingData.locality.trim()) errors.billing_locality = "Area / Locality is required"
@@ -815,7 +815,7 @@ shippingAddress: {
                       </div>
                       <div>
                         <label className="block text-black mb-2 text-lg font-medium">
-                          Last Name <span className="text-red-500">*</span>
+                          Last Name <span className="text-foreground/50 text-sm">(Optional)</span>
                         </label>
                         <input
                           type="text"
@@ -824,6 +824,7 @@ shippingAddress: {
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.lastName ? "border-red-500 bg-red-50" : ""}`}
                           style={{ borderColor: fieldErrors.lastName ? undefined : "#D9CFC7" }}
+                          placeholder="Enter last name (optional)"
                         />
                         {fieldErrors.lastName && (
                           <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -1214,7 +1215,7 @@ shippingAddress: {
                           </div>
                           <div>
                             <label className="block text-black mb-2 font-medium">
-                              Last Name <span className="text-red-500">*</span>
+                              Last Name <span className="text-foreground/50 text-sm">(Optional)</span>
                             </label>
                             <input
                               type="text"
@@ -1223,6 +1224,7 @@ shippingAddress: {
                               onChange={handleBillingInputChange}
                               className={`w-full px-4 py-3 border text-black ${fieldErrors.billing_lastName ? "border-red-500 bg-red-50" : ""}`}
                               style={{ borderColor: fieldErrors.billing_lastName ? undefined : "#D9CFC7" }}
+                              placeholder="Enter last name (optional)"
                             />
                             {fieldErrors.billing_lastName && (
                               <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
