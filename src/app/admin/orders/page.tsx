@@ -114,8 +114,18 @@ export default function OrderManagementPage() {
     }
   }
 
+  const isTrackingNumberRequired = (status: string) => {
+    return ["shipped", "in-transit", "delivered"].includes(status)
+  }
+
   const handleUpdateStatus = async () => {
     if (!selectedOrder || !newStatus) return
+
+    // Validate tracking number is required for shipping statuses
+    if (isTrackingNumberRequired(newStatus) && !trackingNumber.trim()) {
+      setUpdateMessage({ type: "error", text: "Tracking number is required for this status." })
+      return
+    }
 
     try {
       setUpdatingOrderId(selectedOrder._id)
@@ -702,12 +712,30 @@ export default function OrderManagementPage() {
 
               {/* Tracking Number Input */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Tracking Number (Optional)</label>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Tracking Number {isTrackingNumberRequired(newStatus) ? <span className="text-red-500">*</span> : <span className="text-foreground/50">(Optional)</span>}
+                  </label>
+                </div>
+                {isTrackingNumberRequired(newStatus) && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-xs text-blue-700">
+                      <span className="font-semibold">Required:</span> Tracking number is mandatory for shipping status updates.
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      <span className="font-semibold">Tip:</span> Enter your ShipRocket tracking number. Customers will receive a link:
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1 break-words font-mono">
+                      shiprocket.co/tracking/[TRACKING_NUMBER]
+                    </p>
+                  </div>
+                )}
                 <Input
-                  placeholder="Enter tracking number"
+                  placeholder={isTrackingNumberRequired(newStatus) ? "Enter ShipRocket tracking number (required)" : "Enter tracking number (optional)"}
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  className="w-full"
+                  className={`w-full ${isTrackingNumberRequired(newStatus) && !trackingNumber ? "border-red-300 focus:ring-red-200" : ""}`}
+                  required={isTrackingNumberRequired(newStatus)}
                 />
               </div>
 
@@ -735,7 +763,7 @@ export default function OrderManagementPage() {
                 </Button>
                 <Button
                   onClick={handleUpdateStatus}
-                  disabled={!newStatus || updatingOrderId === selectedOrder._id}
+                  disabled={!newStatus || updatingOrderId === selectedOrder._id || (isTrackingNumberRequired(newStatus) && !trackingNumber.trim())}
                   className="bg-[#8B5A3C] hover:bg-[#6D4530] text-white"
                 >
                   {updatingOrderId === selectedOrder._id ? (
