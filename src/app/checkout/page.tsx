@@ -301,10 +301,8 @@ useEffect(() => {
     formData.zipCode &&
     /^\d{6}$/.test(formData.zipCode)
   
-  // Shipping formula: 120 for first product, +20 for each additional product
-  // Only calculate shipping if address is complete
-  // Example: 1 product = 120, 2 products = 140, 3 products = 160
-  const shipping = (isAddressComplete && totalQuantity > 0) ? 120 + (Math.max(0, totalQuantity - 1) * 20) : 0
+  // Shipping is FREE for all orders
+  const shipping = 0
   
   // Calculate discount based on applied coupon
   const discount = appliedCoupon ? appliedCoupon.discountAmount : 0
@@ -1628,27 +1626,10 @@ shippingAddress: {
                         </span>
                       </div>
                     )}
-                    {isAddressComplete ? (
-                      <div className="flex items-center justify-between text-base md:text-lg">
-                        <span className="text-black font-medium">Shipping Charge</span>
-                        <span className="text-black">
-                          <div className="flex items-center gap-1">
-                            <IndianRupee className="w-4 h-4" />
-                            <span>
-                              {shipping.toLocaleString("en-IN", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </span>
-                          </div>
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between text-base md:text-lg">
-                        <span className="text-gray-500 font-medium">Shipping Charge</span>
-                        <span className="text-gray-400 text-sm">Add address to calculate</span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between text-base md:text-lg">
+                      <span className="text-black font-medium">Shipping Charge</span>
+                      <span className="text-green-600 font-semibold">Free</span>
+                    </div>
                   </div>
                 </div>
 
