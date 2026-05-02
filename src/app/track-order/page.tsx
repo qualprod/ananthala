@@ -293,7 +293,7 @@ export default function TrackOrderPage() {
                         )}
                         <div className="flex justify-between text-sm sm:text-base text-[#6D4530]">
                           <span>Shipping</span>
-                          <span className="font-semibold">₹{order.shippingCost.toFixed(2)}</span>
+                          <span className="font-semibold text-green-600">Free</span>
                         </div>
                         <div className="border-t border-[#D9CFC7] pt-3 mt-3 flex justify-between font-bold text-base sm:text-lg text-[#6D4530]">
                           <span>Total Amount</span>
