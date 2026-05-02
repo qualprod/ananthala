@@ -138,6 +138,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Invalid order status" }, { status: 400 })
     }
 
+    // Validate tracking number is required for shipping statuses
+    const shippingStatuses = ["shipped", "in-transit", "delivered"]
+    if (orderStatus && shippingStatuses.includes(orderStatus) && !trackingNumber?.trim()) {
+      return NextResponse.json(
+        { error: "Tracking number is required for shipping status updates (Shipped, In Transit, Delivered)" },
+        { status: 400 }
+      )
+    }
+
     const updateData: Record<string, unknown> = {}
     if (orderStatus) updateData.orderStatus = orderStatus
     if (trackingNumber) updateData.trackingNumber = trackingNumber
