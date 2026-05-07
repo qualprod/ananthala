@@ -117,6 +117,23 @@ shippingAddress: {
     razorpayOrderId: String,
     razorpayPaymentId: String,
     razorpaySignature: String,
+    // Shiprocket Integration
+    shiprocketOrderId: {
+      type: Number,
+    },
+    deliveryPartnerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DeliveryPartner",
+    },
+    awbCode: {
+      type: String,
+    },
+    courierName: {
+      type: String,
+    },
+    handoverDate: {
+      type: Date,
+    },
   },
   { timestamps: true },
 )

@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb"
 import Order from "@/models/order"
+import DeliveryPartner from "@/models/DeliveryPartner"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -19,6 +20,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
+    // Fetch delivery partner info if order is in transit or delivered
+    let deliveryPartnerInfo = null
+    if (
+      order.orderStatus === "in-transit" ||
+      order.orderStatus === "delivered"
+    ) {
+      const deliveryPartner = await DeliveryPartner.findOne({
+        orderId: order._id,
+      })
+
+      if (deliveryPartner) {
+        deliveryPartnerInfo = {
+          courierName: deliveryPartner.courierName || "Shiprocket Partner",
+          courierLogo: deliveryPartner.courierLogo,
+          awbCode: deliveryPartner.awbCode,
+          trackingUrl: deliveryPartner.trackingUrl,
+          deliveryPartnerName: deliveryPartner.deliveryPartnerName,
+          deliveryPartnerPhone: deliveryPartner.deliveryPartnerPhone,
+          deliveryPartnerLocation: deliveryPartner.deliveryPartnerLocation,
+          shipmentStatus: deliveryPartner.shipmentStatus,
+          lastStatusUpdate: deliveryPartner.lastStatusUpdate,
+          statusTimeline: deliveryPartner.statusTimeline || [],
+        }
+      }
+    }
+
     // Return order details without sensitive customer ID
     return NextResponse.json({
       _id: order._id,
@@ -36,6 +63,10 @@ export async function GET(request: NextRequest) {
       orderStatus: order.orderStatus,
       orderTimeline: order.orderTimeline || [],
       trackingNumber: order.trackingNumber,
+      handoverDate: order.handoverDate,
+      courierName: order.courierName,
+      awbCode: order.awbCode,
+      deliveryPartner: deliveryPartnerInfo,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
     })

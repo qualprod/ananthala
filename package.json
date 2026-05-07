@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.4.2",
     "@hookform/resolvers": "^3.10.0",
     "@microsoft/clarity": "^1.0.2",
     "@radix-ui/react-accordion": "1.2.2",
