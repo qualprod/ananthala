@@ -57,34 +57,22 @@ export default function GoogleMapsPicker({
   const mapRef = useRef<google.maps.Map | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
-  const [mapReady, setMapReady] = useState(false)
+  const [apiKeyMissing, setApiKeyMissing] = useState(false)
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
-
-  // More robust API loading with fallback
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: apiKey,
-    libraries,
-  })
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (apiKey) {
-        console.log("[v0] Google Maps API key configured (length: " + apiKey.length + " chars)")
-      } else {
-        console.warn("[v0] Google Maps API key not configured in environment")
-      }
+    if (!apiKey) {
+      console.error("[v0] Google Maps API key is not configured. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable.")
+      setApiKeyMissing(true)
     }
   }, [apiKey])
 
-  useEffect(() => {
-    if (isLoaded && !loadError) {
-      setMapReady(true)
-      console.log("[v0] Google Maps API loaded successfully")
-    } else if (loadError) {
-      console.error("[v0] Google Maps API load error:", loadError)
-    }
-  }, [isLoaded, loadError])
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: apiKey || "",
+    libraries,
+    preventGoogleFontsLoading: true,
+  })
 
   useEffect(() => {
     if (isLoaded && searchInputRef.current && !autocompleteRef.current) {
@@ -270,31 +258,25 @@ export default function GoogleMapsPicker({
     onClose()
   }
 
-  if (!apiKey) {
+  if (apiKeyMissing) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Maps Configuration Required</DialogTitle>
+            <DialogTitle className="text-foreground">Maps Configuration Error</DialogTitle>
           </DialogHeader>
           <div className="text-center py-8 space-y-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-left">
-              <p className="text-amber-900 font-medium mb-3">Google Maps Setup Required</p>
-              <div className="text-sm text-amber-800 space-y-2">
-                <p>To use the map feature, please:</p>
-                <ol className="list-decimal list-inside space-y-1 ml-2">
-                  <li>Get an API key from <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="underline font-medium">Google Cloud Console</a></li>
-                  <li>Enable Maps JavaScript API, Places API, and Geocoding API</li>
-                  <li>Set the <code className="bg-amber-100 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> environment variable</li>
-                  <li>Restart the application</li>
-                </ol>
-              </div>
-              <p className="text-xs text-amber-700 mt-3 pt-3 border-t border-amber-200">
-                See MAPS_SETUP_GUIDE.md for detailed instructions.
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-700 font-medium mb-2">Google Maps API Key Not Configured</p>
+              <p className="text-sm text-red-600 mb-3">
+                The Google Maps feature requires an API key to function properly.
+              </p>
+              <p className="text-xs text-gray-600">
+                Please contact support to enable this feature, or manually enter your address details.
               </p>
             </div>
-            <Button onClick={onClose} className="bg-[#8B5A3C] hover:bg-[#8B5A3C]/90">
-              Continue with Manual Entry
+            <Button onClick={onClose} variant="outline">
+              Close
             </Button>
           </div>
         </DialogContent>
@@ -303,49 +285,22 @@ export default function GoogleMapsPicker({
   }
 
   if (loadError) {
-    console.error("[v0] Google Maps Load Error:", loadError)
     return (
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Map Loading Error</DialogTitle>
+            <DialogTitle className="text-foreground">Error Loading Maps</DialogTitle>
           </DialogHeader>
           <div className="text-center py-8 space-y-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-700 font-medium mb-2">Unable to Load Map</p>
-              <p className="text-sm text-red-600 mb-3">
-                {loadError?.message || "Could not load Google Maps. Your API key may be invalid or restricted."}
-              </p>
-              <p className="text-xs text-red-500">
-                Error details: {JSON.stringify(loadError)}
+              <p className="text-red-700 font-medium mb-2">Failed to Load Google Maps</p>
+              <p className="text-sm text-red-600">
+                {loadError?.message || "An error occurred while loading Google Maps. Please try again later."}
               </p>
             </div>
-            <div className="flex gap-2 justify-center">
-              <Button onClick={onClose} variant="outline">
-                Use Manual Entry
-              </Button>
-              <Button onClick={() => window.location.reload()} className="bg-[#8B5A3C] hover:bg-[#8B5A3C]/90">
-                Retry
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    )
-  }
-
-  if (!isLoaded) {
-    return (
-      <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Loading Map</DialogTitle>
-          </DialogHeader>
-          <div className="text-center py-8 space-y-4">
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8B5A3C]"></div>
-            </div>
-            <p className="text-gray-600">Loading Google Maps...</p>
+            <Button onClick={onClose} variant="outline">
+              Close
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -35,7 +35,7 @@ export default function CustomerCartPage() {
   )
 
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0)
-  const shipping = totalQuantity === 0 ? 0 : 120 + (Math.max(0, totalQuantity - 1) * 20)
+  const shipping = 0 // Free shipping for all orders
   const total = subtotal + shipping
   const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return
@@ -170,7 +170,7 @@ export default function CustomerCartPage() {
                   </div>
                   <div className="flex justify-between text-foreground/70">
                     <span>Shipping Charge</span>
-                    <span>₹{shipping.toFixed(2)}</span>
+                    <span className="text-green-600 font-semibold">Free</span>
                   </div>
                   <div className="border-t" style={{ borderColor: "#D9CFC7" }} />
                   <div className="flex justify-between font-bold text-lg text-foreground">

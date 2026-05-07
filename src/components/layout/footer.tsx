@@ -11,7 +11,7 @@ export function Footer() {
         <div className="max-w-6xl mx-auto flex flex-col gap-4 sm:gap-6 text-foreground">
           {/* Copyright */}
           <p className="font-medium text-xs sm:text-sm md:text-base text-center">
-            © 2025 Ananthala. All rights reserved.
+            © 2026 Ananthala. All rights reserved.
           </p>
           
           {/* Links Grid - Responsive */}

@@ -15,24 +15,6 @@ interface TimelineEntry {
   description: string
 }
 
-interface DeliveryPartnerInfo {
-  courierName?: string
-  courierLogo?: string
-  awbCode?: string
-  trackingUrl?: string
-  deliveryPartnerName?: string
-  deliveryPartnerPhone?: string
-  deliveryPartnerLocation?: string
-  shipmentStatus?: string
-  lastStatusUpdate?: string
-  statusTimeline?: Array<{
-    status: string
-    timestamp: string
-    description: string
-    location: string
-  }>
-}
-
 interface Order {
   _id: string
   orderId: string
@@ -66,10 +48,6 @@ interface Order {
   orderStatus: "pending" | "processing" | "shipped" | "in-transit" | "delivered" | "cancelled"
   orderTimeline: TimelineEntry[]
   trackingNumber?: string
-  handoverDate?: string
-  courierName?: string
-  awbCode?: string
-  deliveryPartner?: DeliveryPartnerInfo
   createdAt: string
   updatedAt: string
 }
@@ -260,62 +238,6 @@ export default function TrackOrderPage() {
                     </Card>
                   )}
 
-                  {/* Delivery Partner Card */}
-                  {order.deliveryPartner && (order.orderStatus === "in-transit" || order.orderStatus === "delivered") && (
-                    <Card className="border border-[#D9CFC7] rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
-                      <CardContent className="p-4 sm:p-6">
-                        <h3 className="text-base sm:text-lg font-bold text-[#6D4530] mb-4 flex items-center gap-2">
-                          <Truck className="w-5 h-5 text-purple-600" />
-                          Delivery Partner
-                        </h3>
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-xs sm:text-sm font-medium text-[#8B5A3C]">Courier Service</p>
-                            <p className="text-base sm:text-lg font-semibold text-[#6D4530] mt-1">
-                              {order.deliveryPartner.courierName || order.deliveryPartner.deliveryPartnerName || "Shiprocket"}
-                            </p>
-                          </div>
-
-                          {order.deliveryPartner.awbCode && (
-                            <div className="border-t border-[#D9CFC7] pt-3">
-                              <p className="text-xs sm:text-sm font-medium text-[#8B5A3C]">AWB/Tracking Code</p>
-                              <p className="font-mono text-base sm:text-lg font-semibold text-[#6D4530] mt-1 break-all">
-                                {order.deliveryPartner.awbCode}
-                              </p>
-                            </div>
-                          )}
-
-                          {order.deliveryPartner.deliveryPartnerPhone && (
-                            <div className="border-t border-[#D9CFC7] pt-3">
-                              <p className="text-xs sm:text-sm font-medium text-[#8B5A3C]">Delivery Contact</p>
-                              <p className="text-base sm:text-lg font-semibold text-[#6D4530] mt-1">
-                                {order.deliveryPartner.deliveryPartnerPhone}
-                              </p>
-                            </div>
-                          )}
-
-                          {order.deliveryPartner.deliveryPartnerLocation && (
-                            <div className="border-t border-[#D9CFC7] pt-3">
-                              <p className="text-xs sm:text-sm font-medium text-[#8B5A3C]">Current Location</p>
-                              <p className="text-base sm:text-lg font-semibold text-[#6D4530] mt-1">
-                                {order.deliveryPartner.deliveryPartnerLocation}
-                              </p>
-                            </div>
-                          )}
-
-                          {order.handoverDate && (
-                            <div className="border-t border-[#D9CFC7] pt-3">
-                              <p className="text-xs sm:text-sm font-medium text-[#8B5A3C]">Handed Over Date</p>
-                              <p className="text-base sm:text-lg font-semibold text-[#6D4530] mt-1">
-                                {formatDate(order.handoverDate)}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
                   {/* Delivery Timeline */}
                   <Card className="border border-[#D9CFC7] rounded-lg overflow-hidden">
                     <CardContent className="p-4 sm:p-6">
@@ -371,7 +293,7 @@ export default function TrackOrderPage() {
                         )}
                         <div className="flex justify-between text-sm sm:text-base text-[#6D4530]">
                           <span>Shipping</span>
-                          <span className="font-semibold">₹{order.shippingCost.toFixed(2)}</span>
+                          <span className="font-semibold text-green-600">Free</span>
                         </div>
                         <div className="border-t border-[#D9CFC7] pt-3 mt-3 flex justify-between font-bold text-base sm:text-lg text-[#6D4530]">
                           <span>Total Amount</span>

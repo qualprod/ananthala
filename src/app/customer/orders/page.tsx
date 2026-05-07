@@ -55,6 +55,8 @@ interface Order {
   items: OrderItem[]
   orderTimeline?: TimelineEntry[]
   trackingNumber?: string
+  trackingUrl?: string
+  shippingProvider?: string
   razorpayPaymentId?: string
   razorpayOrderId?: string
   paymentMethod?: string
@@ -615,6 +617,22 @@ export default function OrdersPage() {
                   {selectedOrder.orderStatus.charAt(0).toUpperCase() + selectedOrder.orderStatus.slice(1)}
                 </div>
               </div>
+
+              {/* Tracking URL Button */}
+              {selectedOrder.trackingUrl && (
+                <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                  <p className="text-xs text-blue-700 font-medium mb-3">Track Your Shipment</p>
+                  <Button
+                    onClick={() => {
+                      window.open(selectedOrder.trackingUrl, "_blank")
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+                  >
+                    <Truck className="w-4 h-4 mr-2" />
+                    Open Tracking ({selectedOrder.shippingProvider || "Logistics Provider"})
+                  </Button>
+                </div>
+              )}
 
               {/* Timeline Tracking */}
               {selectedOrder.orderTimeline && selectedOrder.orderTimeline.length > 0 ? (

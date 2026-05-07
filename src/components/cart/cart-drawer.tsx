@@ -50,6 +50,11 @@ export function CartDrawer({ isOpen, onClose, cartItems = [] }: CartDrawerProps)
     router.push("/checkout")
   }
 
+  const handleContinueShopping = () => {
+    onClose()
+    router.push("/")
+  }
+
   return (
     <>
       {/* Overlay */}
@@ -204,7 +209,6 @@ export function CartDrawer({ isOpen, onClose, cartItems = [] }: CartDrawerProps)
                     })}
                   </span>
                 </div>
-                <p className="text-black text-lg">Shipping calculated at checkout</p>
               </div>
 
               <div className="space-y-3">
@@ -213,16 +217,15 @@ export function CartDrawer({ isOpen, onClose, cartItems = [] }: CartDrawerProps)
                   style={{ backgroundColor: "#EED9C4" }}
                   onClick={handleCheckout}
                 >
-                  Checkout
+                  Proceed to Checkout
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full border-2 py-6 text-lg font-medium transition-colors bg-transparent text-black hover:opacity-70"
                   style={{ borderColor: "#D9CFC7" }}
-                  onClick={onClose}
-                  asChild
+                  onClick={handleContinueShopping}
                 >
-                  <Link href="/cart">View Cart</Link>
+                  Continue Shopping
                 </Button>
               </div>
             </div>

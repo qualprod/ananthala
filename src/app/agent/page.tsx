@@ -121,7 +121,7 @@ export default function AgentLoginPage() {
             <img
               src="/logo1.png"
               alt="Ananthala Agent"
-              className="h-20 md:h-24 w-auto mix-blend-multiply"
+              className="h-20 md:h-24 w-auto mix-blend-lighten"
             />
           </div>
 

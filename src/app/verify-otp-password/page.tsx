@@ -144,7 +144,7 @@ function VerifyOTPForm() {
             <img
               src="/logo.png"
               alt="Ananthala"
-              className="h-16 md:h-20 w-auto mx-auto mix-blend-multiply"
+              className="h-16 md:h-20 w-auto mx-auto mix-blend-lighten"
             />
           </Link>
         </div>

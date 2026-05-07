@@ -43,13 +43,13 @@ declare global {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { cartItems, clearCart, appliedCoupon, setAppliedCoupon, clearCoupon } = useCart()
+  const { cartItems, clearCart, appliedCoupons, setAppliedCoupon, clearCoupon } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
   const [isAuthChecking, setIsAuthChecking] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [allStates, setAllStates] = useState<string[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-const [couponCode, setCouponCode] = useState("")
+  const [couponCode, setCouponCode] = useState("")
   const [couponError, setCouponError] = useState("")
   const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
   const { toast } = useToast()
@@ -301,14 +301,12 @@ useEffect(() => {
     formData.zipCode &&
     /^\d{6}$/.test(formData.zipCode)
   
-  // Shipping formula: 120 for first product, +20 for each additional product
-  // Only calculate shipping if address is complete
-  // Example: 1 product = 120, 2 products = 140, 3 products = 160
-  const shipping = (isAddressComplete && totalQuantity > 0) ? 120 + (Math.max(0, totalQuantity - 1) * 20) : 0
+  // Shipping is FREE for all orders
+  const shipping = 0
   
-  // Calculate discount based on applied coupon
-  const discount = appliedCoupon ? appliedCoupon.discountAmount : 0
-  const total = subtotal - discount + shipping
+  // Calculate total discount from all applied coupons
+  const totalDiscount = appliedCoupons.reduce((sum, coupon) => sum + coupon.discountAmount, 0)
+  const total = subtotal - totalDiscount + shipping
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -316,8 +314,19 @@ useEffect(() => {
       return
     }
 
+    if (appliedCoupons.length >= 3) {
+      setCouponError("Maximum 3 coupons can be applied")
+      return
+    }
+
     if (cartItems.length === 0) {
       setCouponError("Your cart is empty")
+      return
+    }
+
+    // Check if coupon already applied
+    if (appliedCoupons.find((c) => c.code === couponCode.toUpperCase())) {
+      setCouponError("This coupon is already applied")
       return
     }
 
@@ -340,22 +349,19 @@ useEffect(() => {
           type: data.coupon.type,
           discount: data.coupon.discount,
         })
+        setCouponCode("")
         setCouponError("")
       } else {
         setCouponError(data.error || "Invalid coupon code")
-        clearCoupon()
       }
     } catch (error) {
       console.error("Error validating coupon:", error)
       setCouponError("Error validating coupon. Please try again.")
-      clearCoupon()
     }
   }
 
-  const removeCoupon = () => {
-    clearCoupon()
-    setCouponCode("")
-    setCouponError("")
+  const removeCoupon = (couponCode: string) => {
+    clearCoupon(couponCode)
   }
 
 const handleInputChange = (
@@ -402,7 +408,7 @@ const handleInputChange = (
     
     // Required shipping fields
     if (!formData.firstName.trim()) errors.firstName = "First name is required"
-    if (!formData.lastName.trim()) errors.lastName = "Last name is required"
+    // lastName is optional - no validation required
     if (!formData.email.trim()) errors.email = "Email is required"
     else if (!/^\S+@\S+\.\S+$/.test(formData.email)) errors.email = "Invalid email format"
     if (!formData.phone.trim()) errors.phone = "Phone number is required"
@@ -419,7 +425,7 @@ const handleInputChange = (
     // Billing address validation if different
     if (billingDifferent) {
       if (!billingData.firstName.trim()) errors.billing_firstName = "First name is required"
-      if (!billingData.lastName.trim()) errors.billing_lastName = "Last name is required"
+      // billing lastName is optional - no validation required
       if (!billingData.houseNumber.trim()) errors.billing_houseNumber = "House number is required"
       if (!billingData.crossStreet.trim()) errors.billing_crossStreet = "Street is required"
       if (!billingData.locality.trim()) errors.billing_locality = "Area / Locality is required"
@@ -655,8 +661,8 @@ shippingAddress: {
                 })),
                 subtotal,
                 shippingCost: shipping,
-                discount: discount,
-                couponCode: appliedCoupon?.code || null,
+      discount: totalDiscount,
+      appliedCoupons: appliedCoupons.map((c) => c.code).join(", "),
                 totalAmount: total,
                 paymentMethod: formData.paymentMethod,
               }),
@@ -817,7 +823,7 @@ shippingAddress: {
                       </div>
                       <div>
                         <label className="block text-black mb-2 text-lg font-medium">
-                          Last Name <span className="text-red-500">*</span>
+                          Last Name <span className="text-foreground/50 text-sm">(Optional)</span>
                         </label>
                         <input
                           type="text"
@@ -826,6 +832,7 @@ shippingAddress: {
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.lastName ? "border-red-500 bg-red-50" : ""}`}
                           style={{ borderColor: fieldErrors.lastName ? undefined : "#D9CFC7" }}
+                          placeholder="Enter last name (optional)"
                         />
                         {fieldErrors.lastName && (
                           <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -974,14 +981,14 @@ shippingAddress: {
                     <div className="space-y-4">
                       <div>
                         <label className="block text-black mb-2 text-lg font-medium">
-                          House Number <span className="text-red-500">*</span>
+                          House Number / Flat Number <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           name="houseNumber"
                           value={formData.houseNumber}
                           onChange={handleInputChange}
-                          placeholder="House / Flat Number"
+                          placeholder="e.g., 123, Apt 4B"
                           className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.houseNumber ? "border-red-500 bg-red-50" : ""}`}
                           style={{ borderColor: fieldErrors.houseNumber ? undefined : "#D9CFC7" }}
                         />
@@ -993,14 +1000,14 @@ shippingAddress: {
                       </div>
                       <div>
                         <label className="block text-black mb-2 text-lg font-medium">
-                          Street <span className="text-red-500">*</span>
+                          Street / Road Name <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           name="crossStreet"
                           value={formData.crossStreet}
                           onChange={handleInputChange}
-                          placeholder="Street name"
+                          placeholder="e.g., Main Street, XYZ Road"
                           className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.crossStreet ? "border-red-500 bg-red-50" : ""}`}
                           style={{ borderColor: fieldErrors.crossStreet ? undefined : "#D9CFC7" }}
                         />
@@ -1011,13 +1018,15 @@ shippingAddress: {
                         )}
                       </div>
                       <div>
-                        <label className="block text-black mb-2 text-lg font-medium">Landmark</label>
+                        <label className="block text-black mb-2 text-lg font-medium">
+                          Landmark / Reference <span className="text-gray-500 text-sm">(Optional)</span>
+                        </label>
                         <input
                           type="text"
                           name="landmark"
                           value={formData.landmark}
                           onChange={handleInputChange}
-                          placeholder="Nearby landmark (optional)"
+                          placeholder="e.g., Near City Hospital, Beside Park"
                           className="w-full px-4 py-3 border text-black text-lg"
                           style={{ borderColor: "#D9CFC7" }}
                         />
@@ -1031,7 +1040,7 @@ shippingAddress: {
                           name="locality"
                           value={formData.locality}
                           onChange={handleInputChange}
-                          placeholder="Area / Locality"
+                          placeholder="e.g., Downtown, Westside"
                           className={`w-full px-4 py-3 border text-black text-lg ${fieldErrors.locality ? "border-red-500 bg-red-50" : ""}`}
                           style={{ borderColor: fieldErrors.locality ? undefined : "#D9CFC7" }}
                         />
@@ -1216,7 +1225,7 @@ shippingAddress: {
                           </div>
                           <div>
                             <label className="block text-black mb-2 font-medium">
-                              Last Name <span className="text-red-500">*</span>
+                              Last Name <span className="text-foreground/50 text-sm">(Optional)</span>
                             </label>
                             <input
                               type="text"
@@ -1225,6 +1234,7 @@ shippingAddress: {
                               onChange={handleBillingInputChange}
                               className={`w-full px-4 py-3 border text-black ${fieldErrors.billing_lastName ? "border-red-500 bg-red-50" : ""}`}
                               style={{ borderColor: fieldErrors.billing_lastName ? undefined : "#D9CFC7" }}
+                              placeholder="Enter last name (optional)"
                             />
                             {fieldErrors.billing_lastName && (
                               <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -1569,26 +1579,47 @@ shippingAddress: {
 
                 {/* Coupon Input Section */}
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg border" style={{ borderColor: "#D9CFC7" }}>
-                  <h3 className="text-sm font-semibold text-black mb-3">Apply Coupon Code</h3>
-                  <div className="flex items-center gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Enter Coupon Code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      className="flex-1 px-3 py-2 border rounded-md text-sm text-black focus:outline-none"
-                      style={{ borderColor: "#D9CFC7" }}
-                    />
-                    <button
-                      onClick={appliedCoupon ? removeCoupon : applyCoupon}
-                      className="px-4 py-2 text-sm text-black bg-gray-200 hover:bg-gray-300 transition-colors rounded-md"
-                    >
-                      {appliedCoupon ? "Remove" : "Apply"}
-                    </button>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-semibold text-black">Apply Coupon Code</h3>
+                    <span className="text-xs text-gray-600">({appliedCoupons.length}/3)</span>
                   </div>
-                  {couponError && <p className="text-xs text-red-600">{couponError}</p>}
-                  {appliedCoupon && (
-                    <p className="text-xs text-green-600 mt-2">✓ Coupon "{appliedCoupon.code}" applied successfully</p>
+                  {appliedCoupons.length < 3 && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Enter Coupon Code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        className="flex-1 px-3 py-2 border rounded-md text-sm text-black focus:outline-none"
+                        style={{ borderColor: "#D9CFC7" }}
+                      />
+                      <button
+                        onClick={applyCoupon}
+                        className="px-4 py-2 text-sm text-black bg-gray-200 hover:bg-gray-300 transition-colors rounded-md"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  )}
+                  {couponError && <p className="text-xs text-red-600 mb-2">{couponError}</p>}
+                  {appliedCoupons.length > 0 && (
+                    <div className="space-y-2">
+                      {appliedCoupons.map((coupon) => (
+                        <div
+                          key={coupon.code}
+                          className="flex items-center justify-between text-xs bg-white p-2 rounded border"
+                          style={{ borderColor: "#D9CFC7" }}
+                        >
+                          <span className="text-green-600">✓ {coupon.code}</span>
+                          <button
+                            onClick={() => removeCoupon(coupon.code)}
+                            className="text-red-600 hover:text-red-700 font-semibold"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
 
@@ -1611,15 +1642,15 @@ shippingAddress: {
                         </div>
                       </span>
                     </div>
-                    {appliedCoupon && (
+                    {appliedCoupons.length > 0 && (
                       <div className="flex items-center justify-between text-base md:text-lg">
-                        <span className="text-black font-medium">Discount ({appliedCoupon.code})</span>
+                        <span className="text-black font-medium">Discount ({appliedCoupons.map((c) => c.code).join(", ")})</span>
                         <span className="text-green-600 font-semibold">
                           <div className="flex items-center gap-1">
                             <span>-</span>
                             <IndianRupee className="w-4 h-4" />
                             <span>
-                              {discount.toLocaleString("en-IN", {
+                              {totalDiscount.toLocaleString("en-IN", {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })}
@@ -1628,27 +1659,10 @@ shippingAddress: {
                         </span>
                       </div>
                     )}
-                    {isAddressComplete ? (
-                      <div className="flex items-center justify-between text-base md:text-lg">
-                        <span className="text-black font-medium">Shipping Charge</span>
-                        <span className="text-black">
-                          <div className="flex items-center gap-1">
-                            <IndianRupee className="w-4 h-4" />
-                            <span>
-                              {shipping.toLocaleString("en-IN", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </span>
-                          </div>
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between text-base md:text-lg">
-                        <span className="text-gray-500 font-medium">Shipping Charge</span>
-                        <span className="text-gray-400 text-sm">Add address to calculate</span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between text-base md:text-lg">
+                      <span className="text-black font-medium">Shipping Charge</span>
+                      <span className="text-green-600 font-semibold">Free</span>
+                    </div>
                   </div>
                 </div>
 

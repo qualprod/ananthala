@@ -3,7 +3,6 @@ import { cookies } from "next/headers"
 import dbConnect from "@/lib/mongodb"
 import Cart from "@/models/cart"
 import { verifyToken } from "@/lib/jwt"
-import { calculateShippingCharge } from "@/lib/shipping"
 import { nanoid } from "nanoid"
 
 interface SaveCartRequest {
@@ -78,7 +77,7 @@ export async function POST(request: NextRequest) {
     // Calculate totals
     const subtotal = body.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     const totalQuantity = body.items.reduce((sum, item) => sum + item.quantity, 0)
-    const shipping = calculateShippingCharge(totalQuantity)
+    const shipping = 0
     const total = subtotal + shipping
 
     // Create cart document with real user info

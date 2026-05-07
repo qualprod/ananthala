@@ -260,7 +260,7 @@ export default function SignupPage() {
               <img
                 src="/logo1.png"
                 alt="Ananthala"
-                className="h-24 md:h-28 w-auto mx-auto mix-blend-multiply"
+                className="h-24 md:h-28 w-auto mx-auto mix-blend-lighten"
               />
             </Link>
           </div>
@@ -374,7 +374,7 @@ export default function SignupPage() {
             <img
               src="/logo1.png"
               alt="Ananthala"
-              className="h-24 md:h-28 w-auto mx-auto mix-blend-multiply"
+              className="h-24 md:h-28 w-auto mx-auto mix-blend-lighten"
             />
           </Link>
         </div>

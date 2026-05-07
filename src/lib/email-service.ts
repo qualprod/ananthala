@@ -105,6 +105,8 @@ export async function sendOrderConfirmationEmail(
 
     const trackOrderUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/track-order`
 
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
+
     const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -145,10 +147,10 @@ export async function sendOrderConfirmationEmail(
           text-align: center;
         }
         .header-logo {
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.5px;
-          margin-bottom: 8px;
+          max-width: 160px;
+          height: auto;
+          margin: 0 auto 8px;
+          display: block;
         }
         .header-subtitle {
           font-size: 13px;
@@ -450,7 +452,7 @@ export async function sendOrderConfirmationEmail(
         <div class="container">
           <!-- Header -->
           <div class="header">
-            <div class="header-logo"></div>
+            <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
             <div class="header-subtitle">Order Confirmation</div>
           </div>
 
@@ -498,23 +500,23 @@ export async function sendOrderConfirmationEmail(
             <!-- Summary -->
             <div class="summary-box">
               <div class="summary-row">
-                <span class="summary-label">Subtotal</span>
+                <span class="summary-label">Subtotal : </span>
                 <span>₹${order.subtotal.toFixed(2)}</span>
               </div>
               ${
                 order.discount > 0
                   ? `<div class="summary-row discount">
-                <span class="summary-label">Discount</span>
+                <span class="summary-label">Discount : </span>
                 <span>-₹${order.discount.toFixed(2)}</span>
               </div>`
                   : ""
               }
               <div class="summary-row">
-                <span class="summary-label">Shipping</span>
-                <span>₹${order.shippingCost.toFixed(2)}</span>
+                <span class="summary-label">Shipping : </span>
+                <span>Free</span>
               </div>
               <div class="summary-row total">
-                <span class="summary-label">Total Amount</span>
+                <span class="summary-label">Total Amount : </span>
                 <span>₹${order.totalAmount.toFixed(2)}</span>
               </div>
             </div>
@@ -588,7 +590,7 @@ Items:
 ${order.items.map((item: { productName: any; quantity: number; price: number }) => `- ${item.productName} x${item.quantity}: ₹${(item.price * item.quantity).toFixed(2)}`).join("\n")}
 
 Subtotal: ₹${order.subtotal.toFixed(2)}
-${order.discount > 0 ? `Discount: -₹${order.discount.toFixed(2)}\n` : ""}Shipping: ₹${order.shippingCost.toFixed(2)}
+${order.discount > 0 ? `Discount: -₹${order.discount.toFixed(2)}\n` : ""}Shipping: Free
 Total: ₹${order.totalAmount.toFixed(2)}
 
 Track your order here:
@@ -648,6 +650,8 @@ export async function sendOrderCancellationEmail(
       console.error(`[v0] Email transporter not configured for cancellation email`)
       return false
     }
+
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
 
     const itemsHTML = orderData.items
       .map(
@@ -709,10 +713,10 @@ export async function sendOrderCancellationEmail(
           text-align: center;
         }
         .header-logo {
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.5px;
-          margin-bottom: 8px;
+          max-width: 160px;
+          height: auto;
+          margin: 0 auto 8px;
+          display: block;
         }
         .header-subtitle {
           font-size: 13px;
@@ -886,7 +890,7 @@ export async function sendOrderCancellationEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="header-logo"> <img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span> </div>
+            <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
             <div class="header-subtitle">Order Cancelled</div>
           </div>
 
@@ -942,7 +946,7 @@ export async function sendOrderCancellationEmail(
               }
               <div class="summary-row">
                 <span class="summary-label">Shipping</span>
-                <span>₹${orderData.shippingCost.toFixed(2)}</span>
+                <span>Free</span>
               </div>
               <div class="summary-row total">
                 <span class="summary-label">Total Amount</span>
@@ -1001,7 +1005,7 @@ Cancelled Items:
 ${orderData.items.map((item) => `- ${item.productName} x${item.quantity}: ₹${(item.price * item.quantity).toFixed(2)}`).join("\n")}
 
 Subtotal: ₹${orderData.subtotal.toFixed(2)}
-${orderData.discount > 0 ? `Discount: ₹${orderData.discount.toFixed(2)}\n` : ""}Shipping: ₹${orderData.shippingCost.toFixed(2)}
+${orderData.discount > 0 ? `Discount: ₹${orderData.discount.toFixed(2)}\n` : ""}Shipping: Free
 Total Amount: ₹${orderData.totalAmount.toFixed(2)}
 
 REFUND INFORMATION:
@@ -1053,6 +1057,8 @@ export async function sendOrderStatusUpdateEmail(
 ): Promise<boolean> {
   try {
     const transporter = await getEmailTransporter()
+    
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
 
     const getStatusColor = (status: string) => {
       const statusColors: Record<string, { color: string; bg: string; icon: string }> = {
@@ -1120,10 +1126,10 @@ export async function sendOrderStatusUpdateEmail(
           text-align: center;
         }
         .header-logo {
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.5px;
-          margin-bottom: 8px;
+          max-width: 160px;
+          height: auto;
+          margin: 0 auto 8px;
+          display: block;
         }
         .content {
           padding: 32px 24px;
@@ -1269,7 +1275,8 @@ export async function sendOrderStatusUpdateEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-           <div class="header-logo"> <img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span> </div>
+            <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
+            <div class="header-subtitle">Order Cancellation</div>
           </div>
 
           <div class="content">
@@ -1396,6 +1403,7 @@ export async function sendWelcomeEmail(
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    const logoUrl = `${appUrl}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -1411,8 +1419,8 @@ export async function sendWelcomeEmail(
           
           <!-- Header -->
           <div style="background: linear-gradient(135deg, #6d4530 0%, #8b5a3c 100%); padding: 40px 32px; text-align: center;">
-            <h1 style="color: white; font-size: 32px; margin: 0; letter-spacing: 3px; font-weight: 700;">ANANTHALA</h1>
-            <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 8px; letter-spacing: 1px;">Premium Comfort for Your Little Ones</p>
+            <img src="${logoUrl}" alt="Ananthala Logo" style="max-width: 160px; height: auto; margin-bottom: 16px;" />
+            <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0; letter-spacing: 1px;">Premium Comfort for Your Little Ones</p>
           </div>
           
           <!-- Content -->
@@ -1533,6 +1541,9 @@ export async function sendOTPEmail(
 
     console.log(`[v0] Email transporter configured successfully`)
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    const logoUrl = `${appUrl}/logo.png`
+
     const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -1571,10 +1582,10 @@ export async function sendOTPEmail(
           text-align: center;
         }
         .header-logo {
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.5px;
-          margin-bottom: 8px;
+          max-width: 160px;
+          height: auto;
+          margin: 0 auto 8px;
+          display: block;
         }
         .content {
           padding: 32px 24px;
@@ -1647,7 +1658,7 @@ export async function sendOTPEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="header-logo"> <img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span> </div>
+            <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
           </div>
           <div class="content">
             <p class="greeting">Hello ${userName},</p>
@@ -1877,8 +1888,8 @@ export async function sendPasswordResetConfirmationEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="header-logo"> <img src="logo.png" alt="Ananthala Logo" class="logo-img" /> <span>Ananthala</span> </div>
-            <div class="header-subtitle">Password Reset Confirmation</div>
+            <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
+            <div class="header-subtitle">Order Confirmation</div>
           </div>
           <div class="content">
             <p class="greeting">Hello ${userName},</p>

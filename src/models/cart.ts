@@ -110,6 +110,27 @@ const cartSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    appliedCoupons: [
+      {
+        code: {
+          type: String,
+          required: true,
+        },
+        discountAmount: {
+          type: Number,
+          required: true,
+        },
+        type: {
+          type: String,
+          enum: ["percentage", "fixed"],
+          required: true,
+        },
+        discount: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
     total: {
       type: Number,
       default: 0,

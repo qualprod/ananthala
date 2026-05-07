@@ -39,7 +39,7 @@ export function useCartPersistence(options: CartPersistenceOptions) {
         (sum, item) => sum + item.price * item.quantity,
         0
       )
-      const shipping = subtotal > 5000 ? 0 : 500
+      const shipping = 0
       const total = subtotal + shipping
 
       // Create payload

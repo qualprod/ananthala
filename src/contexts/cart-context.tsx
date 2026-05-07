@@ -11,14 +11,14 @@ interface CartContextType {
   updateQuantity: (itemId: string, quantity: number) => void
   clearCart: () => void
   isLoading: boolean
-  appliedCoupon: {
+  appliedCoupons: Array<{
     code: string
     discountAmount: number
     type: string
     discount: number
-  } | null
+  }>
   setAppliedCoupon: (coupon: any) => void
-  clearCoupon: () => void
+  clearCoupon: (couponCode?: string) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -30,7 +30,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [userEmail, setUserEmail] = useState<string>("")
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [appliedCoupons, setAppliedCoupons] = useState<any[]>([])
 
   const normalizeItemName = (name: string) => name.replace(/\bGRACE\b/g, "Grace")
   const getCartItemMergeKey = (item: CartItem) =>
@@ -60,9 +60,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return Array.from(merged.values())
   }
 
-  // Fetch user info from auth verification endpoint
+  // Fetch user info from auth verification endpoint and load user's saved cart
   useEffect(() => {
-    const fetchUserInfo = async () => {
+    const fetchUserInfoAndCart = async () => {
       try {
         const response = await fetch("/api/auth/verify", {
           method: "GET",
@@ -79,6 +79,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               localStorage.setItem("user_id", data.user.id || "")
               localStorage.setItem("user_fullname", data.user.fullname || "")
             }
+
+            // Load user's saved cart from database after successful login
+            if (data.user.id) {
+              try {
+                const cartResponse = await fetch(`/api/cart/get?userId=${data.user.id}`, {
+                  method: "GET",
+                  credentials: "include",
+                })
+
+                if (cartResponse.ok) {
+                  const cartData = await cartResponse.json()
+                  if (cartData.cart && cartData.cart.items && cartData.cart.items.length > 0) {
+                    // Normalize and merge the loaded cart items
+                    const normalizedItems = cartData.cart.items.map((item: any) =>
+                      item && typeof item === "object" ? { ...item, name: normalizeItemName(item.name ?? "") } : item
+                    )
+                    setCartItems(mergeDuplicateCartItems(normalizedItems))
+                  }
+                }
+              } catch (cartError) {
+                console.error("[Cart] Error loading saved cart after login:", cartError)
+              }
+            }
           }
         } else {
           // User not logged in, use guest
@@ -91,7 +114,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (typeof window !== "undefined") {
-      fetchUserInfo()
+      fetchUserInfoAndCart()
     }
   }, [])
 
@@ -246,11 +269,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const handleSetAppliedCoupon = (coupon: any) => {
-    setAppliedCoupon(coupon)
+    if (appliedCoupons.length < 3) {
+      // Check if coupon already applied
+      if (appliedCoupons.find((c) => c.code === coupon.code)) {
+        return // Coupon already applied
+      }
+      setAppliedCoupons([...appliedCoupons, coupon])
+    }
   }
 
-  const clearCoupon = () => {
-    setAppliedCoupon(null)
+  const clearCoupon = (couponCode?: string) => {
+    if (couponCode) {
+      // Remove specific coupon
+      setAppliedCoupons(appliedCoupons.filter((c) => c.code !== couponCode))
+    } else {
+      // Clear all coupons
+      setAppliedCoupons([])
+    }
   }
 
   return (
@@ -262,7 +297,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         clearCart,
         isLoading,
-        appliedCoupon,
+        appliedCoupons,
         setAppliedCoupon: handleSetAppliedCoupon,
         clearCoupon,
       }}

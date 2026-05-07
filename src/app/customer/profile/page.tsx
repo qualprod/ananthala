@@ -14,6 +14,7 @@ import { splitPhoneNumber, withCountryCode } from "@/lib/phone"
 
 const GoogleMapsPicker = lazy(() => import("@/components/location/google-maps-picker"))
 
+// Suspense fallback for Maps
 function GoogleMapsPickerFallback() {
   return (
     <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -414,13 +415,10 @@ export default function ProfilePage() {
         <CardContent className="space-y-6">
           {showAddForm && (
             <div className="border border-[#D9CFC7] rounded-lg p-4 space-y-4 bg-background">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">
-                    {editingAddressIndex !== null ? "Edit Address" : "Add New Address"}
-                  </h3>
-                  <p className="text-sm text-gray-600">Enter complete address details or pick location from map.</p>
-                </div>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">
+                  {editingAddressIndex !== null ? "Edit Address" : "Add New Address"}
+                </h3>
                 <Button
                   type="button"
                   onClick={() => setShowMapPicker(true)}
@@ -433,14 +431,8 @@ export default function ProfilePage() {
               </div>
 
               {newAddress.latitude && newAddress.longitude && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-sm text-green-800">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-semibold">✓</span>
-                    <div>
-                      <p className="font-medium">Location saved</p>
-                      <p className="text-xs mt-0.5 opacity-90">Coordinates: {newAddress.latitude.toFixed(6)}, {newAddress.longitude.toFixed(6)}</p>
-                    </div>
-                  </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+                  Location coordinates saved: {newAddress.latitude.toFixed(6)}, {newAddress.longitude.toFixed(6)}
                 </div>
               )}
 
@@ -552,6 +544,18 @@ export default function ProfilePage() {
                   placeholder="e.g., 110001"
                   className="border-[#D9CFC7] focus-visible:ring-foreground text-foreground"
                   maxLength={6}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country" className="text-foreground">
+                  Country
+                </Label>
+                <Input
+                  id="country"
+                  value={newAddress.country}
+                  disabled
+                  className="border-[#D9CFC7] focus-visible:ring-foreground text-foreground bg-gray-100 cursor-not-allowed"
                 />
               </div>
 
