@@ -1888,7 +1888,7 @@ export async function sendPasswordResetConfirmationEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
+            <img src="/logo.png" alt="Ananthala Logo" class="header-logo" />
             <div class="header-subtitle">Order Confirmation</div>
           </div>
           <div class="content">
