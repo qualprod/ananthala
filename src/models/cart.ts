@@ -156,6 +156,11 @@ const cartSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    cartVersion: {
+      type: Number,
+      default: 1,
+      required: true,
+    },
     expiresAt: {
       type: Date,
       default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days

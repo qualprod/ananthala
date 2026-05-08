@@ -36,13 +36,13 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json()
     } catch (parseError: any) {
-      console.error("[v0] JSON parse error:", parseError)
+      console.error("[v0] JSON parse error:", parseError.message)
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid JSON in request body",
+          message: "Invalid JSON in request body. Please ensure all fields are properly formatted.",
         },
-        { status: 400 },
+        { status: 400 }
       )
     }
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
           success: false,
           message: "Title and video URL are required",
         },
-        { status: 400 },
+        { status: 400 }
       )
     }
 
@@ -71,11 +71,11 @@ export async function POST(request: NextRequest) {
       customerName: customerName ? String(customerName).trim() : "",
       thumbnail: thumbnail ? String(thumbnail).trim() : "",
       displayOrder,
+      isActive: true,
     })
 
     await newVideo.save()
 
-    // Convert MongoDB document to plain object to avoid serialization issues
     const savedVideo = newVideo.toObject()
 
     return NextResponse.json(
@@ -84,16 +84,16 @@ export async function POST(request: NextRequest) {
         message: "Review video created successfully",
         data: savedVideo,
       },
-      { status: 201 },
+      { status: 201 }
     )
   } catch (error: any) {
-    console.error("[v0] Error creating review video:", error)
+    console.error("[v0] Error creating review video:", error.message)
     return NextResponse.json(
       {
         success: false,
         message: error.message || "Failed to create review video",
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }

@@ -17,6 +17,7 @@ export interface CartItem {
   productId?: string
   name: string
   image: string
+  slug?: string
   size: string
   fabric?: string
   productColor?: string // Color selected from color configurator

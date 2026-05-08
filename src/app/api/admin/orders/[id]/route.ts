@@ -133,7 +133,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { orderStatus, trackingNumber, notes, paymentStatus } = await request.json()
 
     // Validate orderStatus
-    const validStatuses = ["pending", "processing", "shipped", "in-transit", "delivered", "cancelled"]
+    const validStatuses = ["pending", "processing", "shipped", "in-transit", "delivered", "cancelled", "payment_failed"]
     if (orderStatus && !validStatuses.includes(orderStatus)) {
       return NextResponse.json({ error: "Invalid order status" }, { status: 400 })
     }

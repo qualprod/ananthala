@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer"
-import type { Order } from "@/types/index"
+import type { Order, OrderItem } from "@/types/index"
 
 const getEmailTransporter = async () => {
   // Check if using Gmail with EMAIL_PROVIDER explicitly set to gmail
@@ -83,7 +83,7 @@ export async function sendOrderConfirmationEmail(
     // Build items table HTML
     const itemsHTML = order.items
       .map(
-        (item: { productName: any; size: any; fabric: any; productColor: any; quantity: number; price: number }) => `
+        (item: OrderItem) => `
       <tr>
         <td>
           <div class="item-name">${item.productName}</div>
@@ -891,7 +891,7 @@ export async function sendOrderCancellationEmail(
         <div class="container">
           <div class="header">
             <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
-            <div class="header-subtitle">Order Cancelled</div>
+            <div class="header-subtitle">Password Reset Confirmation</div>
           </div>
 
           <div class="content">
@@ -1276,7 +1276,7 @@ export async function sendOrderStatusUpdateEmail(
         <div class="container">
           <div class="header">
             <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
-            <div class="header-subtitle">Order Cancellation</div>
+            <div class="header-subtitle">Order Status Update</div>
           </div>
 
           <div class="content">
@@ -1734,6 +1734,8 @@ export async function sendPasswordResetConfirmationEmail(
       return false
     }
 
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
+
     const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -1772,10 +1774,10 @@ export async function sendPasswordResetConfirmationEmail(
           text-align: center;
         }
         .header-logo {
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.5px;
-          margin-bottom: 8px;
+          max-width: 160px;
+          height: auto;
+          margin: 0 auto 8px;
+          display: block;
         }
         .header-subtitle {
           font-size: 13px;
@@ -1888,7 +1890,7 @@ export async function sendPasswordResetConfirmationEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <img src="/logo.png" alt="Ananthala Logo" class="header-logo" />
+            <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
             <div class="header-subtitle">Order Confirmation</div>
           </div>
           <div class="content">

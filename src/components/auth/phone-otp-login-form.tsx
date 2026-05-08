@@ -143,7 +143,7 @@ export function PhoneOTPLoginForm() {
         } else {
           toast({
             title: "Success",
-            description: "Login successful! Redirecting...",
+            description: "Login successful!..",
           })
           setTimeout(() => {
             router.push(redirectUrl)
@@ -187,7 +187,7 @@ export function PhoneOTPLoginForm() {
       if (data.success) {
         toast({
           title: "Success",
-          description: "Profile completed! Redirecting...",
+          description: "Profile completed! ...",
         })
         setTimeout(() => {
           router.push(redirectUrl)

@@ -11,8 +11,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast"
 
 interface OrderItem {
-  productId: string
+  productId?: string
   productName: string
+  productImage?: string
+  productSlug?: string
   quantity: number
   price: number
   size?: string
@@ -472,21 +474,47 @@ export default function OrdersPage() {
                 <div className="border" style={{ borderColor: "#D9CFC7" }}>
                   {selectedOrder.items.map((item, idx) => (
                     <div key={idx} className="p-4 border-b" style={{ borderColor: "#D9CFC7" }}>
-                      <div className="flex justify-between items-start gap-4">
-                        <div>
-                          <p className="font-medium text-[#6D4530]">{item.productName}</p>
-                          <div className="text-sm text-foreground mt-1 space-y-1">
-                            {item.size && <p>Size: {item.size}</p>}
-                            {item.fabric && <p>Fabric: {item.fabric}</p>}
-                            {item.productColor && <p>Color: {item.productColor}</p>}
+                      <div className="flex gap-4">
+                        {/* Product Image */}
+                        {item.productImage && (
+                          <div className="flex-shrink-0">
+                            <img
+                              src={item.productImage}
+                              alt={item.productName}
+                              className="w-24 h-24 object-cover rounded-lg border"
+                              style={{ borderColor: "#D9CFC7" }}
+                            />
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-[#6D4530]">₹{item.price.toFixed(2)}</p>
-                          <p className="text-sm text-foreground">Qty: {item.quantity}</p>
-                          <p className="text-sm font-medium text-[#8B5A3C]">
-                            ₹{(item.price * item.quantity).toFixed(2)}
-                          </p>
+                        )}
+                        
+                        {/* Product Details */}
+                        <div className="flex-1 flex justify-between items-start gap-4">
+                          <div>
+                            {item.productSlug ? (
+                              <a
+                                href={`/product/${item.productSlug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-[#6D4530] hover:text-[#8B5A3C] hover:underline transition-colors"
+                              >
+                                {item.productName}
+                              </a>
+                            ) : (
+                              <p className="font-medium text-[#6D4530]">{item.productName}</p>
+                            )}
+                            <div className="text-sm text-foreground mt-2 space-y-1">
+                              {item.size && <p>Size: {item.size}</p>}
+                              {item.fabric && <p>Fabric: {item.fabric}</p>}
+                              {item.productColor && <p>Color: {item.productColor}</p>}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-[#6D4530]">₹{item.price.toFixed(2)}</p>
+                            <p className="text-sm text-foreground">Qty: {item.quantity}</p>
+                            <p className="text-sm font-medium text-[#8B5A3C]">
+                              ₹{(item.price * item.quantity).toFixed(2)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>

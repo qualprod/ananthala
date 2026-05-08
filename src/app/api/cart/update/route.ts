@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
       cart.subtotal = subtotal
       cart.shipping = shipping
       cart.total = total
+      cart.cartVersion = (cart.cartVersion || 1) + 1
       cart.lastActivityAt = new Date()
 
       await cart.save()
@@ -105,6 +106,7 @@ export async function POST(request: NextRequest) {
             shipping: cart.shipping,
             discount: cart.discount,
             total: cart.total,
+            cartVersion: cart.cartVersion,
           },
         },
         { status: 200 }
@@ -143,6 +145,7 @@ export async function POST(request: NextRequest) {
       cart.subtotal = subtotal
       cart.shipping = shipping
       cart.total = total
+      cart.cartVersion = (cart.cartVersion || 1) + 1
       cart.lastActivityAt = new Date()
 
       await cart.save()
@@ -158,6 +161,7 @@ export async function POST(request: NextRequest) {
             shipping: cart.shipping,
             discount: cart.discount,
             total: cart.total,
+            cartVersion: cart.cartVersion,
           },
         },
         { status: 200 }
@@ -194,6 +198,7 @@ export async function POST(request: NextRequest) {
       cart.subtotal = subtotal
       cart.shipping = shipping
       cart.total = total
+      cart.cartVersion = (cart.cartVersion || 1) + 1
       cart.lastActivityAt = new Date()
 
       await cart.save()
@@ -209,6 +214,7 @@ export async function POST(request: NextRequest) {
             shipping: cart.shipping,
             discount: cart.discount,
             total: cart.total,
+            cartVersion: cart.cartVersion,
           },
         },
         { status: 200 }

@@ -57,6 +57,8 @@ shippingAddress: {
       {
         productId: mongoose.Schema.Types.ObjectId,
         productName: String,
+        productImage: String,
+        productSlug: String,
         quantity: Number,
         price: Number,
         size: String,
@@ -97,7 +99,7 @@ shippingAddress: {
     },
     orderStatus: {
       type: String,
-      enum: ["pending", "processing", "shipped", "in-transit", "delivered", "cancelled"],
+      enum: ["pending", "processing", "shipped", "in-transit", "delivered", "cancelled", "payment_failed"],
       default: "pending",
     },
     orderTimeline: [

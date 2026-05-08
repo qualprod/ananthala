@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
       status: "active",
       ipAddress: ip,
       userAgent: body.userAgent || userAgent,
+      cartVersion: 1,
       lastActivityAt: new Date(),
     })
 

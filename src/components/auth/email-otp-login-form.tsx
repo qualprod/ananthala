@@ -111,7 +111,7 @@ export function EmailOTPLoginForm() {
         } else {
           toast({
             title: "Success",
-            description: "Login successful! Redirecting...",
+            description: "Login successful!",
           })
           setTimeout(() => {
             router.push(redirectUrl)
@@ -155,7 +155,7 @@ export function EmailOTPLoginForm() {
       if (data.success) {
         toast({
           title: "Success",
-          description: "Profile completed! Redirecting...",
+          description: "Profile Update completed!...",
         })
         setTimeout(() => {
           router.push(redirectUrl)

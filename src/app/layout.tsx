@@ -1,8 +1,9 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Cormorant_Garamond, Geist_Mono } from "next/font/google"
+import { Cormorant_Garamond } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { CartProvider } from "@/contexts/cart-context"
+import { CartSyncWrapper } from "@/components/cart/cart-sync-wrapper"
 import { FixedSidebar } from "@/components/layout/fixed-sidebar"
 import { Toaster } from "@/components/ui/toaster"
 import { ClarityAnalytics } from "@/components/clarity-analytics"
@@ -15,7 +16,6 @@ const cormorantGaramond = Cormorant_Garamond({
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-cormorant-garamond",
 })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -61,8 +61,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${cormorantGaramond.className} antialiased`} style={{ fontWeight: 300 }}>
         <CartProvider>
-          {children}
-          <FixedSidebar />
+          <CartSyncWrapper>
+            {children}
+            <FixedSidebar />
+          </CartSyncWrapper>
         </CartProvider>
         <Toaster />
         <Analytics />
