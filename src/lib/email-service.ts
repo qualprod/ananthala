@@ -65,6 +65,8 @@ export async function sendOrderConfirmationEmail(
     orderId: string
     items: Array<{
       productName: string
+      productImage?: string
+      productSlug?: string
       quantity: number
       price: number
       size?: string
@@ -80,32 +82,43 @@ export async function sendOrderConfirmationEmail(
   try {
     const transporter = await getEmailTransporter()
 
-    // Build items table HTML
+    // Build items table HTML with product images and links
     const itemsHTML = order.items
       .map(
-        (item: OrderItem) => `
+        (item: any) => `
       <tr>
-        <td>
-          <div class="item-name">${item.productName}</div>
+        <td style="padding: 12px; vertical-align: top;">
+          ${
+            item.productImage
+              ? `<img src="${item.productImage}" alt="${item.productName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; display: block; margin-bottom: 8px;">`
+              : ""
+          }
+        </td>
+        <td style="padding: 12px; vertical-align: top;">
+          ${
+            item.productSlug
+              ? `<a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/product/${item.productSlug}" style="color: #6d4530; text-decoration: none; font-weight: 600; font-size: 14px;">${item.productName}</a>`
+              : `<div class="item-name">${item.productName}</div>`
+          }
           ${
             item.size || item.fabric || item.productColor
-              ? `<div class="item-specs">
+              ? `<div class="item-specs" style="font-size: 12px; color: #8b5a3c; margin-top: 4px;">
               ${[item.size, item.fabric, item.productColor].filter(Boolean).join(" • ")}
             </div>`
               : ""
           }
         </td>
-        <td style="text-align: center;">${item.quantity}</td>
-        <td class="text-right">₹${item.price.toFixed(2)}</td>
-        <td class="text-right font-medium">₹${(item.price * item.quantity).toFixed(2)}</td>
+        <td style="text-align: center; padding: 12px; vertical-align: top;">${item.quantity}</td>
+        <td style="text-align: right; padding: 12px; vertical-align: top;">₹${item.price.toFixed(2)}</td>
+        <td style="text-align: right; padding: 12px; vertical-align: top; font-weight: 600;">₹${(item.price * item.quantity).toFixed(2)}</td>
       </tr>
     `,
       )
       .join("")
 
-    const trackOrderUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/track-order`
+    const trackOrderUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/track-order`
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -486,10 +499,11 @@ export async function sendOrderConfirmationEmail(
             <table class="items-table">
               <thead>
                 <tr>
-                  <th style="width: 45%;">Product</th>
-                  <th style="width: 15%; text-align: center;">Qty</th>
-                  <th style="width: 20%; text-align: right;">Price</th>
-                  <th style="width: 20%; text-align: right;">Total</th>
+                  <th style="width: 15%; text-align: center;">Image</th>
+                  <th style="width: 35%;">Product</th>
+                  <th style="width: 12%; text-align: center;">Qty</th>
+                  <th style="width: 15%; text-align: right;">Price</th>
+                  <th style="width: 23%; text-align: right;">Total</th>
                 </tr>
               </thead>
               <tbody>
