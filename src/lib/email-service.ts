@@ -2051,17 +2051,17 @@ export async function sendAdminOrderCancellationNotification(
           </div>
 
           <div class="section">
-            <div class="section-title">Order Details</div>
+            <div class="section-title">Order Details </div>
             <div class="info-row">
-              <span class="info-label">Order ID:</span>
+              <span class="info-label">Order ID : </span>
               <span class="info-value"><strong>${notificationData.orderId}</strong></span>
             </div>
             <div class="info-row">
-              <span class="info-label">Cancelled At:</span>
+              <span class="info-label">Cancelled At : </span>
               <span class="info-value">${new Date(notificationData.cancelledAt).toLocaleString('en-IN')}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Previous Status:</span>
+              <span class="info-label">Previous Status : </span>
               <span class="info-value">${notificationData.previousStatus.replace('_', ' ')}</span>
             </div>
           </div>
@@ -2069,15 +2069,15 @@ export async function sendAdminOrderCancellationNotification(
           <div class="section">
             <div class="section-title">Customer Information</div>
             <div class="info-row">
-              <span class="info-label">Name:</span>
+              <span class="info-label">Name : </span>
               <span class="info-value">${notificationData.customerName}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Email:</span>
+              <span class="info-label">Email : </span>
               <span class="info-value">${notificationData.customerEmail}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Phone:</span>
+              <span class="info-label">Phone : </span>
               <span class="info-value">${notificationData.customerPhone}</span>
             </div>
           </div>
@@ -2085,15 +2085,15 @@ export async function sendAdminOrderCancellationNotification(
           <div class="section">
             <div class="section-title">Refund Information</div>
             <div class="info-row">
-              <span class="info-label">Refund Amount:</span>
+              <span class="info-label">Refund Amount : </span>
               <span class="info-value"><strong>₹${notificationData.refundAmount.toFixed(2)}</strong></span>
             </div>
             <div class="info-row">
-              <span class="info-label">Items Cancelled:</span>
+              <span class="info-label">Items Cancelled : </span>
               <span class="info-value">${notificationData.itemsCount}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Refund Status:</span>
+              <span class="info-label">Refund Status : </span>
               <span class="info-value" style="color: #dc2626; font-weight: bold;">PENDING - Requires Processing</span>
             </div>
           </div>
