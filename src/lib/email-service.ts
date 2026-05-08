@@ -1988,3 +1988,188 @@ Phone: +91 9071799966
     return false
   }
 }
+
+export async function sendAdminOrderCancellationNotification(
+  notificationData: {
+    orderId: string
+    customerName: string
+    customerEmail: string
+    customerPhone: string
+    totalAmount: number
+    cancellationReason: string
+    previousStatus: string
+    cancelledAt: string
+    refundAmount: number
+    itemsCount: number
+  },
+): Promise<boolean> {
+  try {
+    const transporter = await getEmailTransporter()
+
+    if (!transporter) {
+      console.error(`[v0] Email transporter not configured for admin notification`)
+      return false
+    }
+
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #8B5A3C 0%, #6D4530 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+        .header-logo { max-width: 160px; height: auto; margin: 0 auto 8px; display: block; }
+        .header-subtitle { font-size: 13px; opacity: 0.9; letter-spacing: 0.3px; }
+        .content { background: #f9f7f4; padding: 20px; border: 1px solid #E5DDD0; }
+        .alert { background: #fee2e2; border-left: 4px solid #dc2626; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .alert-title { color: #dc2626; font-weight: bold; margin-bottom: 8px; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 16px; font-weight: bold; color: #6D4530; margin-bottom: 12px; border-bottom: 2px solid #D9CFC7; padding-bottom: 8px; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #E5DDD0; }
+        .info-label { font-weight: bold; color: #6D4530; }
+        .info-value { color: #555; }
+        .footer { background: #f5f1ed; padding: 15px; border-top: 1px solid #E5DDD0; font-size: 12px; text-align: center; color: #666; }
+        .action-button { display: inline-block; background: #6D4530; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 15px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
+          <div class="header-subtitle">Order Cancellation Alert</div>
+        </div>
+        
+        <div class="content">
+          <div class="alert">
+            <div class="alert-title">⚠️ Order Cancelled by Customer</div>
+            An order has been cancelled by the customer and requires refund processing.
+          </div>
+
+          <div class="section">
+            <div class="section-title">Order Details</div>
+            <div class="info-row">
+              <span class="info-label">Order ID:</span>
+              <span class="info-value"><strong>${notificationData.orderId}</strong></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Cancelled At:</span>
+              <span class="info-value">${new Date(notificationData.cancelledAt).toLocaleString('en-IN')}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Previous Status:</span>
+              <span class="info-value">${notificationData.previousStatus.replace('_', ' ')}</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Customer Information</div>
+            <div class="info-row">
+              <span class="info-label">Name:</span>
+              <span class="info-value">${notificationData.customerName}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Email:</span>
+              <span class="info-value">${notificationData.customerEmail}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Phone:</span>
+              <span class="info-value">${notificationData.customerPhone}</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Refund Information</div>
+            <div class="info-row">
+              <span class="info-label">Refund Amount:</span>
+              <span class="info-value"><strong>₹${notificationData.refundAmount.toFixed(2)}</strong></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Items Cancelled:</span>
+              <span class="info-value">${notificationData.itemsCount}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Refund Status:</span>
+              <span class="info-value" style="color: #dc2626; font-weight: bold;">PENDING - Requires Processing</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Cancellation Reason</div>
+            <p style="background: white; padding: 12px; border-left: 3px solid #D9CFC7; margin: 0; color: #555;">
+              ${notificationData.cancellationReason}
+            </p>
+          </div>
+
+          <div class="section" style="background: white; padding: 15px; border-radius: 4px; border: 1px solid #E5DDD0;">
+            <strong>NEXT STEPS:</strong>
+            <ul style="margin: 10px 0 0 20px; padding: 0;">
+              <li>Log in to Ananthala Admin Dashboard</li>
+              <li>Navigate to Order Management</li>
+              <li>Find Order ID: ${notificationData.orderId}</li>
+              <li>Process refund and update refund status</li>
+              <li>Confirm receipt of bank notification once refund is processed</li>
+            </ul>
+          </div>
+
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/admin/orders" class="action-button" style="text-align: center; display: block; width: 200px; margin: 20px auto;">View Order in Admin</a>
+        </div>
+
+        <div class="footer">
+          <p>This is an automated notification. Please do not reply to this email.</p>
+          <p>© 2026 Ananthala. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `
+
+    const adminEmail = process.env.ADMIN_EMAIL || "qualprodsllp@gmail.com"
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || "noreply@ananthala.com",
+      to: adminEmail,
+      subject: `[ACTION REQUIRED] Order Cancellation - ${notificationData.orderId} - Refund Pending`,
+      html: htmlContent,
+      text: `
+ORDER CANCELLATION ALERT
+
+Order ID: ${notificationData.orderId}
+Customer: ${notificationData.customerName}
+Email: ${notificationData.customerEmail}
+Phone: ${notificationData.customerPhone}
+
+CANCELLATION DETAILS:
+- Cancelled At: ${new Date(notificationData.cancelledAt).toLocaleString('en-IN')}
+- Previous Status: ${notificationData.previousStatus}
+- Reason: ${notificationData.cancellationReason}
+
+REFUND REQUIRED:
+- Refund Amount: ₹${notificationData.refundAmount.toFixed(2)}
+- Items Cancelled: ${notificationData.itemsCount}
+- Status: PENDING - Requires Processing
+
+ACTION REQUIRED:
+1. Log in to Admin Dashboard
+2. Navigate to Order Management
+3. Find Order: ${notificationData.orderId}
+4. Process refund to customer
+5. Update refund status with transaction ID
+6. Mark bank notification received when processed
+
+© 2026 Ananthala. All rights reserved.
+      `,
+    }
+
+    await transporter.sendMail(mailOptions)
+    console.log(`[v0] Admin cancellation notification sent for order ${notificationData.orderId}`)
+    return true
+  } catch (error) {
+    console.error(`[v0] Failed to send admin cancellation notification: ${error}`)
+    return false
+  }
+}

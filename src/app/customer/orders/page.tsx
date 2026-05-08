@@ -48,7 +48,7 @@ interface Order {
   customerEmail: string
   customerPhone: string
   shippingAddress?: ShippingAddress
-  orderStatus: "pending" | "processing" | "shipped" | "in-transit" | "delivered" | "cancelled"
+  orderStatus: "pending" | "order_received" | "order_processing" | "shipped" | "in-transit" | "delivered" | "cancelled" | "payment_failed"
   paymentStatus: "pending" | "completed" | "failed"
   totalAmount: number
   subtotal: number
@@ -64,6 +64,16 @@ interface Order {
   paymentMethod?: string
   createdAt: string
   updatedAt: string
+  cancellationDetails?: {
+    cancelledAt: string
+    cancelledBy: "customer" | "admin"
+    reason: string
+  }
+  refundDetails?: {
+    refundAmount: number
+    refundStatus: "pending" | "initiated" | "processed" | "failed"
+    refundDate?: string
+  }
 }
 
 export default function OrdersPage() {
@@ -196,10 +206,31 @@ export default function OrdersPage() {
   }
 
   const canCancelOrder = (order: Order) => {
-    // Allow cancellation for pending and processing orders only
-    // Cannot cancel if already cancelled, delivered, shipped, or in-transit
-    const cancellableStatuses = ["pending", "processing"]
+    // CRITICAL: Can only cancel orders in "pending" or "order_received" status
+    // Cannot cancel once order_processing begins (manufacturing started)
+    // Cannot cancel if already cancelled, shipped, in-transit, or delivered
+    const cancellableStatuses = ["pending", "order_received"]
     return cancellableStatuses.includes(order.orderStatus)
+  }
+
+  const getCancellationMessage = (order: Order) => {
+    if (order.orderStatus === "order_processing") {
+      return "Cannot cancel: Manufacturing has started. Your order is being processed."
+    }
+    if (order.orderStatus === "shipped" || order.orderStatus === "in-transit") {
+      return "Cannot cancel: Your order is on the way."
+    }
+    if (order.orderStatus === "delivered") {
+      return "Order has been delivered. For returns, please contact support."
+    }
+    if (order.orderStatus === "cancelled") {
+      if (order.refundDetails) {
+        const refundStatus = order.refundDetails.refundStatus || "pending"
+        return `Order cancelled. Refund status: ${refundStatus.replace('_', ' ')}`
+      }
+      return "Order has been cancelled. Refund is being processed."
+    }
+    return ""
   }
 
   if (loading) {
@@ -570,8 +601,8 @@ export default function OrdersPage() {
                 </div>
               )}
 
-              {/* Cancel Order Button */}
-              {canCancelOrder(selectedOrder) && (
+              {/* Cancel Order Button or Status Message */}
+              {canCancelOrder(selectedOrder) ? (
                 <div className="flex gap-3 pt-4">
                   <Button
                     variant="destructive"
@@ -581,6 +612,16 @@ export default function OrdersPage() {
                   >
                     {isCancelling ? "Cancelling..." : "Cancel Order"}
                   </Button>
+                </div>
+              ) : (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm font-medium text-red-700">{getCancellationMessage(selectedOrder)}</p>
+                  {selectedOrder.refundDetails && selectedOrder.refundDetails.refundStatus && (
+                    <div className="mt-2 text-xs text-red-600 space-y-1">
+                      <p>Refund Amount: ₹{selectedOrder.refundDetails.refundAmount?.toFixed(2)}</p>
+                      <p>Status: {selectedOrder.refundDetails.refundStatus.replace('_', ' ')}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

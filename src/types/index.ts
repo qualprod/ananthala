@@ -54,7 +54,7 @@ export interface Order {
   customerEmail: string
   customerPhone: string
   shippingAddress?: ShippingAddress
-  orderStatus: "pending" | "processing" | "shipped" | "in-transit" | "delivered" | "cancelled" | "payment_failed"
+  orderStatus: "pending" | "order_received" | "order_processing" | "shipped" | "in-transit" | "delivered" | "cancelled" | "payment_failed"
   paymentStatus: "pending" | "completed" | "failed"
   totalAmount: number
   subtotal: number
@@ -68,6 +68,21 @@ export interface Order {
   razorpayOrderId?: string
   paymentMethod?: string
   appliedCoupons?: string
+  cancellationDetails?: {
+    cancelledAt?: string
+    cancelledBy?: "customer" | "admin"
+    reason?: string
+  }
+  refundDetails?: {
+    refundAmount?: number
+    refundStatus?: "pending" | "initiated" | "processed" | "failed"
+    refundDate?: string
+    refundTransactionId?: string
+    refundReason?: string
+    refundInitiatedAt?: string
+    refundProcessedAt?: string
+    bankNotificationReceived?: boolean
+  }
   createdAt?: string
   updatedAt?: string
 }
