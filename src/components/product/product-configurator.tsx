@@ -475,10 +475,10 @@ export function ProductConfigurator({
 
                 {availableFabrics.length > 0 && (
                   <div>
-                    <label className="text-base font-medium text-foreground mb-2 block">Fabric</label>
+                    <label className="text-base font-medium text-foreground mb-2 block">Fabric / Finish</label>
                     <Select value={selectedFabric || undefined} onValueChange={setSelectedFabric}>
                       <SelectTrigger className="w-full text-foreground ">
-                        <SelectValue placeholder="Select fabric" />
+                        <SelectValue placeholder="Select fabric / finish" />
                       </SelectTrigger>
                       <SelectContent>
                         {availableFabrics.map((fabricId) => {

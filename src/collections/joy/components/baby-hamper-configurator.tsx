@@ -676,7 +676,7 @@ export function BabyHamperConfigurator({
           
           {/* Fabric Selection */}
           <div className="mt-6">
-            <label className="text-base font-medium text-foreground mb-3 block">Fabric</label>
+            <label className="text-base font-medium text-foreground mb-3 block">Fabric / Finish</label>
             <Select
               value={
                 hamperState.mattressFabric ||
@@ -695,7 +695,7 @@ export function BabyHamperConfigurator({
               }}
             >
               <SelectTrigger className="w-full text-foreground py-3">
-                <SelectValue placeholder="Select fabric" />
+                <SelectValue placeholder="Select fabric / finish" />
               </SelectTrigger>
               <SelectContent>
                 {fabricOptions.map((fabric) => (

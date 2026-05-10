@@ -268,6 +268,7 @@ export default function AdminFabricsPage() {
                     <p className="text-sm text-foreground/70 break-words">{fabric.id}</p>
                   </div>
                   <Button
+                    type="button"
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDelete(fabric.id)}

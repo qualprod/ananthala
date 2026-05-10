@@ -306,10 +306,10 @@ export function DbHamperConfigurator({
             {/* Fabric (single option behaves like single products with 1 available fabric) */}
             {availableHamperFabrics.length > 0 && (
               <div>
-                <label className="text-base font-medium text-foreground mb-2 block">Fabric</label>
+                <label className="text-base font-medium text-foreground mb-2 block">Fabric / Finish</label>
                 <Select value={selectedFabric || undefined} onValueChange={setSelectedFabric}>
                   <SelectTrigger className="w-full text-foreground ">
-                    <SelectValue placeholder="Select fabric" />
+                    <SelectValue placeholder="Select fabric / finish" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableHamperFabrics.map((fabricId) => {

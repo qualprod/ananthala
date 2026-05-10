@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Loader2, X } from "lucide-react"
+import { Plus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "@/hooks/use-toast"
 import { fabricOptions } from "@/data/fabric"
 import { getAllFabricPatterns } from "@/data/fabric-patterns"
@@ -31,7 +31,7 @@ interface FabricSelectorProps {
 export function FabricSelector({
   value,
   onValueChange,
-  label = "Fabric",
+  label = "Fabric / Finish",
   htmlFor = "fabric",
   triggerClassName = "h-12 bg-white border-[#D9CFC7] text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold",
   showAddOption = true,
@@ -137,7 +137,7 @@ export function FabricSelector({
       <div className="flex gap-2 flex-wrap sm:flex-nowrap">
         <Select value={value || ""} onValueChange={onValueChange}>
           <SelectTrigger id={htmlFor} className={triggerClassName}>
-            <SelectValue placeholder="Select fabric" />
+            <SelectValue placeholder="Select fabric / finish" />
           </SelectTrigger>
           <SelectContent className="bg-white border-[#D9CFC7]">
             {allFabrics.map((fabric) => {
@@ -165,6 +165,7 @@ export function FabricSelector({
             {showAddOption && <div className="border-t border-[#D9CFC7] my-1" />}
             {showAddOption && (
               <button
+                type="button"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -180,9 +181,11 @@ export function FabricSelector({
         </Select>
         {showAddOption && (
           <Button
+            type="button"
+            variant="outline"
             onClick={() => setIsAddDialogOpen(true)}
             size="icon"
-            className="h-10 w-10 sm:h-12 sm:w-12 bg-[#8B5A3C] hover:bg-[#6D4530] flex-shrink-0"
+            className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 bg-white border-[#D9CFC7] text-[#6D4530] hover:bg-[#F5F1ED]"
             title="Add new fabric"
           >
             <Plus className="h-5 w-5" />
@@ -192,16 +195,12 @@ export function FabricSelector({
 
       {/* Add Fabric Dialog - Properly Responsive */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-md mx-auto p-0 gap-0 rounded-lg border border-[#D9CFC7] bg-white shadow-lg">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-[#D9CFC7] px-4 sm:px-6 py-3 sm:py-4">
+        <DialogContent className="w-[95vw] max-w-md mx-auto p-0 gap-0 rounded-lg border border-[#D9CFC7] bg-white shadow-lg [&_[data-slot=dialog-close]]:text-[#6D4530]">
+          {/* Header — leave right padding so the built-in close control does not overlap the title */}
+          <div className="border-b border-[#D9CFC7] px-4 sm:px-6 py-3 sm:py-4 pr-12 sm:pr-14">
             <DialogTitle className="text-base sm:text-lg font-semibold text-[#6D4530]">
               Add New Fabric
             </DialogTitle>
-            <DialogClose className="rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-slate-100">
-              <X className="h-4 w-4 sm:h-5 sm:w-5 text-[#6D4530]" />
-              <span className="sr-only">Close</span>
-            </DialogClose>
           </div>
 
           {/* Content */}
@@ -269,6 +268,7 @@ export function FabricSelector({
           {/* Footer */}
           <div className="flex gap-2 px-4 sm:px-6 py-3 sm:py-4 border-t border-[#D9CFC7] bg-gray-50">
             <Button
+              type="button"
               onClick={() => setIsAddDialogOpen(false)}
               disabled={isSubmitting}
               variant="outline"
@@ -277,6 +277,7 @@ export function FabricSelector({
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={handleAddFabric}
               disabled={isSubmitting || !newFabricName.trim() || !newFabricId.trim()}
               className="flex-1 h-9 sm:h-10 bg-[#8B5A3C] hover:bg-[#6D4530] text-white font-medium text-sm sm:text-base"
