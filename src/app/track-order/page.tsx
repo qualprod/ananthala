@@ -33,7 +33,10 @@ interface Order {
     country?: string
   }
   items: Array<{
+    productId?: string
     productName: string
+    productImage?: string
+    productSlug?: string
     quantity: number
     price: number
     size?: string
@@ -310,17 +313,42 @@ export default function TrackOrderPage() {
                         <h2 className="text-lg sm:text-xl font-bold text-[#6D4530] mb-4">Items Ordered ({order.items.length})</h2>
                         <div className="space-y-3 max-h-48 overflow-y-auto">
                           {order.items.map((item, index) => (
-                            <div key={index} className="flex justify-between items-start p-3 bg-[#F5F1ED] rounded-lg gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-[#6D4530] text-sm sm:text-base break-words">{item.productName}</p>
-                                <p className="text-xs sm:text-sm text-[#8B5A3C]/70 mt-1">Qty: {item.quantity}</p>
-                                {(item.size || item.fabric || item.productColor) && (
-                                  <p className="text-xs text-[#8B5A3C]/60 mt-1 break-words">
-                                    {[item.size, item.fabric, item.productColor].filter(Boolean).join(" • ")}
-                                  </p>
-                                )}
+                            <div key={index} className="flex gap-3 p-3 bg-[#F5F1ED] rounded-lg">
+                              {/* Product Image */}
+                              {item.productImage && (
+                                <div className="flex-shrink-0">
+                                  <img
+                                    src={item.productImage}
+                                    alt={item.productName}
+                                    className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md border border-[#D9CFC7]"
+                                  />
+                                </div>
+                              )}
+                              
+                              {/* Product Details */}
+                              <div className="flex-1 min-w-0 flex justify-between items-start gap-2">
+                                <div>
+                                  {item.productSlug ? (
+                                    <a
+                                      href={`/product/${item.productSlug}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-medium text-[#6D4530] text-sm sm:text-base hover:text-[#8B5A3C] hover:underline transition-colors break-words"
+                                    >
+                                      {item.productName}
+                                    </a>
+                                  ) : (
+                                    <p className="font-medium text-[#6D4530] text-sm sm:text-base break-words">{item.productName}</p>
+                                  )}
+                                  <p className="text-xs sm:text-sm text-[#8B5A3C]/70 mt-1">Qty: {item.quantity}</p>
+                                  {(item.size || item.fabric || item.productColor) && (
+                                    <p className="text-xs text-[#8B5A3C]/60 mt-1 break-words">
+                                      {[item.size, item.fabric, item.productColor].filter(Boolean).join(" • ")}
+                                    </p>
+                                  )}
+                                </div>
+                                <p className="font-semibold text-[#6D4530] text-sm sm:text-base flex-shrink-0">₹{item.price.toFixed(2)}</p>
                               </div>
-                              <p className="font-semibold text-[#6D4530] text-sm sm:text-base flex-shrink-0">₹{item.price.toFixed(2)}</p>
                             </div>
                           ))}
                         </div>

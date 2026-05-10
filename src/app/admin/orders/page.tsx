@@ -200,6 +200,10 @@ export default function OrderManagementPage() {
         return "bg-purple-100 text-purple-700"
       case "pending":
         return "bg-gray-100 text-gray-700"
+      case "payment_failed":
+        return "bg-red-100 text-red-700"
+      case "cancelled":
+        return "bg-orange-100 text-orange-700"
       default:
         return "bg-red-100 text-red-700"
     }
@@ -215,6 +219,8 @@ export default function OrderManagementPage() {
         return <Package className="w-4 h-4" />
       case "shipped":
         return <Truck className="w-4 h-4" />
+      case "payment_failed":
+        return <AlertCircle className="w-4 h-4" />
       default:
         return <Clock className="w-4 h-4" />
     }
@@ -438,10 +444,7 @@ export default function OrderManagementPage() {
                               <Truck className="w-4 h-4 mr-2" />
                               Update Status
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Download className="w-4 h-4 mr-2" />
-                              Download Invoice
-                            </DropdownMenuItem>
+                            
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -701,6 +704,7 @@ export default function OrderManagementPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="payment_failed">Payment Failed</SelectItem>
                     <SelectItem value="processing">Processing</SelectItem>
                     <SelectItem value="shipped">Shipped</SelectItem>
                     <SelectItem value="in-transit">In Transit</SelectItem>

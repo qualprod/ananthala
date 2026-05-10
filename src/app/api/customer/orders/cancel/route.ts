@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 import { jwtVerify } from "@/lib/jwt"
 import connectDB from "@/lib/mongodb"
 import Order from "@/models/order"
-import { sendOrderCancellationEmail } from "@/lib/email-service"
+import { sendOrderCancellationEmail, sendAdminOrderCancellationNotification } from "@/lib/email-service"
 
 export async function PUT(request: NextRequest) {
   try {
@@ -19,9 +19,10 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 })
     }
 
-    // Get order ID from request body or query
+    // Get order ID from request body
     const body = await request.json().catch(() => ({}))
     const orderId = body.orderId
+    const cancellationReason = body.reason || "Customer requested cancellation"
 
     if (!orderId) {
       return NextResponse.json({ success: false, error: "Order ID is required" }, { status: 400 })
@@ -48,36 +49,66 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 })
     }
 
-    // Check if order can be cancelled (only pending and processing orders can be cancelled)
-    const cancellableStatuses = ["pending", "processing"]
-    if (!cancellableStatuses.includes(order.orderStatus)) {
+    // CRITICAL: Check if order can be cancelled
+    // Cannot cancel if status is order_processing or beyond (shipped, in-transit, delivered)
+    // Can only cancel if: pending or order_received
+    const nonCancellableStatuses = ["order_processing", "shipped", "in-transit", "delivered", "cancelled"]
+    
+    if (nonCancellableStatuses.includes(order.orderStatus)) {
       return NextResponse.json(
         {
           success: false,
-          error: `Cannot cancel order with status: ${order.orderStatus}`,
+          canCancel: false,
+          error: `Cannot cancel order. Order status is ${order.orderStatus.replace('_', ' ')}. Orders can only be cancelled before manufacturing starts.`,
+        },
+        { status: 400 },
+      )
+    }
+
+    // Verify order is not already cancelled
+    if (order.orderStatus === "cancelled") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Order is already cancelled",
         },
         { status: 400 },
       )
     }
 
     // Update order status to cancelled
+    const previousStatus = order.orderStatus
     order.orderStatus = "cancelled"
+
+    // Record cancellation details
+    order.cancellationDetails = {
+      cancelledAt: new Date(),
+      cancelledBy: "customer",
+      reason: cancellationReason,
+    }
+
+    // Initialize refund details - refund will be processed by admin
+    if (!order.refundDetails) {
+      order.refundDetails = {}
+    }
+    order.refundDetails.refundAmount = order.totalAmount
+    order.refundDetails.refundStatus = "pending"
+    order.refundDetails.refundReason = `Order cancelled by customer. Previous status: ${previousStatus}`
 
     // Add timeline entry for cancellation
     order.orderTimeline.push({
       status: "cancelled",
       timestamp: new Date(),
-      description: "Order cancelled by customer",
+      description: `Order cancelled by customer. Reason: ${cancellationReason}. Refund pending.`,
     })
 
     // Save the updated order
     await order.save()
 
-    // Send cancellation confirmation email
+    // Send cancellation confirmation email to customer
     try {
-      console.log(`[v0] Preparing to send cancellation email for order ${order.orderId}`)
+      console.log(`[v0] Sending cancellation email to customer for order ${order.orderId}`)
       
-      // Prepare order data for email
       const cancellationEmailData = {
         orderId: order.orderId,
         customerName: order.customerName,
@@ -95,34 +126,51 @@ export async function PUT(request: NextRequest) {
         shippingCost: order.shippingCost,
         totalAmount: order.totalAmount,
         shippingAddress: order.shippingAddress || {},
+        cancellationReason: cancellationReason,
       }
-      
-      console.log(`[v0] Cancellation email data prepared:`, {
-        orderId: cancellationEmailData.orderId,
-        customerEmail: cancellationEmailData.customerEmail,
-        itemsCount: cancellationEmailData.items.length,
-      })
       
       const emailSent = await sendOrderCancellationEmail(cancellationEmailData)
-      
       if (emailSent) {
-        console.log(`[v0] Order cancellation confirmation email sent successfully to ${order.customerEmail}`)
-      } else {
-        console.warn(`[v0] Order cancellation email failed to send for order ${order.orderId}`)
+        console.log(`[v0] Order cancellation confirmation email sent to ${order.customerEmail}`)
       }
     } catch (emailError) {
-      console.error(`[v0] Error sending order cancellation email:`, emailError)
-      // Don't fail the cancellation if email fails - order is already cancelled in database
+      console.error(`[v0] Error sending cancellation email:`, emailError)
+    }
+
+    // Send admin notification about order cancellation
+    try {
+      console.log(`[v0] Sending admin notification for cancelled order ${order.orderId}`)
+      
+      const adminNotificationData = {
+        orderId: order.orderId,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone,
+        totalAmount: order.totalAmount,
+        cancellationReason: cancellationReason,
+        previousStatus: previousStatus,
+        cancelledAt: new Date().toISOString(),
+        refundAmount: order.totalAmount,
+        itemsCount: order.items.length,
+      }
+      
+      const adminNotified = await sendAdminOrderCancellationNotification(adminNotificationData)
+      if (adminNotified) {
+        console.log(`[v0] Admin notification sent for cancelled order ${order.orderId}`)
+      }
+    } catch (adminNotifyError) {
+      console.error(`[v0] Error sending admin notification:`, adminNotifyError)
     }
 
     return NextResponse.json(
       {
         success: true,
-        message: "Order cancelled successfully",
+        message: "Order cancelled successfully. Refund will be processed shortly.",
         order: {
           _id: order._id,
           orderId: order.orderId,
           orderStatus: order.orderStatus,
+          refundDetails: order.refundDetails,
           updatedAt: order.updatedAt,
         },
       },

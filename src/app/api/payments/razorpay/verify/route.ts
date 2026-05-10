@@ -11,7 +11,10 @@ import { withCountryCode } from "@/lib/phone"
 export const runtime = "nodejs"
 
 interface CartItemPayload {
+  id?: string
   name: string
+  image?: string
+  slug?: string
   quantity: number
   price: number
   size?: string
@@ -90,7 +93,10 @@ const {
     const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`
     const orderItems = Array.isArray(items)
       ? (items as CartItemPayload[]).map((item) => ({
+          productId: item.id,
           productName: item.name,
+          productImage: item.image,
+          productSlug: item.slug,
           quantity: item.quantity,
           price: item.price,
           size: item.size,

@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer"
-import type { Order } from "@/types/index"
+import type { Order, OrderItem } from "@/types/index"
 
 const getEmailTransporter = async () => {
   // Check if using Gmail with EMAIL_PROVIDER explicitly set to gmail
@@ -65,6 +65,8 @@ export async function sendOrderConfirmationEmail(
     orderId: string
     items: Array<{
       productName: string
+      productImage?: string
+      productSlug?: string
       quantity: number
       price: number
       size?: string
@@ -80,32 +82,43 @@ export async function sendOrderConfirmationEmail(
   try {
     const transporter = await getEmailTransporter()
 
-    // Build items table HTML
+    // Build items table HTML with product images and links
     const itemsHTML = order.items
       .map(
-        (item: { productName: any; size: any; fabric: any; productColor: any; quantity: number; price: number }) => `
+        (item: any) => `
       <tr>
-        <td>
-          <div class="item-name">${item.productName}</div>
+        <td style="padding: 12px; vertical-align: top;">
+          ${
+            item.productImage
+              ? `<img src="${item.productImage}" alt="${item.productName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; display: block; margin-bottom: 8px;">`
+              : ""
+          }
+        </td>
+        <td style="padding: 12px; vertical-align: top;">
+          ${
+            item.productSlug
+              ? `<a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/product/${item.productSlug}" style="color: #6d4530; text-decoration: none; font-weight: 600; font-size: 14px;">${item.productName}</a>`
+              : `<div class="item-name">${item.productName}</div>`
+          }
           ${
             item.size || item.fabric || item.productColor
-              ? `<div class="item-specs">
+              ? `<div class="item-specs" style="font-size: 12px; color: #8b5a3c; margin-top: 4px;">
               ${[item.size, item.fabric, item.productColor].filter(Boolean).join(" • ")}
             </div>`
               : ""
           }
         </td>
-        <td style="text-align: center;">${item.quantity}</td>
-        <td class="text-right">₹${item.price.toFixed(2)}</td>
-        <td class="text-right font-medium">₹${(item.price * item.quantity).toFixed(2)}</td>
+        <td style="text-align: center; padding: 12px; vertical-align: top;">${item.quantity}</td>
+        <td style="text-align: right; padding: 12px; vertical-align: top;">₹${item.price.toFixed(2)}</td>
+        <td style="text-align: right; padding: 12px; vertical-align: top; font-weight: 600;">₹${(item.price * item.quantity).toFixed(2)}</td>
       </tr>
     `,
       )
       .join("")
 
-    const trackOrderUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/track-order`
+    const trackOrderUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/track-order`
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -486,10 +499,11 @@ export async function sendOrderConfirmationEmail(
             <table class="items-table">
               <thead>
                 <tr>
-                  <th style="width: 45%;">Product</th>
-                  <th style="width: 15%; text-align: center;">Qty</th>
-                  <th style="width: 20%; text-align: right;">Price</th>
-                  <th style="width: 20%; text-align: right;">Total</th>
+                  <th style="width: 15%; text-align: center;">Image</th>
+                  <th style="width: 35%;">Product</th>
+                  <th style="width: 12%; text-align: center;">Qty</th>
+                  <th style="width: 15%; text-align: right;">Price</th>
+                  <th style="width: 23%; text-align: right;">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -891,7 +905,7 @@ export async function sendOrderCancellationEmail(
         <div class="container">
           <div class="header">
             <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
-            <div class="header-subtitle">Order Cancelled</div>
+            <div class="header-subtitle">Password Reset Confirmation</div>
           </div>
 
           <div class="content">
@@ -1276,7 +1290,7 @@ export async function sendOrderStatusUpdateEmail(
         <div class="container">
           <div class="header">
             <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
-            <div class="header-subtitle">Order Cancellation</div>
+            <div class="header-subtitle">Order Status Update</div>
           </div>
 
           <div class="content">
@@ -1734,6 +1748,8 @@ export async function sendPasswordResetConfirmationEmail(
       return false
     }
 
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
+
     const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -1772,10 +1788,10 @@ export async function sendPasswordResetConfirmationEmail(
           text-align: center;
         }
         .header-logo {
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.5px;
-          margin-bottom: 8px;
+          max-width: 160px;
+          height: auto;
+          margin: 0 auto 8px;
+          display: block;
         }
         .header-subtitle {
           font-size: 13px;
@@ -1888,7 +1904,7 @@ export async function sendPasswordResetConfirmationEmail(
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <img src="/logo.png" alt="Ananthala Logo" class="header-logo" />
+            <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
             <div class="header-subtitle">Order Confirmation</div>
           </div>
           <div class="content">
@@ -1969,6 +1985,191 @@ Phone: +91 9071799966
     return true
   } catch (error) {
     console.error(`[v0] Failed to send password reset confirmation email: ${error}`)
+    return false
+  }
+}
+
+export async function sendAdminOrderCancellationNotification(
+  notificationData: {
+    orderId: string
+    customerName: string
+    customerEmail: string
+    customerPhone: string
+    totalAmount: number
+    cancellationReason: string
+    previousStatus: string
+    cancelledAt: string
+    refundAmount: number
+    itemsCount: number
+  },
+): Promise<boolean> {
+  try {
+    const transporter = await getEmailTransporter()
+
+    if (!transporter) {
+      console.error(`[v0] Email transporter not configured for admin notification`)
+      return false
+    }
+
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #8B5A3C 0%, #6D4530 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+        .header-logo { max-width: 160px; height: auto; margin: 0 auto 8px; display: block; }
+        .header-subtitle { font-size: 13px; opacity: 0.9; letter-spacing: 0.3px; }
+        .content { background: #f9f7f4; padding: 20px; border: 1px solid #E5DDD0; }
+        .alert { background: #fee2e2; border-left: 4px solid #dc2626; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .alert-title { color: #dc2626; font-weight: bold; margin-bottom: 8px; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 16px; font-weight: bold; color: #6D4530; margin-bottom: 12px; border-bottom: 2px solid #D9CFC7; padding-bottom: 8px; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #E5DDD0; }
+        .info-label { font-weight: bold; color: #6D4530; }
+        .info-value { color: #555; }
+        .footer { background: #f5f1ed; padding: 15px; border-top: 1px solid #E5DDD0; font-size: 12px; text-align: center; color: #666; }
+        .action-button { display: inline-block; background: #6D4530; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 15px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <img src="${logoUrl}" alt="Ananthala Logo" class="header-logo" />
+          <div class="header-subtitle">Order Cancellation Alert</div>
+        </div>
+        
+        <div class="content">
+          <div class="alert">
+            <div class="alert-title">⚠️ Order Cancelled by Customer</div>
+            An order has been cancelled by the customer and requires refund processing.
+          </div>
+
+          <div class="section">
+            <div class="section-title">Order Details </div>
+            <div class="info-row">
+              <span class="info-label">Order ID : </span>
+              <span class="info-value"><strong>${notificationData.orderId}</strong></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Cancelled At : </span>
+              <span class="info-value">${new Date(notificationData.cancelledAt).toLocaleString('en-IN')}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Previous Status : </span>
+              <span class="info-value">${notificationData.previousStatus.replace('_', ' ')}</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Customer Information</div>
+            <div class="info-row">
+              <span class="info-label">Name : </span>
+              <span class="info-value">${notificationData.customerName}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Email : </span>
+              <span class="info-value">${notificationData.customerEmail}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Phone : </span>
+              <span class="info-value">${notificationData.customerPhone}</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Refund Information</div>
+            <div class="info-row">
+              <span class="info-label">Refund Amount : </span>
+              <span class="info-value"><strong>₹${notificationData.refundAmount.toFixed(2)}</strong></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Items Cancelled : </span>
+              <span class="info-value">${notificationData.itemsCount}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Refund Status : </span>
+              <span class="info-value" style="color: #dc2626; font-weight: bold;">PENDING - Requires Processing</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Cancellation Reason</div>
+            <p style="background: white; padding: 12px; border-left: 3px solid #D9CFC7; margin: 0; color: #555;">
+              ${notificationData.cancellationReason}
+            </p>
+          </div>
+
+          <div class="section" style="background: white; padding: 15px; border-radius: 4px; border: 1px solid #E5DDD0;">
+            <strong>NEXT STEPS:</strong>
+            <ul style="margin: 10px 0 0 20px; padding: 0;">
+              <li>Log in to Ananthala Admin Dashboard</li>
+              <li>Navigate to Order Management</li>
+              <li>Find Order ID: ${notificationData.orderId}</li>
+              <li>Process refund and update refund status</li>
+              <li>Confirm receipt of bank notification once refund is processed</li>
+            </ul>
+          </div>
+
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/admin/orders" class="action-button" style="text-align: center; display: block; width: 200px; margin: 20px auto;">View Order in Admin</a>
+        </div>
+
+        <div class="footer">
+          <p>This is an automated notification. Please do not reply to this email.</p>
+          <p>© 2026 Ananthala. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `
+
+    const adminEmail = process.env.ADMIN_EMAIL || "qualprodsllp@gmail.com"
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || "noreply@ananthala.com",
+      to: adminEmail,
+      subject: `[ACTION REQUIRED] Order Cancellation - ${notificationData.orderId} - Refund Pending`,
+      html: htmlContent,
+      text: `
+ORDER CANCELLATION ALERT
+
+Order ID: ${notificationData.orderId}
+Customer: ${notificationData.customerName}
+Email: ${notificationData.customerEmail}
+Phone: ${notificationData.customerPhone}
+
+CANCELLATION DETAILS:
+- Cancelled At: ${new Date(notificationData.cancelledAt).toLocaleString('en-IN')}
+- Previous Status: ${notificationData.previousStatus}
+- Reason: ${notificationData.cancellationReason}
+
+REFUND REQUIRED:
+- Refund Amount: ₹${notificationData.refundAmount.toFixed(2)}
+- Items Cancelled: ${notificationData.itemsCount}
+- Status: PENDING - Requires Processing
+
+ACTION REQUIRED:
+1. Log in to Admin Dashboard
+2. Navigate to Order Management
+3. Find Order: ${notificationData.orderId}
+4. Process refund to customer
+5. Update refund status with transaction ID
+6. Mark bank notification received when processed
+
+© 2026 Ananthala. All rights reserved.
+      `,
+    }
+
+    await transporter.sendMail(mailOptions)
+    console.log(`[v0] Admin cancellation notification sent for order ${notificationData.orderId}`)
+    return true
+  } catch (error) {
+    console.error(`[v0] Failed to send admin cancellation notification: ${error}`)
     return false
   }
 }

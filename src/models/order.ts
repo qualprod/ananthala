@@ -57,6 +57,8 @@ shippingAddress: {
       {
         productId: mongoose.Schema.Types.ObjectId,
         productName: String,
+        productImage: String,
+        productSlug: String,
         quantity: Number,
         price: Number,
         size: String,
@@ -97,8 +99,33 @@ shippingAddress: {
     },
     orderStatus: {
       type: String,
-      enum: ["pending", "processing", "shipped", "in-transit", "delivered", "cancelled"],
+      enum: ["pending", "order_received", "order_processing", "shipped", "in-transit", "delivered", "cancelled", "payment_failed"],
       default: "pending",
+    },
+    cancellationDetails: {
+      cancelledAt: Date,
+      cancelledBy: {
+        type: String,
+        enum: ["customer", "admin"],
+      },
+      reason: String,
+    },
+    refundDetails: {
+      refundAmount: Number,
+      refundStatus: {
+        type: String,
+        enum: ["pending", "initiated", "processed", "failed"],
+        default: "pending",
+      },
+      refundDate: Date,
+      refundTransactionId: String,
+      refundReason: String,
+      refundInitiatedAt: Date,
+      refundProcessedAt: Date,
+      bankNotificationReceived: {
+        type: Boolean,
+        default: false,
+      },
     },
     orderTimeline: [
       {

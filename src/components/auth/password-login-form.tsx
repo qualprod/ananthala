@@ -50,7 +50,7 @@ export function PasswordLoginForm({ isLoading: initialLoading = false }: Passwor
       if (data.success) {
         toast({
           title: "Success",
-          description: "Login successful! Redirecting...",
+          description: "Login successful! ...",
         })
         setTimeout(() => {
           router.push(redirectUrl)

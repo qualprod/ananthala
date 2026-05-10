@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
       processedOrders: await Order.countDocuments({ orderStatus: { $in: ["shipped", "in-transit"] } }),
       deliveredOrders: await Order.countDocuments({ orderStatus: "delivered" }),
       inTransitOrders: await Order.countDocuments({ orderStatus: "in-transit" }),
+      failedPaymentOrders: await Order.countDocuments({ orderStatus: "payment_failed" }),
       totalRevenue: await Order.aggregate([
         { $match: { paymentStatus: "completed" } },
         { $group: { _id: null, total: { $sum: "$totalAmount" } } },
@@ -69,13 +70,14 @@ export async function GET(request: NextRequest) {
           total: totalOrders,
           pages: Math.ceil(totalOrders / limit),
         },
-        stats: {
-          totalOrders: stats.totalOrders,
-          processedOrders: stats.processedOrders,
-          deliveredOrders: stats.deliveredOrders,
-          inTransitOrders: stats.inTransitOrders,
-          totalRevenue: stats.totalRevenue[0]?.total || 0,
-        },
+      stats: {
+        totalOrders: stats.totalOrders,
+        processedOrders: stats.processedOrders,
+        deliveredOrders: stats.deliveredOrders,
+        inTransitOrders: stats.inTransitOrders,
+        failedPaymentOrders: stats.failedPaymentOrders,
+        totalRevenue: stats.totalRevenue[0]?.total || 0,
+      },
       },
       { status: 200 },
     )
