@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { type CartItem } from "@/components/cart/cart-drawer"
 import { toast } from "@/hooks/use-toast"
 
@@ -26,6 +27,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 const CART_STORAGE_KEY = "ananthala_cart"
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -229,7 +231,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={() => {
                 dismiss()
-                window.location.href = "/cart"
+                router.push("/cart")
               }}
               className="rounded-md bg-[#EED9C4] px-4 py-2 text-sm font-medium text-[#6D4530] transition-colors hover:bg-[#D9BB9B]"
             >
@@ -266,16 +268,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setCartItems([])
+    setAppliedCoupons([])
   }
 
+  /** Only one coupon per order (general or agent offers cannot be stacked). */
   const handleSetAppliedCoupon = (coupon: any) => {
-    if (appliedCoupons.length < 3) {
-      // Check if coupon already applied
-      if (appliedCoupons.find((c) => c.code === coupon.code)) {
-        return // Coupon already applied
-      }
-      setAppliedCoupons([...appliedCoupons, coupon])
+    if (appliedCoupons.find((c) => c.code === coupon.code)) {
+      return
     }
+    setAppliedCoupons([coupon])
   }
 
   const clearCoupon = (couponCode?: string) => {

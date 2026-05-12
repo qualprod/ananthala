@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     const cart = await Cart.findOne({
       userId,
       status: "active",
-    })
+    }).sort({ updatedAt: -1 })
 
     if (!cart) {
       return NextResponse.json(

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
+import mongoose from "mongoose"
 import dbConnect from "@/lib/mongodb"
 import Cart from "@/models/cart"
 import { verifyToken } from "@/lib/jwt"
@@ -76,25 +77,58 @@ export async function POST(request: NextRequest) {
 
     // Calculate totals
     const subtotal = body.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    const totalQuantity = body.items.reduce((sum, item) => sum + item.quantity, 0)
     const shipping = 0
     const total = subtotal + shipping
 
-    // Create cart document with real user info
+    const mappedItems = body.items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      image: item.image,
+      quantity: item.quantity,
+      price: item.price,
+      size: item.size,
+      fabric: item.fabric,
+      productColor: item.productColor,
+      productColorHex: item.productColorHex,
+    }))
+
+    // Logged-in users: update their active cart instead of creating a new document each save.
+    // Otherwise findOne returns an arbitrary row among many "active" carts and reloads show stale items.
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      const existing = await Cart.findOne({
+        userId: new mongoose.Types.ObjectId(userId),
+        status: "active",
+      }).sort({ updatedAt: -1 })
+
+      if (existing) {
+        existing.items = mappedItems
+        existing.userEmail = userEmail
+        existing.userName = userName
+        existing.userPhone = userPhone
+        existing.subtotal = subtotal
+        existing.shipping = shipping
+        existing.total = total
+        existing.cartVersion = (existing.cartVersion || 1) + 1
+        existing.lastActivityAt = new Date()
+        existing.ipAddress = ip
+        existing.userAgent = body.userAgent || userAgent
+        await existing.save()
+
+        return NextResponse.json(
+          {
+            success: true,
+            cartId: existing.cartId,
+            message: "Cart saved successfully",
+          },
+          { status: 200 }
+        )
+      }
+    }
+
     const cart = await Cart.create({
       cartId,
-      items: body.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        image: item.image,
-        quantity: item.quantity,
-        price: item.price,
-        size: item.size,
-        fabric: item.fabric,
-        productColor: item.productColor,
-        productColorHex: item.productColorHex,
-      })),
-      userId: userId || undefined, // Will be null if not logged in
+      items: mappedItems,
+      userId: userId && mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : undefined,
       userEmail,
       userName,
       userPhone,

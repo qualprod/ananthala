@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       query.status = "active"
     }
 
-    const cart = await Cart.findOne(query)
+    const cart = await Cart.findOne(query).sort({ updatedAt: -1 })
 
     if (!cart) {
       return NextResponse.json(
