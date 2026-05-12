@@ -85,6 +85,11 @@ const menuItems = [
     icon: Tag,
   },
   {
+    label: "Agent coupon sales",
+    href: "/admin/agent-coupon-sales",
+    icon: Users,
+  },
+  {
     label: "Fabrics Management",
     href: "/admin/fabrics",
     icon: Palette,

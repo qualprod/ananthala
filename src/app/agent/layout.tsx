@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Plus_Jakarta_Sans } from "next/font/google"
-import { LayoutDashboard, Tag, Settings, Menu, X, LogOut } from "lucide-react"
+import { LayoutDashboard, Tag, Settings, Menu, X, LogOut, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
@@ -32,6 +32,11 @@ const menuItems = [
     label: "Offer-Coupons",
     href: "/agent/coupons",
     icon: Tag,
+  },
+  {
+    label: "Sales",
+    href: "/agent/sales",
+    icon: TrendingUp,
   },
   {
     label: "Settings",

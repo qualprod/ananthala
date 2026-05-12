@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Agent-assigned coupons work like any other code at checkout; sales are attributed via order.couponAgentId.
+
     // Check if coupon is expired
     if (new Date(coupon.expiryDate) < new Date()) {
       return NextResponse.json(
