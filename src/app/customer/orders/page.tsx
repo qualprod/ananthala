@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Package, Search, Eye, Truck, Clock, CheckCircle, AlertCircle, X } from "lucide-react"
+import { Package, Search, Eye, Truck, Clock, CheckCircle, AlertCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -415,14 +415,8 @@ export default function OrdersPage() {
       {/* Order Details Modal */}
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="flex flex-row items-center justify-between pr-0">
+          <DialogHeader>
             <DialogTitle className="text-[#6D4530]">Order Details</DialogTitle>
-            <button
-              onClick={() => setIsDetailModalOpen(false)}
-              className="text-foreground hover:text-[#6D4530]"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </DialogHeader>
 
           {selectedOrder && (
