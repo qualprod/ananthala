@@ -75,6 +75,10 @@ const {
       return NextResponse.json({ success: false, message: "Missing payment details." }, { status: 400 })
     }
 
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ success: false, message: "Order must include at least one item." }, { status: 400 })
+    }
+
     const signaturePayload = `${razorpay_order_id}|${razorpay_payment_id}`
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)

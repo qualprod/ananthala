@@ -1,12 +1,17 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, useRef } from "react"
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { type CartItem } from "@/components/cart/cart-drawer"
-import { toast } from "@/hooks/use-toast"
+import { toast, useToast } from "@/hooks/use-toast"
 
 interface CartContextType {
   cartItems: CartItem[]
   addToCart: (item: CartItem) => void
+  /** Replace cart from server sync without showing add-to-cart toasts */
+  applyRemoteCart: (items: unknown[]) => void
+  /** Persist current cart to DB immediately (logged-in); avoids poll wiping unsaved items */
+  flushCartToServer: () => Promise<void>
   removeFromCart: (itemId: string) => void
   updateQuantity: (itemId: string, quantity: number) => void
   clearCart: () => void
@@ -26,13 +31,19 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 const CART_STORAGE_KEY = "ananthala_cart"
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const { dismiss: dismissAllToasts } = useToast()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const cartItemsRef = useRef<CartItem[]>([])
+  cartItemsRef.current = cartItems
   const [isLoading, setIsLoading] = useState(true)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [userEmail, setUserEmail] = useState<string>("")
   const [appliedCoupons, setAppliedCoupons] = useState<any[]>([])
 
-  const normalizeItemName = (name: string) => name.replace(/\bGRACE\b/g, "Grace")
+  const normalizeItemName = (name: unknown) =>
+    String(name ?? "")
+      .replace(/\bGRACE\b/g, "Grace")
   const getCartItemMergeKey = (item: CartItem) =>
     [
       normalizeItemName(item.name).trim().toLowerCase(),
@@ -60,7 +71,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return Array.from(merged.values())
   }
 
-  // Fetch user info from auth verification endpoint and load user's saved cart
+  /** DB/localStorage may contain loose types; coerce so UI never shows "[object Object]". */
+  const coerceCartItem = (raw: unknown): CartItem | null => {
+    if (!raw || typeof raw !== "object") return null
+    const item = raw as Record<string, unknown>
+    const q = Number(item.quantity)
+    const p = Number(item.price)
+    const img =
+      typeof item.image === "string" && item.image.trim()
+        ? item.image
+        : "/placeholder.svg"
+    return {
+      ...(item as unknown as CartItem),
+      id: String(item.id ?? ""),
+      name: normalizeItemName(item.name),
+      image: img,
+      size: item.size != null ? String(item.size) : "",
+      quantity: Number.isFinite(q) && q >= 1 ? Math.floor(q) : 1,
+      price: Number.isFinite(p) ? p : 0,
+      fabric: item.fabric != null ? String(item.fabric) : undefined,
+      productColor: item.productColor != null ? String(item.productColor) : undefined,
+      productColorHex: item.productColorHex != null ? String(item.productColorHex) : undefined,
+    }
+  }
+
+  // Load cart from localStorage first so auth hydration respects an explicitly cleared cart ([]).
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(CART_STORAGE_KEY)
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed)) {
+            const normalizedItems = parsed
+              .map((item: unknown) => coerceCartItem(item))
+              .filter((item): item is CartItem => item !== null)
+            setCartItems(mergeDuplicateCartItems(normalizedItems))
+          }
+        } catch (error) {
+          console.error("Error loading cart from localStorage:", error)
+        }
+      }
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Fetch user info from auth verification endpoint and load user's saved cart from DB when appropriate
   useEffect(() => {
     const fetchUserInfoAndCart = async () => {
       try {
@@ -83,6 +139,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             // Load user's saved cart from database after successful login
             if (data.user.id) {
               try {
+                // If localStorage was explicitly cleared ([]), do not resurrect stale server cart
+                let skipServerHydrate = false
+                try {
+                  const raw = localStorage.getItem(CART_STORAGE_KEY)
+                  if (raw !== null) {
+                    const parsed = JSON.parse(raw)
+                    skipServerHydrate = Array.isArray(parsed) && parsed.length === 0
+                  }
+                } catch {
+                  skipServerHydrate = false
+                }
+
+                if (skipServerHydrate) {
+                  return
+                }
+
                 const cartResponse = await fetch(`/api/cart/get?userId=${data.user.id}`, {
                   method: "GET",
                   credentials: "include",
@@ -91,10 +163,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 if (cartResponse.ok) {
                   const cartData = await cartResponse.json()
                   if (cartData.cart && cartData.cart.items && cartData.cart.items.length > 0) {
-                    // Normalize and merge the loaded cart items
-                    const normalizedItems = cartData.cart.items.map((item: any) =>
-                      item && typeof item === "object" ? { ...item, name: normalizeItemName(item.name ?? "") } : item
-                    )
+                    const normalizedItems = cartData.cart.items
+                      .map((item: unknown) => coerceCartItem(item))
+                      .filter((item): item is CartItem => item !== null)
                     setCartItems(mergeDuplicateCartItems(normalizedItems))
                   }
                 }
@@ -118,43 +189,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(CART_STORAGE_KEY)
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          if (Array.isArray(parsed)) {
-            const normalizedItems = parsed.map((item) =>
-              item && typeof item === "object" ? { ...item, name: normalizeItemName(item.name ?? "") } : item
-            )
-            setCartItems(mergeDuplicateCartItems(normalizedItems))
-          }
-        } catch (error) {
-          console.error("Error loading cart from localStorage:", error)
-        }
-      }
-      setIsLoading(false)
-    }
-  }, [])
-
   // Save cart to localStorage and database whenever it changes (debounced)
   useEffect(() => {
     if (typeof window !== "undefined" && !isLoading) {
       // Save to localStorage immediately
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems))
 
-      // Save to database with debounce (every 2 seconds max)
+      // Save to database with debounce
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
       }
 
       saveTimeoutRef.current = setTimeout(() => {
-        if (cartItems.length > 0) {
+        const uid = typeof window !== "undefined" ? localStorage.getItem("user_id") : null
+        if (cartItems.length > 0 || uid) {
           saveCartToDatabase(cartItems, userEmail)
         }
-      }, 2000)
+      }, 600)
     }
 
     return () => {
@@ -195,8 +246,51 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const persistEmptyCartToServer = () => {
+    if (typeof window === "undefined") return
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+      saveTimeoutRef.current = null
+    }
+    const uid = localStorage.getItem("user_id")
+    if (!uid) return
+    void saveCartToDatabase(
+      [],
+      userEmail || localStorage.getItem("user_email") || "guest@ananthala.com"
+    )
+  }
+
+  const flushCartToServer = useCallback(async () => {
+    if (typeof window === "undefined") return
+    const uid = localStorage.getItem("user_id")
+    if (!uid) return
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+      saveTimeoutRef.current = null
+    }
+    const items = cartItemsRef.current
+    await saveCartToDatabase(
+      items,
+      userEmail || localStorage.getItem("user_email") || "guest@ananthala.com"
+    )
+  }, [userEmail])
+
+  const applyRemoteCart = useCallback((items: unknown[]) => {
+    const normalized = items
+      .map((item) => coerceCartItem(item))
+      .filter((item): item is CartItem => item !== null)
+    setCartItems(mergeDuplicateCartItems(normalized))
+  }, [])
+
   const addToCart = (newItem: CartItem) => {
-    const normalizedItem = { ...newItem, name: normalizeItemName(newItem.name) }
+    const rawImage =
+      typeof newItem.image === "string" && newItem.image.trim() ? newItem.image : String(newItem.image ?? "").trim()
+    const normalizedItem = {
+      ...newItem,
+      name: normalizeItemName(newItem.name),
+      size: newItem.size != null ? String(newItem.size) : "",
+      image: rawImage || "/placeholder.svg",
+    }
     const mergeKey = getCartItemMergeKey(normalizedItem)
     const existingItem = cartItems.find((item) => getCartItemMergeKey(item) === mergeKey)
 
@@ -214,12 +308,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })
 
     const { dismiss } = toast({
-      title: <span className="text-lg font-semibold">{existingItem ? "Cart updated" : "Added to cart"}</span>,
+      title: existingItem ? "Cart updated" : "Added to cart",
       className:
-        "cart-toast fixed left-1/2 top-1/2 z-100 w-[520px] max-w-[96vw] -translate-x-1/2 -translate-y-1/2 p-8",
+        "cart-toast fixed left-1/2 top-1/2 z-100 w-[520px] max-w-[96vw] -translate-x-1/2 -translate-y-1/2 p-8 text-lg font-semibold",
       description: (
         <div className="mt-3 space-y-4">
-          <p className="text-base leading-relaxed">
+          <p className="text-base leading-relaxed font-normal">
             {existingItem
               ? `${normalizedItem.name} quantity updated in your cart.`
               : `${normalizedItem.name} has been added to your cart.`}
@@ -229,7 +323,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={() => {
                 dismiss()
-                window.location.href = "/cart"
+                router.push("/cart")
               }}
               className="rounded-md bg-[#EED9C4] px-4 py-2 text-sm font-medium text-[#6D4530] transition-colors hover:bg-[#D9BB9B]"
             >
@@ -246,10 +340,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         </div>
       ),
     })
+
+    // Logged-in: persist immediately so background sync never applies a stale DB snapshot with fewer lines than the cart you just built (loses newly added items).
+    if (typeof window !== "undefined") {
+      const uid = localStorage.getItem("user_id")
+      if (uid) {
+        setTimeout(() => void flushCartToServer(), 0)
+      }
+    }
   }
 
   const removeFromCart = (itemId: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId))
+    setCartItems((prevItems) => {
+      const next = prevItems.filter((item) => item.id !== itemId)
+      if (next.length === 0) {
+        dismissAllToasts()
+        queueMicrotask(() => persistEmptyCartToServer())
+      }
+      return next
+    })
   }
 
   const updateQuantity = (itemId: string, quantity: number) => {
@@ -265,17 +374,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const clearCart = () => {
+    dismissAllToasts()
     setCartItems([])
+    setAppliedCoupons([])
+    if (typeof window !== "undefined") {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify([]))
+    }
+    persistEmptyCartToServer()
   }
 
+  /** Only one coupon per order (general or agent offers cannot be stacked). */
   const handleSetAppliedCoupon = (coupon: any) => {
-    if (appliedCoupons.length < 3) {
-      // Check if coupon already applied
-      if (appliedCoupons.find((c) => c.code === coupon.code)) {
-        return // Coupon already applied
-      }
-      setAppliedCoupons([...appliedCoupons, coupon])
+    if (appliedCoupons.find((c) => c.code === coupon.code)) {
+      return
     }
+    setAppliedCoupons([coupon])
   }
 
   const clearCoupon = (couponCode?: string) => {
@@ -293,6 +406,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         cartItems,
         addToCart,
+        applyRemoteCart,
+        flushCartToServer,
         removeFromCart,
         updateQuantity,
         clearCart,

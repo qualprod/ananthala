@@ -314,8 +314,8 @@ useEffect(() => {
       return
     }
 
-    if (appliedCoupons.length >= 3) {
-      setCouponError("Maximum 3 coupons can be applied")
+    if (appliedCoupons.length >= 1) {
+      setCouponError("Only one coupon can be applied per order")
       return
     }
 
@@ -510,6 +510,16 @@ const handleInputChange = (
 
 const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (cartItems.length === 0) {
+      setErrorMessage("Your cart is empty. Add items before checkout.")
+      toast({
+        title: "Cart is empty",
+        description: "Please add products to your cart before paying.",
+        variant: "destructive",
+      })
+      return
+    }
     
     // Validate form before processing
     if (!validateForm()) {
@@ -1581,9 +1591,9 @@ shippingAddress: {
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg border" style={{ borderColor: "#D9CFC7" }}>
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-semibold text-black">Apply Coupon Code</h3>
-                    <span className="text-xs text-gray-600">({appliedCoupons.length}/3)</span>
+                    <span className="text-xs text-gray-600">(max 1 per order)</span>
                   </div>
-                  {appliedCoupons.length < 3 && (
+                  {appliedCoupons.length < 1 && (
                     <div className="flex items-center gap-2 mb-2">
                       <input
                         type="text"
