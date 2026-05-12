@@ -15,7 +15,10 @@ interface UseCartSyncOptions {
  * Syncs cart from server without calling addToCart (which shows a toast per item).
  */
 export function useCartSync(options: UseCartSyncOptions) {
-  const { applyRemoteCart } = useCart()
+  const { applyRemoteCart, flushCartToServer, cartItems } = useCart()
+  const cartRef = useRef(cartItems)
+  cartRef.current = cartItems
+
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null)
   const lastSyncVersionRef = useRef<number>(0)
   const isSyncingRef = useRef<boolean>(false)
@@ -48,8 +51,10 @@ export function useCartSync(options: UseCartSyncOptions) {
       })
 
       if (!response.ok) {
-        console.error("[v0] Cart sync failed:", response.statusText)
-        isSyncingRef.current = false
+        // 401 = no/expired session cookie — normal if logged out or token expired; don't spam the console.
+        if (response.status !== 401) {
+          console.error("[v0] Cart sync failed:", response.status, response.statusText)
+        }
         return
       }
 
@@ -85,6 +90,21 @@ export function useCartSync(options: UseCartSyncOptions) {
           /* ignore */
         }
 
+        const localItems = cartRef.current
+        // Server still empty while local has lines — debounced save often has not landed yet. Push client cart; never wipe.
+        if (serverItems.length === 0 && localItems.length > 0) {
+          await flushCartToServer()
+          lastSyncVersionRef.current = data.lastSyncVersion || data.cart.cartVersion
+          return
+        }
+
+        // DB snapshot has fewer cart lines than the client (new adds not saved yet). Push full client cart — do not replace with a partial server list.
+        if (serverItems.length > 0 && localItems.length > serverItems.length) {
+          await flushCartToServer()
+          lastSyncVersionRef.current = data.lastSyncVersion || data.cart.cartVersion
+          return
+        }
+
         applyRemoteCart(serverItems)
 
         lastSyncVersionRef.current = data.lastSyncVersion || data.cart.cartVersion
@@ -100,7 +120,7 @@ export function useCartSync(options: UseCartSyncOptions) {
     } finally {
       isSyncingRef.current = false
     }
-  }, [enabled, userId, applyRemoteCart, onSyncUpdate])
+  }, [enabled, userId, applyRemoteCart, flushCartToServer, onSyncUpdate])
 
   useEffect(() => {
     if (!enabled || !userId) return

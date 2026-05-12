@@ -4,6 +4,8 @@ import dbConnect from "@/lib/mongodb"
 import Cart from "@/models/cart"
 import { verifyToken } from "@/lib/jwt"
 
+export const runtime = "nodejs"
+
 interface SyncRequest {
   userId: string
   lastSyncVersion?: number
@@ -19,7 +21,8 @@ export async function POST(request: NextRequest) {
     await dbConnect()
 
     const cookieStore = await cookies()
-    const token = cookieStore.get("auth_token")?.value
+    const token =
+      request.cookies.get("auth_token")?.value ?? cookieStore.get("auth_token")?.value
 
     if (!token) {
       return NextResponse.json(

@@ -10,6 +10,8 @@ interface CartContextType {
   addToCart: (item: CartItem) => void
   /** Replace cart from server sync without showing add-to-cart toasts */
   applyRemoteCart: (items: unknown[]) => void
+  /** Persist current cart to DB immediately (logged-in); avoids poll wiping unsaved items */
+  flushCartToServer: () => Promise<void>
   removeFromCart: (itemId: string) => void
   updateQuantity: (itemId: string, quantity: number) => void
   clearCart: () => void
@@ -32,6 +34,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { dismiss: dismissAllToasts } = useToast()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const cartItemsRef = useRef<CartItem[]>([])
+  cartItemsRef.current = cartItems
   const [isLoading, setIsLoading] = useState(true)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [userEmail, setUserEmail] = useState<string>("")
@@ -191,7 +195,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Save to localStorage immediately
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems))
 
-      // Save to database with debounce (every 2 seconds max)
+      // Save to database with debounce
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
       }
@@ -201,7 +205,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (cartItems.length > 0 || uid) {
           saveCartToDatabase(cartItems, userEmail)
         }
-      }, 2000)
+      }, 600)
     }
 
     return () => {
@@ -255,6 +259,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       userEmail || localStorage.getItem("user_email") || "guest@ananthala.com"
     )
   }
+
+  const flushCartToServer = useCallback(async () => {
+    if (typeof window === "undefined") return
+    const uid = localStorage.getItem("user_id")
+    if (!uid) return
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+      saveTimeoutRef.current = null
+    }
+    const items = cartItemsRef.current
+    await saveCartToDatabase(
+      items,
+      userEmail || localStorage.getItem("user_email") || "guest@ananthala.com"
+    )
+  }, [userEmail])
 
   const applyRemoteCart = useCallback((items: unknown[]) => {
     const normalized = items
@@ -321,6 +340,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         </div>
       ),
     })
+
+    // Logged-in: persist immediately so background sync never applies a stale DB snapshot with fewer lines than the cart you just built (loses newly added items).
+    if (typeof window !== "undefined") {
+      const uid = localStorage.getItem("user_id")
+      if (uid) {
+        setTimeout(() => void flushCartToServer(), 0)
+      }
+    }
   }
 
   const removeFromCart = (itemId: string) => {
@@ -380,6 +407,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         cartItems,
         addToCart,
         applyRemoteCart,
+        flushCartToServer,
         removeFromCart,
         updateQuantity,
         clearCart,
