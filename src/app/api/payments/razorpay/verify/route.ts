@@ -262,10 +262,10 @@ shippingAddress: {
       totalAmount: Number(totalAmount) || 0,
       paymentMethod: paymentMethod || "razorpay",
       paymentStatus: "completed",
-      orderStatus: "order_received",
+      orderStatus: "order_processing",
       orderTimeline: [
         {
-          status: "processing",
+          status: "order_processing",
           description: "Payment confirmed via Razorpay.",
         },
       ],

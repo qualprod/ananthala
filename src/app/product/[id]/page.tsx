@@ -193,10 +193,6 @@ export default function ProductDetailPage() {
   const [selectedHamperVariants, setSelectedHamperVariants] = useState<Record<number, number>>({})
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "auto" })
-  }, [rawId])
-
-  useEffect(() => {
     if (staticProduct) {
       setApiProduct(null)
       setRawApiProduct(null)
