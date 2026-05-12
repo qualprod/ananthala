@@ -49,7 +49,8 @@ export function ProductListingContent({ category }: ProductListingContentProps) 
     const currentPrice = selectedSizeData?.price || featuredProductDetail.price
     
     const cartItem: CartItem = {
-      id: featuredProductDetail.id?.toString(),
+      id: `${featuredProductDetail.id}-${selectedSize}`,
+      productId: featuredProductDetail.id?.toString(),
       name: featuredProductDetail.name,
       image: featuredProductDetail.images[0],
       slug: featuredProductDetail.slug || featuredProductDetail.id?.toString(),

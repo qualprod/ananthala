@@ -1,5 +1,4 @@
 export interface ProductDetail {
-  slug: string
   id: number | string
   name: string
   category: string

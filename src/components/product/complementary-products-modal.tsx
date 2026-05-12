@@ -96,11 +96,11 @@ export default function ComplementaryProductsModal({
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-3xl font-bold text-[#4A2F1F]">
-                {complementaryProducts.length > 0 ? "Free Complimentary Products included!" : "Complete Your Order"}
+                {complementaryProducts.length > 0 ? "Free Products Included!" : "Complete Your Order"}
               </DialogTitle>
               <DialogDescription className="text-[#6D4530] mt-2 text-base">
                 {complementaryProducts.length > 0
-                  ? "We value your patronage and as a gesture of gratitude, we would like to offer some of our fine products free of cost to compliment your purchase."
+                  ? `Add "${mainProductName}" and get these amazing products completely FREE! Select the ones you want.`
                   : `Proceeding to add "${mainProductName}" to your cart.`}
               </DialogDescription>
             </div>

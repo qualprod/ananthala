@@ -7,12 +7,10 @@ export const runtime = "nodejs"
 // DELETE - Remove a fabric
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ id: string }> | { id: string } },
+  { params }: { params: { id: string } }
 ) {
   try {
-    const params = await Promise.resolve(context.params)
-    const rawId = params?.id
-    const fabricId = typeof rawId === "string" ? rawId.trim() : ""
+    const fabricId = params.id
 
     if (!fabricId) {
       return NextResponse.json(

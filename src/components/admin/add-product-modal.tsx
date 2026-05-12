@@ -1094,7 +1094,7 @@ export default function AddProductModal({
                   <FabricSelector
                     value={formData.hamperFabric || ""}
                     onValueChange={(value) => handleInputChange("hamperFabric", value)}
-                    label="Hamper Fabric / Finish"
+                    label="Hamper Fabric Picker"
                     htmlFor="hamperFabric"
                     triggerClassName="border-[#D9CFC7] h-11 sm:h-12"
                   />
@@ -1104,7 +1104,7 @@ export default function AddProductModal({
                       onClick={addHamperFabricOption}
                       className="bg-[#6D4530] hover:bg-[#8B5A3C] text-white"
                     >
-                      Add Fabric / Finish Option
+                      Add Fabric Option
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1514,7 +1514,7 @@ export default function AddProductModal({
                                       onValueChange={(value) =>
                                         handleHamperItemVariantChange(item.id, variant.id, "fabric", value)
                                       }
-                                      label="Fabric / Finish"
+                                      label="Fabric"
                                       htmlFor={`hamper-variant-fabric-${variant.id}`}
                                       triggerClassName="h-10 bg-white border-[#D9CFC7] text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-sm font-semibold"
                                     />
@@ -1786,7 +1786,7 @@ export default function AddProductModal({
                       <FabricSelector
                         value={variant.fabric}
                         onValueChange={(value) => handleVariantChange(variant.id, "fabric", value)}
-                        label="Fabric / Finish"
+                        label="Fabric"
                         htmlFor={`fabric-${variant.id}`}
                         triggerClassName="pl-12 h-12 bg-white border-[#D9CFC7] text-[#000000] focus:border-[#8B5A3C] focus:ring-[#8B5A3C] text-base font-semibold"
                       />

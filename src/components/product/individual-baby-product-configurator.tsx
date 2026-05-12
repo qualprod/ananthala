@@ -148,7 +148,7 @@ export function IndividualBabyProductConfigurator({
                 {/* Color Configurator Section */}
                 {showColorConfigurator && (
                   <div>
-                    <label className="text-base font-medium text-foreground mb-2 block">Fabric / Finish</label>
+                    <label className="text-base font-medium text-foreground mb-2 block">Fabric Color</label>
                     <Select value={selectedFabricId || "original-color"} onValueChange={(value) => {
                       if (value === "original-color") {
                         handleFabricChange("")
@@ -157,7 +157,7 @@ export function IndividualBabyProductConfigurator({
                       }
                     }}>
                       <SelectTrigger className="w-full text-foreground">
-                        <SelectValue placeholder="Select fabric / finish" />
+                        <SelectValue placeholder="Select fabric color" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="original-color">

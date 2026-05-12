@@ -179,7 +179,7 @@ export function HeadPillowConfigurator({
             </div>
             
             <div>
-              <h4 className="text-2xl font-medium text-foreground mb-4">Dimensions & Fabric / Finish</h4>
+              <h4 className="text-2xl font-medium text-foreground mb-4">Dimensions & Fabric</h4>
               <div className="space-y-4">
                 <div className="flex items-center gap-4 mb-4">
                   <button
@@ -282,10 +282,10 @@ export function HeadPillowConfigurator({
       <div className="lg:col-span-4">
         <div className="sticky top-24 p-6 bg-white border-2 border-[#EED9C4]">
           <div className="mb-6">
-            <label className="text-base font-medium text-foreground mb-3 block">Fabric / Finish</label>
+            <label className="text-base font-medium text-foreground mb-3 block">Fabric</label>
             <Select value={pillowState.pillowFabric || ""} onValueChange={pillowState.setPillowFabric}>
               <SelectTrigger className="w-full text-foreground py-3">
-                <SelectValue placeholder="Select fabric / finish" />
+                <SelectValue placeholder="Select fabric" />
               </SelectTrigger>
               <SelectContent>
                 {fabricOptions.map((fabric) => (
