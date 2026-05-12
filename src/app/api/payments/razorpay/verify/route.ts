@@ -147,7 +147,7 @@ shippingAddress: {
       totalAmount: Number(totalAmount) || 0,
       paymentMethod: paymentMethod || "razorpay",
       paymentStatus: "completed",
-      orderStatus: "processing",
+      orderStatus: "order_received",
       orderTimeline: [
         {
           status: "processing",
