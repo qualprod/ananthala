@@ -97,7 +97,7 @@ export async function sendOrderConfirmationEmail(
         <td style="padding: 12px; vertical-align: top;">
           ${
             item.productSlug
-              ? `<a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/product/${item.productSlug}" style="color: #6d4530; text-decoration: none; font-weight: 600; font-size: 14px;">${item.productName}</a>`
+              ? `<a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/product/${item.productSlug}" style="color: #6d4530; text-decoration: none; font-weight: 600; font-size: 14px;">${item.productName}</a>`
               : `<div class="item-name">${item.productName}</div>`
           }
           ${
@@ -603,8 +603,8 @@ Status: Processing
 Items:
 ${order.items.map((item: { productName: any; quantity: number; price: number }) => `- ${item.productName} x${item.quantity}: ₹${(item.price * item.quantity).toFixed(2)}`).join("\n")}
 
-Subtotal: ₹${order.subtotal.toFixed(2)}
-${order.discount > 0 ? `Discount: -₹${order.discount.toFixed(2)}\n` : ""}Shipping: Free
+Subtotal :  ₹${order.subtotal.toFixed(2)}
+${order.discount > 0 ? `Discount: -₹${order.discount.toFixed(2)}\n` : ""}Shipping : Free
 Total: ₹${order.totalAmount.toFixed(2)}
 
 Track your order here:
@@ -656,7 +656,7 @@ export async function sendOrderCancellationEmail(
   orderData: OrderCancellationData,
 ): Promise<boolean> {
   try {
-    console.log(`[v0] Starting order cancellation email process for order: ${orderData.orderId}`)
+    console.log(`[v0] Starting order cancellation email process for order : ${orderData.orderId}`)
     
     const transporter = await getEmailTransporter()
     
@@ -665,7 +665,7 @@ export async function sendOrderCancellationEmail(
       return false
     }
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const itemsHTML = orderData.items
       .map(
@@ -1018,9 +1018,9 @@ Status: Cancelled
 Cancelled Items:
 ${orderData.items.map((item) => `- ${item.productName} x${item.quantity}: ₹${(item.price * item.quantity).toFixed(2)}`).join("\n")}
 
-Subtotal: ₹${orderData.subtotal.toFixed(2)}
-${orderData.discount > 0 ? `Discount: ₹${orderData.discount.toFixed(2)}\n` : ""}Shipping: Free
-Total Amount: ₹${orderData.totalAmount.toFixed(2)}
+Subtotal :  ₹${orderData.subtotal.toFixed(2)}
+${orderData.discount > 0 ? `Discount: ₹${orderData.discount.toFixed(2)}\n` : ""}Shipping : Free
+Total Amount :  ₹${orderData.totalAmount.toFixed(2)}
 
 REFUND INFORMATION:
 Your refund will be processed back to your original payment method within 5-7 business days.
@@ -1072,7 +1072,7 @@ export async function sendOrderStatusUpdateEmail(
   try {
     const transporter = await getEmailTransporter()
     
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const getStatusColor = (status: string) => {
       const statusColors: Record<string, { color: string; bg: string; icon: string }> = {
@@ -1295,7 +1295,7 @@ export async function sendOrderStatusUpdateEmail(
 
           <div class="content">
             <p style="font-size: 16px; font-weight: 600; color: #6d4530; margin-bottom: 12px;">Hi ${statusData.customerName},</p>
-            <p style="color: #8b5a3c; font-size: 14px; margin-bottom: 24px; line-height: 1.6;">Your order status has been updated. See the details below:</p>
+            <p style="color: #8b5a3c; font-size: 14px; margin-bottom: 24px; line-height: 1.6;">Your order status has been updated. See the details below : </p>
 
             <div class="status-box">
               <div class="status-icon">${statusInfo.icon}</div>
@@ -1334,7 +1334,7 @@ export async function sendOrderStatusUpdateEmail(
               statusData.notes
                 ? `
             <div class="notes-section">
-              <strong style="color: #6d4530;">Additional Information:</strong><br>
+              <strong style="color: #6d4530;">Additional Information : </strong><br>
               ${statusData.notes}
             </div>
             `
@@ -1416,7 +1416,7 @@ export async function sendWelcomeEmail(
       return false
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"
     const logoUrl = `${appUrl}/logo.png`
 
     const htmlContent = `
@@ -1555,7 +1555,7 @@ export async function sendOTPEmail(
 
     console.log(`[v0] Email transporter configured successfully`)
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"
     const logoUrl = `${appUrl}/logo.png`
 
     const htmlContent = `
@@ -1748,7 +1748,7 @@ export async function sendPasswordResetConfirmationEmail(
       return false
     }
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -2110,7 +2110,7 @@ export async function sendAdminOrderCancellationNotification(
             <ul style="margin: 10px 0 0 20px; padding: 0;">
               <li>Log in to Ananthala Admin Dashboard</li>
               <li>Navigate to Order Management</li>
-              <li>Find Order ID: ${notificationData.orderId}</li>
+              <li>Find Order ID :  ${notificationData.orderId}</li>
               <li>Process refund and update refund status</li>
               <li>Confirm receipt of bank notification once refund is processed</li>
             </ul>
@@ -2156,7 +2156,7 @@ REFUND REQUIRED:
 ACTION REQUIRED:
 1. Log in to Admin Dashboard
 2. Navigate to Order Management
-3. Find Order: ${notificationData.orderId}
+3. Find Order : ${notificationData.orderId}
 4. Process refund to customer
 5. Update refund status with transaction ID
 6. Mark bank notification received when processed
