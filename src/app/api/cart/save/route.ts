@@ -38,13 +38,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (body.items.length === 0) {
-      return NextResponse.json(
-        { error: "Cart cannot be empty" },
-        { status: 400 }
-      )
-    }
-
     // Try to extract user info from JWT token in cookies
     let userId: string | null = null
     let userEmail: string = body.email || "guest@ananthala.com"
@@ -68,9 +61,44 @@ export async function POST(request: NextRequest) {
       // Continue with provided email if token verification fails
     }
 
-    // Get session/IP info
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("cf-connecting-ip") || "unknown"
     const userAgent = request.headers.get("user-agent") || "unknown"
+
+    // Empty cart: only persisted for logged-in users (clears server cart). Guests cannot POST empty (invalid).
+    if (body.items.length === 0) {
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return NextResponse.json(
+          { error: "Cart cannot be empty" },
+          { status: 400 }
+        )
+      }
+
+      const existing = await Cart.findOne({
+        userId: new mongoose.Types.ObjectId(userId),
+        status: "active",
+      }).sort({ updatedAt: -1 })
+
+      if (existing) {
+        existing.items = []
+        existing.subtotal = 0
+        existing.total = 0
+        existing.shipping = 0
+        existing.cartVersion = (existing.cartVersion || 1) + 1
+        existing.lastActivityAt = new Date()
+        existing.ipAddress = ip
+        existing.userAgent = body.userAgent || userAgent
+        await existing.save()
+      }
+
+      return NextResponse.json(
+        {
+          success: true,
+          cartId: existing?.cartId ?? null,
+          message: "Cart cleared",
+        },
+        { status: 200 }
+      )
+    }
 
     // Create unique cart ID
     const cartId = `cart_${Date.now()}_${nanoid(8)}`

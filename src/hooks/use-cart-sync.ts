@@ -2,6 +2,8 @@ import { useEffect, useRef, useCallback } from "react"
 import { useCart } from "@/contexts/cart-context"
 import type { CartItem } from "@/components/cart/cart-drawer"
 
+const CART_STORAGE_KEY = "ananthala_cart"
+
 interface UseCartSyncOptions {
   userId?: string
   enabled?: boolean
@@ -10,11 +12,10 @@ interface UseCartSyncOptions {
 }
 
 /**
- * Hook to sync cart in real-time across browsers
- * Polls the server for cart updates and syncs local state
+ * Syncs cart from server without calling addToCart (which shows a toast per item).
  */
 export function useCartSync(options: UseCartSyncOptions) {
-  const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
+  const { applyRemoteCart } = useCart()
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null)
   const lastSyncVersionRef = useRef<number>(0)
   const isSyncingRef = useRef<boolean>(false)
@@ -22,7 +23,7 @@ export function useCartSync(options: UseCartSyncOptions) {
   const {
     userId,
     enabled = true,
-    pollIntervalMs = 5000, // Poll every 5 seconds
+    pollIntervalMs = 5000,
     onSyncUpdate,
   } = options
 
@@ -55,45 +56,39 @@ export function useCartSync(options: UseCartSyncOptions) {
       const data = await response.json()
 
       if (data.success && data.hasSyncedChanges && data.cart) {
-        // Update the local cart with server state
         const serverItems = data.cart.items || []
-        const localItemIds = new Set(cartItems.map((item) => item.id))
-        const serverItemIds = new Set(serverItems.map((item: any) => item.id))
 
-        // Find items to remove (exist locally but not on server)
-        localItemIds.forEach((id) => {
-          if (!serverItemIds.has(id)) {
-            removeFromCart(id)
+        // If the client explicitly cleared the cart ([]) but the server still has rows (race before POST), flush empty to server — do not resurrect stale lines or spam toasts.
+        try {
+          const raw =
+            typeof window !== "undefined" ? window.localStorage.getItem(CART_STORAGE_KEY) : null
+          if (raw !== null) {
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed) && parsed.length === 0 && serverItems.length > 0) {
+              await fetch("/api/cart/save", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email: window.localStorage.getItem("user_email"),
+                  userId: window.localStorage.getItem("user_id"),
+                  userFullname: window.localStorage.getItem("user_fullname"),
+                  items: [],
+                  userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+                }),
+              })
+              lastSyncVersionRef.current = data.lastSyncVersion || data.cart.cartVersion
+              return
+            }
           }
-        })
+        } catch {
+          /* ignore */
+        }
 
-        // Find items to add or update
-        serverItems.forEach((serverItem: any) => {
-          const localItem = cartItems.find((item) => item.id === serverItem.id)
+        applyRemoteCart(serverItems)
 
-          if (!localItem) {
-            // Item doesn't exist locally, add it
-            addToCart({
-              id: serverItem.id,
-              name: serverItem.name,
-              image: serverItem.image,
-              price: serverItem.price,
-              quantity: serverItem.quantity,
-              size: serverItem.size,
-              fabric: serverItem.fabric,
-              productColor: serverItem.productColor,
-              productColorHex: serverItem.productColorHex,
-            })
-          } else if (localItem.quantity !== serverItem.quantity) {
-            // Quantity differs, update it
-            updateQuantity(serverItem.id, serverItem.quantity)
-          }
-        })
-
-        // Update sync version
         lastSyncVersionRef.current = data.lastSyncVersion || data.cart.cartVersion
 
-        // Notify parent component of sync
         if (onSyncUpdate) {
           onSyncUpdate(serverItems)
         }
@@ -105,16 +100,13 @@ export function useCartSync(options: UseCartSyncOptions) {
     } finally {
       isSyncingRef.current = false
     }
-  }, [enabled, userId, cartItems, addToCart, removeFromCart, updateQuantity, onSyncUpdate])
+  }, [enabled, userId, applyRemoteCart, onSyncUpdate])
 
-  // Set up polling interval
   useEffect(() => {
     if (!enabled || !userId) return
 
-    // Initial sync
     syncCartFromServer()
 
-    // Set up polling
     pollTimerRef.current = setInterval(() => {
       syncCartFromServer()
     }, pollIntervalMs)

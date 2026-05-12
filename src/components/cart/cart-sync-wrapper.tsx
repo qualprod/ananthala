@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { useCart } from "@/contexts/cart-context"
 import { useCartSync } from "@/hooks/use-cart-sync"
 
 /**
@@ -11,7 +10,6 @@ import { useCartSync } from "@/hooks/use-cart-sync"
 export function CartSyncWrapper({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const [isEnabled, setIsEnabled] = useState(false)
-  const { cartItems } = useCart()
 
   // Check if user is logged in and get userId
   useEffect(() => {
