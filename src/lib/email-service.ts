@@ -1305,11 +1305,11 @@ export async function sendOrderStatusUpdateEmail(
 
             <div class="order-info">
               <div class="info-row">
-                <span class="info-label">Order ID</span>
+                <span class="info-label">Order ID :  </span>
                 <span class="info-value" style="font-family: monospace;">${statusData.orderId}</span>
               </div>
               <div class="info-row">
-                <span class="info-label">Current Status</span>
+                <span class="info-label">Current Status :  </span>
                 <span class="info-value">${displayStatus}</span>
               </div>
               <div class="info-row">
@@ -1377,7 +1377,7 @@ Your order status has been updated to: ${displayStatus}
 
 Order ID: ${statusData.orderId}
 New Status: ${displayStatus}
-Order Total: ₹${statusData.totalAmount.toFixed(2)}
+Order Total : ₹${statusData.totalAmount.toFixed(2)}
 
 ${statusData.trackingNumber ? `Tracking Number: ${statusData.trackingNumber}\n` : ""}
 ${statusData.notes ? `Additional Information: ${statusData.notes}\n` : ""}

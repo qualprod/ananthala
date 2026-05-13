@@ -704,8 +704,7 @@ export default function OrderManagementPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="payment_failed">Payment Failed</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="order_processing">order_processing</SelectItem>
                     <SelectItem value="shipped">Shipped</SelectItem>
                     <SelectItem value="in-transit">In Transit</SelectItem>
                     <SelectItem value="delivered">Delivered</SelectItem>
