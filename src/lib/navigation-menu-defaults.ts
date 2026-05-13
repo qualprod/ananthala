@@ -6,7 +6,7 @@ export interface NavigationMenuDefaultItem {
 }
 
 export const DEFAULT_NAVIGATION_MENU_ITEMS: NavigationMenuDefaultItem[] = [
-  { label: "Shop", href: "/#find-your-perfect-mattress", displayOrder: 1, isActive: true },
+  { label: "Shop", href: "/#shop", displayOrder: 1, isActive: true },
   { label: "Babies and Kids - Joy", href: "/category/joy#shop", displayOrder: 2, isActive: true },
   { label: "Adults - Bliss", href: "/category/bliss#shop", displayOrder: 3, isActive: true },
   { label: "Seniors - Grace", href: "/category/grace#shop", displayOrder: 4, isActive: true },

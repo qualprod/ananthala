@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb"
 import { DEFAULT_NAVIGATION_MENU_ITEMS } from "@/lib/navigation-menu-defaults"
+import { HOME_SHOP_PATH } from "@/lib/home-shop-anchor"
 import { NavigationMenu } from "@/models/navigationMenu"
 import { NextResponse } from "next/server"
 
@@ -14,6 +15,13 @@ export async function GET() {
       menuItems = await NavigationMenu.insertMany(DEFAULT_NAVIGATION_MENU_ITEMS)
       menuItems = [...menuItems].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
     }
+
+    await NavigationMenu.updateMany(
+      { href: "/#find-your-perfect-mattress" },
+      { $set: { href: HOME_SHOP_PATH } },
+    )
+
+    menuItems = await NavigationMenu.find().sort({ displayOrder: 1, createdAt: 1 })
 
     return NextResponse.json(
       {

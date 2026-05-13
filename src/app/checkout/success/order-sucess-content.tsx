@@ -55,7 +55,7 @@ export function OrderSuccessContent() {
             <span>Track Your Order</span>
           </Button>
           <Button
-            onClick={() => router.push("/#find-your-perfect-mattress")}
+            onClick={() => router.push("/#shop")}
             className="flex-1 sm:flex-initial h-12 md:h-14 bg-white border-2 border-stone-300 hover:border-amber-500 text-foreground hover:text-amber-600 font-semibold text-base md:text-lg rounded-lg flex items-center justify-center gap-2 transition-all"
           >
             <ShoppingBag className="w-5 h-5" />

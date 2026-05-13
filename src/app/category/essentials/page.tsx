@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef } from "react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
-import { type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { ChevronRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -14,20 +13,8 @@ import { CategoryProductsGrid } from "@/components/sections/category-products-gr
 export default function EssentialsPage() {
   const shopSectionRef = useRef<HTMLElement>(null)
   const aboutUsSectionRef = useRef<HTMLElement>(null)
-  const [differenceCarouselApi, setDifferenceCarouselApi] = useState<CarouselApi>()
 
-  useEffect(() => {
-    if (!differenceCarouselApi) return
-
-    const autoScroll = window.setInterval(() => {
-      differenceCarouselApi.scrollNext()
-    }, 4000)
-
-    return () => window.clearInterval(autoScroll)
-  }, [differenceCarouselApi])
-
-  const scrollToShop = () => {
-    shopSectionRef.current?.scrollIntoView({ behavior: "smooth" })
+  const scrollToShop = () => {    shopSectionRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
   const scrollToAboutUs = () => {
@@ -50,7 +37,7 @@ export default function EssentialsPage() {
                 <li>
                   <ChevronRight className="w-4 h-4 text-foreground" />
                 </li>
-                <li className="text-foreground font-medium">Bedsheets, Pillows & More</li>
+                <li className="text-foreground font-medium">Curated Essentials</li>
               </ol>
             </nav>
           </div>
@@ -58,94 +45,45 @@ export default function EssentialsPage() {
 
         <div className="h-[49px]"></div>
 
-        <section className="relative w-full h-[70vh] md:h-[80vh] overflow-hidden">
-          <div className="relative w-full h-full">
-            <Image src="/mattress.jpg" alt="Sleep Essentials" fill className="object-cover object-top" priority />
-            <div className="absolute inset-0 z-10 flex items-end md:items-center">
-              <div className="flex w-full flex-col gap-5 px-4 sm:px-6 lg:px-8 xl:px-12 pb-8 sm:pb-10 md:pb-0 md:flex-row md:items-center md:justify-between">
-                <div className="order-2 flex flex-col sm:flex-row gap-4 md:order-1">
-                  <Button
-                    onClick={scrollToShop}
-                    className="bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground px-8 py-4 text-lg rounded-md w-full sm:w-auto sm:min-w-[140px]"
-                    style={{ fontFamily: '"Playfair Display", serif' }}
-                  >
-                    Shop
-                  </Button>
-                  <Button
-                    onClick={scrollToAboutUs}
-                    variant="outline"
-                    className="border-2 border-white text-white hover:bg-white hover:text-[#8B5A3C] px-8 py-4 text-lg bg-transparent rounded-md w-full sm:w-auto sm:min-w-[140px]"
-                    style={{ fontFamily: '"Playfair Display", serif' }}
-                  >
-                    Learn More
-                  </Button>
-                </div>
-                <div className="order-1 max-w-[260px] sm:max-w-sm md:max-w-md space-y-5 md:order-2 md:text-left">
-                  <div className="bg-white/10 backdrop-blur-sm p-3 md:p-8 rounded-lg">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-white font-cormorant">
-                      Bedsheets, Pillows & More
-                    </h1>
-                    <p className="text-white text-sm md:text-lg mt-3 md:mt-4 leading-relaxed font-medium max-w-[220px] sm:max-w-xs md:max-w-none">
-                      Complete your sleep setup with premium bedsheets, pillows, bedding, and mattress essentials.
-                    </p>
-                  </div>
+        <section className="relative w-full">
+          <Image
+            src="/MainHeaderImage.jpg"
+            alt="Curated Essentials"
+            width={1890}
+            height={1063}
+            className="w-full h-auto block"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 z-10 flex items-end md:items-center">
+            <div className="flex w-full flex-col gap-5 px-4 sm:px-6 lg:px-8 xl:px-12 pb-8 sm:pb-10 md:pb-0 md:flex-row md:items-start md:justify-between">
+              <div className="order-2 flex flex-col sm:flex-row gap-4 md:order-1 md:pt-44">
+                <Button
+                  onClick={scrollToShop}
+                  className="bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground px-8 py-4 text-lg rounded-md w-full sm:w-auto sm:min-w-[140px]"
+                  style={{ fontFamily: '"Playfair Display", serif' }}
+                >
+                  Shop
+                </Button>
+                <Button
+                  onClick={scrollToAboutUs}
+                  variant="outline"
+                  className="border-2 border-white text-white hover:bg-white hover:text-[#8B5A3C] px-8 py-4 text-lg bg-transparent rounded-md w-full sm:w-auto sm:min-w-[140px]"
+                  style={{ fontFamily: '"Playfair Display", serif' }}
+                >
+                  Learn More
+                </Button>
+              </div>
+              <div className="order-1 max-w-[260px] sm:max-w-sm md:max-w-md space-y-5 md:order-2 md:text-left">
+                <div className="bg-white/10 backdrop-blur-sm p-3 md:p-8 rounded-lg">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-white font-cormorant">
+                    Curated Essentials
+                  </h1>
+                  <p className="text-white text-sm md:text-lg mt-3 md:mt-4 leading-relaxed font-medium max-w-[220px] sm:max-w-xs md:max-w-none">
+                    Fine complements, hand picked keeping in mind your comfort and higher taste
+                  </p>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16 px-4 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <div className="relative">
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-                className="w-full"
-                setApi={setDifferenceCarouselApi}
-              >
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {[
-                    {
-                      id: 1,
-                      image: "/mattress.jpg",
-                    },
-                    {
-                      id: 2,
-                      image: "/hybrid-mattress-with-blue-accent-pillows-bedroom.jpg",
-                    },
-                    {
-                      id: 3,
-                      image: "/Joy-Grace-Bliss 3.png",
-                    },
-                  ].map((slide) => (
-                    <CarouselItem key={slide.id} className="pl-2 md:pl-4 basis-full">
-                      <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-12 items-start bg-[#EED9C4] pr-0 sm:pr-8">
-                        <div className="relative aspect-[3/2] overflow-hidden">
-                          <Image src={slide.image} alt="Ananthala Essentials" fill className="object-cover" />
-                        </div>
-                        <div className="space-y-6 p-6 pb-8 pr-8 sm:p-8 lg:py-8 lg:pr-10 lg:pl-0 self-center text-center flex flex-col justify-center h-full">
-                          <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium font-cormorant text-foreground">
-                            Ananthala Difference
-                          </h1>
-                          <div className="text-sm uppercase tracking-wider font-medium text-foreground">
-                            ESSENTIALS COLLECTION
-                          </div>
-                          <p className="text-xl leading-relaxed text-foreground mt-4">
-                            At Ananthala, we design sleep essentials that blend comfort, durability, and thoughtful
-                            craftsmanship. From breathable bedsheets to supportive pillows and quality bedding, every
-                            product is made to improve everyday rest.
-                          </p>
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-0 bg-white border-2 shadow-md hover:bg-gray-50" style={{ borderColor: "#EED9C4" }} />
-                <CarouselNext className="right-0 bg-white border-2 shadow-md hover:bg-gray-50" style={{ borderColor: "#EED9C4" }} />
-              </Carousel>
             </div>
           </div>
         </section>
