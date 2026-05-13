@@ -5,6 +5,28 @@ import Order from "@/models/order"
 import User from "@/models/User"
 import { verifyToken } from "@/lib/jwt"
 
+/** Calendar boundaries in Asia/Kolkata as UTC instants for Mongo date queries. */
+function startOfMonthIST(now = new Date()): Date {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "numeric",
+  }).formatToParts(now)
+  const y = Number(parts.find((p) => p.type === "year")?.value)
+  const monthNum = Number(parts.find((p) => p.type === "month")?.value)
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return new Date(`${y}-${pad(monthNum)}-01T00:00:00+05:30`)
+}
+
+function startOfYearIST(now = new Date()): Date {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+  }).formatToParts(now)
+  const y = Number(parts.find((p) => p.type === "year")?.value)
+  return new Date(`${y}-01-01T00:00:00+05:30`)
+}
+
 /**
  * GET — summary of completed orders per agent (coupon attribution).
  * GET ?agentId= — list customer/order rows for that agent (coupon-driven sales).
@@ -76,24 +98,45 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const agg = await Order.aggregate([
-      {
-        $match: {
-          couponAgentId: { $ne: null },
-          paymentStatus: "completed",
+    const baseMatch = {
+      couponAgentId: { $ne: null },
+      paymentStatus: "completed" as const,
+    }
+
+    const monthStart = startOfMonthIST()
+    const yearStart = startOfYearIST()
+
+    const sumGroup = {
+      _id: "$couponAgentId",
+      orderCount: { $sum: 1 },
+      grossOrderTotal: { $sum: { $ifNull: ["$subtotal", 0] } },
+      netPaid: { $sum: { $ifNull: ["$totalAmount", 0] } },
+      discountTotal: { $sum: { $ifNull: ["$discount", 0] } },
+    }
+
+    const [aggAll, aggMonth, aggYtd] = await Promise.all([
+      Order.aggregate([{ $match: baseMatch }, { $group: sumGroup }]),
+      Order.aggregate([
+        {
+          $match: {
+            ...baseMatch,
+            createdAt: { $gte: monthStart },
+          },
         },
-      },
-      {
-        $group: {
-          _id: "$couponAgentId",
-          orderCount: { $sum: 1 },
-          revenue: { $sum: "$totalAmount" },
-          discountGiven: { $sum: "$discount" },
+        { $group: sumGroup },
+      ]),
+      Order.aggregate([
+        {
+          $match: {
+            ...baseMatch,
+            createdAt: { $gte: yearStart },
+          },
         },
-      },
+        { $group: sumGroup },
+      ]),
     ])
 
-    const ids = agg.map((a) => a._id).filter(Boolean)
+    const ids = aggAll.map((a) => a._id).filter(Boolean)
     const users = await User.find({
       _id: { $in: ids },
       role: "agent",
@@ -103,22 +146,86 @@ export async function GET(request: NextRequest) {
 
     const nameById = new Map(users.map((u) => [u._id.toString(), u]))
 
-    const agents = agg.map((row) => {
+    type PeriodAgg = {
+      orderCount: number
+      grossOrderTotal: number
+      netPaid: number
+      discountTotal: number
+    }
+
+    const toPeriod = (r: PeriodAgg | undefined) =>
+      r
+        ? {
+            orderCount: r.orderCount,
+            grossOrderTotal: r.grossOrderTotal,
+            netPaid: r.netPaid,
+            discountTotal: r.discountTotal,
+          }
+        : {
+            orderCount: 0,
+            grossOrderTotal: 0,
+            netPaid: 0,
+            discountTotal: 0,
+          }
+
+    const monthMap = new Map(
+      aggMonth.map((r) => [
+        r._id?.toString?.() ?? "",
+        {
+          orderCount: r.orderCount,
+          grossOrderTotal: r.grossOrderTotal,
+          netPaid: r.netPaid,
+          discountTotal: r.discountTotal,
+        } as PeriodAgg,
+      ]),
+    )
+    const ytdMap = new Map(
+      aggYtd.map((r) => [
+        r._id?.toString?.() ?? "",
+        {
+          orderCount: r.orderCount,
+          grossOrderTotal: r.grossOrderTotal,
+          netPaid: r.netPaid,
+          discountTotal: r.discountTotal,
+        } as PeriodAgg,
+      ]),
+    )
+
+    const agents = aggAll.map((row) => {
       const id = row._id?.toString?.() ?? ""
       const u = nameById.get(id)
+      const m = monthMap.get(id)
+      const y = ytdMap.get(id)
+      const allTime: PeriodAgg = {
+        orderCount: row.orderCount,
+        grossOrderTotal: row.grossOrderTotal,
+        netPaid: row.netPaid,
+        discountTotal: row.discountTotal,
+      }
       return {
         agentId: id,
         agentName: u?.fullname ?? "Unknown",
         agentEmail: u?.email ?? "",
-        orderCount: row.orderCount,
-        revenue: row.revenue,
-        discountGiven: row.discountGiven,
+        thisMonth: toPeriod(m),
+        ytd: toPeriod(y),
+        allTime: toPeriod(allTime),
+        /** @deprecated use allTime.netPaid — kept for older clients */
+        revenue: row.netPaid,
+        discountGiven: row.discountTotal,
       }
     })
 
-    agents.sort((a, b) => b.revenue - a.revenue)
+    agents.sort((a, b) => b.allTime.netPaid - a.allTime.netPaid)
 
-    return NextResponse.json({ success: true, agents })
+    return NextResponse.json({
+      success: true,
+      periods: {
+        monthStartsAt: monthStart.toISOString(),
+        yearStartsAt: yearStart.toISOString(),
+        timezone: "Asia/Kolkata",
+      },
+      agents,
+    })
   } catch (error) {
     console.error("[admin/agent-coupon-sales]", error)
     return NextResponse.json({ error: "Failed to load agent coupon sales" }, { status: 500 })

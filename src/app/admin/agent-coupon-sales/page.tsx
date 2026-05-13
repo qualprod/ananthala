@@ -4,19 +4,51 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Users } from "lucide-react"
 
+interface PeriodMetrics {
+  orderCount: number
+  grossOrderTotal: number
+  netPaid: number
+  discountTotal: number
+}
+
 interface AgentRow {
   agentId: string
   agentName: string
   agentEmail: string
-  orderCount: number
-  revenue: number
-  discountGiven: number
+  thisMonth: PeriodMetrics
+  ytd: PeriodMetrics
+  allTime: PeriodMetrics
+}
+
+function formatInr(n: number) {
+  return `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`
+}
+
+function PeriodCell({ p }: { p: PeriodMetrics }) {
+  return (
+    <div className="text-xs text-right space-y-0.5 tabular-nums">
+      <div>
+        <span className="text-foreground/55">Gross</span>{" "}
+        <span className="font-medium text-foreground">{formatInr(p.grossOrderTotal)}</span>
+      </div>
+      <div>
+        <span className="text-foreground/55">Net</span>{" "}
+        <span className="font-medium text-foreground">{formatInr(p.netPaid)}</span>
+      </div>
+      <div>
+        <span className="text-foreground/55">Discount</span>{" "}
+        <span className="font-medium text-green-700">{formatInr(p.discountTotal)}</span>
+      </div>
+      <div className="text-foreground/50 pt-0.5">{p.orderCount} orders</div>
+    </div>
+  )
 }
 
 export default function AdminAgentCouponSalesPage() {
   const [loading, setLoading] = useState(true)
   const [agents, setAgents] = useState<AgentRow[]>([])
   const [error, setError] = useState("")
+  const [periodNote, setPeriodNote] = useState("")
 
   useEffect(() => {
     ;(async () => {
@@ -27,7 +59,12 @@ export default function AdminAgentCouponSalesPage() {
           setError(data.error || "Failed to load")
           return
         }
-        setAgents(data.agents || [])
+        setAgents((data.agents || []) as AgentRow[])
+        if (data.periods?.timezone) {
+          setPeriodNote(
+            `This month and YTD use the calendar in ${data.periods.timezone} (India).`,
+          )
+        }
       } catch {
         setError("Failed to load sales")
       } finally {
@@ -37,15 +74,19 @@ export default function AdminAgentCouponSalesPage() {
   }, [])
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
           <Users className="w-7 h-7" />
           Agent coupon sales
         </h1>
-        <p className="text-foreground/70 mt-2">
-          Revenue from orders where customers paid using an agent-only coupon. Open an agent to see customer details.
+        <p className="text-foreground/70 mt-2 max-w-3xl">
+          Orders paid with an agent&apos;s coupon code. For each period you see:{" "}
+          <strong>Gross</strong> — sum of cart subtotals before the coupon;{" "}
+          <strong>Net</strong> — sum of amounts actually collected (after discount and shipping);{" "}
+          <strong>Discount</strong> — sum of coupon discounts applied.
         </p>
+        {periodNote && <p className="text-sm text-foreground/60 mt-1">{periodNote}</p>}
       </div>
 
       {error && (
@@ -66,25 +107,42 @@ export default function AdminAgentCouponSalesPage() {
                 <tr className="bg-muted/50 text-left">
                   <th className="px-4 py-3 font-semibold">Agent</th>
                   <th className="px-4 py-3 font-semibold">Email</th>
-                  <th className="px-4 py-3 font-semibold text-right">Orders</th>
-                  <th className="px-4 py-3 font-semibold text-right">Discount given</th>
-                  <th className="px-4 py-3 font-semibold text-right">Revenue</th>
+                  <th className="px-4 py-3 font-semibold text-right whitespace-nowrap min-w-36">
+                    This month
+                    <div className="text-[10px] font-normal text-foreground/55 mt-0.5">
+                      Gross · Net · Discount
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-right whitespace-nowrap min-w-36">
+                    YTD
+                    <div className="text-[10px] font-normal text-foreground/55 mt-0.5">
+                      Gross · Net · Discount
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-right whitespace-nowrap min-w-36">
+                    All-time
+                    <div className="text-[10px] font-normal text-foreground/55 mt-0.5">
+                      Gross · Net · Discount
+                    </div>
+                  </th>
                   <th className="px-4 py-3 font-semibold text-right">Customers</th>
                 </tr>
               </thead>
               <tbody>
                 {agents.map((a) => (
                   <tr key={a.agentId} className="border-t hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium">{a.agentName}</td>
-                    <td className="px-4 py-3 text-foreground/80">{a.agentEmail}</td>
-                    <td className="px-4 py-3 text-right">{a.orderCount}</td>
-                    <td className="px-4 py-3 text-right text-green-700">
-                      ₹{a.discountGiven.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    <td className="px-4 py-3 font-medium align-top">{a.agentName}</td>
+                    <td className="px-4 py-3 text-foreground/80 align-top">{a.agentEmail}</td>
+                    <td className="px-4 py-3 align-top">
+                      <PeriodCell p={a.thisMonth} />
                     </td>
-                    <td className="px-4 py-3 text-right font-medium">
-                      ₹{a.revenue.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    <td className="px-4 py-3 align-top">
+                      <PeriodCell p={a.ytd} />
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 align-top">
+                      <PeriodCell p={a.allTime} />
+                    </td>
+                    <td className="px-4 py-3 text-right align-top">
                       <Link
                         href={`/admin/agent-coupon-sales/${a.agentId}`}
                         className="text-primary font-medium hover:underline"
