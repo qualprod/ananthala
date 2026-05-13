@@ -6,6 +6,11 @@ export async function GET() {
   try {
     await connectDB()
 
+    await HomepageCard.updateMany(
+      { name: { $regex: /bedsheets?,\s*pillows?\s*and\s*more/i } },
+      { $set: { name: "Curated Essentials", tagline: "" } },
+    )
+
     const cards = await HomepageCard.find().sort({ displayOrder: 1, createdAt: -1 })
 
     return NextResponse.json(
