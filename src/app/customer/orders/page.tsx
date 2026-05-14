@@ -11,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast"
 
 interface OrderItem {
-  productId?: string
+  productId?: string | number
   productName: string
   productImage?: string
   productSlug?: string
@@ -20,6 +20,84 @@ interface OrderItem {
   size?: string
   fabric?: string
   productColor?: string
+}
+
+// Product Image Component with Fallback - Always displays image area
+function ProductImageWithFallback({ item }: { item: OrderItem }) {
+  const [imageSrc, setImageSrc] = useState<string | null>(item.productImage || null)
+  const [loading, setLoading] = useState(!item.productImage && !!item.productId)
+  const [hasError, setHasError] = useState(false)
+
+  useEffect(() => {
+    // If we already have an image, don't fetch
+    if (item.productImage) {
+      setImageSrc(item.productImage)
+      setLoading(false)
+      return
+    }
+
+    // If we don't have productId, we can't fetch
+    if (!item.productId) {
+      setLoading(false)
+      return
+    }
+
+    // Fetch product image from API
+    const fetchProductImage = async () => {
+      try {
+        const response = await fetch(`/api/products/${item.productId}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.product) {
+            // Use primaryImage first, then first imageUrl
+            const imageUrl = data.product.primaryImage || data.product.imageUrls?.[0] || null
+            if (imageUrl) {
+              setImageSrc(imageUrl)
+            } else {
+              setHasError(true)
+            }
+          }
+        }
+      } catch (error) {
+        console.error("[v0] Error fetching product image:", error)
+        setHasError(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProductImage()
+  }, [item.productId, item.productImage])
+
+  // Always display image area - with placeholder if no image
+  return (
+    <a
+      href={`/product/${item.productId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex-shrink-0 w-24 h-24 bg-[#F9F7F4] rounded-lg border flex items-center justify-center overflow-hidden hover:opacity-80 transition-opacity cursor-pointer group"
+      style={{ borderColor: "#D9CFC7" }}
+      title={`View ${item.productName}`}
+    >
+      {loading ? (
+        <div className="text-center">
+          <div className="w-6 h-6 border-2 border-[#D9CFC7] border-t-[#6D4530] rounded-full animate-spin mx-auto"></div>
+        </div>
+      ) : imageSrc && !hasError ? (
+        <img
+          src={imageSrc}
+          alt={item.productName}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <div className="text-center p-2">
+          <Package className="w-8 h-8 text-[#D9CFC7] mx-auto" />
+          <p className="text-xs text-[#8B5A3C]/50 mt-1">No Image</p>
+        </div>
+      )}
+    </a>
+  )
 }
 
 interface TimelineEntry {
@@ -496,54 +574,80 @@ export default function OrdersPage() {
               {/* Items */}
               <div className="space-y-3">
                 <h3 className="font-semibold text-[#6D4530]">Items Ordered</h3>
-                <div className="border" style={{ borderColor: "#D9CFC7" }}>
-                  {selectedOrder.items.map((item, idx) => (
-                    <div key={idx} className="p-4 border-b" style={{ borderColor: "#D9CFC7" }}>
-                      <div className="flex gap-4">
-                        {/* Product Image */}
-                        {item.productImage && (
+                <div className="border rounded-lg overflow-hidden" style={{ borderColor: "#D9CFC7" }}>
+                  {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                    selectedOrder.items.map((item, idx) => (
+                      <div 
+                        key={idx} 
+                        className="p-4 border-b last:border-b-0 hover:bg-[#F9F7F4] transition-colors" 
+                        style={{ borderColor: "#D9CFC7" }}
+                      >
+                        <div className="flex gap-4">
+                          {/* Product Image */}
                           <div className="flex-shrink-0">
-                            <img
-                              src={item.productImage}
-                              alt={item.productName}
-                              className="w-24 h-24 object-cover rounded-lg border"
-                              style={{ borderColor: "#D9CFC7" }}
-                            />
+                            <ProductImageWithFallback item={item} />
                           </div>
-                        )}
-                        
-                        {/* Product Details */}
-                        <div className="flex-1 flex justify-between items-start gap-4">
-                          <div>
-                            {item.productSlug ? (
-                              <a
-                                href={`/product/${item.productSlug}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-medium text-[#6D4530] hover:text-[#8B5A3C] hover:underline transition-colors"
-                              >
-                                {item.productName}
-                              </a>
-                            ) : (
-                              <p className="font-medium text-[#6D4530]">{item.productName}</p>
-                            )}
-                            <div className="text-sm text-foreground mt-2 space-y-1">
-                              {item.size && <p>Size: {item.size}</p>}
-                              {item.fabric && <p>Fabric: {item.fabric}</p>}
-                              {item.productColor && <p>Color: {item.productColor}</p>}
+                          
+                          {/* Product Details - Left Column */}
+                          <div className="flex-1 min-w-0">
+                            <div className="mb-3">
+                              {item.productId ? (
+                                <a
+                                  href={`/product/${item.productId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-base font-semibold text-[#6D4530] hover:text-[#8B5A3C] hover:underline transition-colors break-words"
+                                >
+                                  {item.productName}
+                                </a>
+                              ) : (
+                                <p className="text-base font-semibold text-[#6D4530]">{item.productName}</p>
+                              )}
+                            </div>
+                            
+                            {/* Product Attributes */}
+                            <div className="space-y-1 text-sm text-foreground">
+                              {item.size && (
+                                <div className="flex justify-between">
+                                  <span className="text-[#8B5A3C]/70">Size:</span>
+                                  <span className="font-medium">{item.size}</span>
+                                </div>
+                              )}
+                              {item.fabric && (
+                                <div className="flex justify-between">
+                                  <span className="text-[#8B5A3C]/70">Fabric:</span>
+                                  <span className="font-medium">{item.fabric}</span>
+                                </div>
+                              )}
+                              {item.productColor && (
+                                <div className="flex justify-between">
+                                  <span className="text-[#8B5A3C]/70">Color:</span>
+                                  <span className="font-medium">{item.productColor}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-[#6D4530]">₹{item.price.toFixed(2)}</p>
-                            <p className="text-sm text-foreground">Qty: {item.quantity}</p>
-                            <p className="text-sm font-medium text-[#8B5A3C]">
-                              ₹{(item.price * item.quantity).toFixed(2)}
-                            </p>
+                          
+                          {/* Price & Quantity - Right Column */}
+                          <div className="flex-shrink-0 text-right whitespace-nowrap">
+                            <div className="mb-3">
+                              <p className="text-sm text-[#8B5A3C]/70">Unit Price</p>
+                              <p className="text-lg font-semibold text-[#6D4530]">₹{item.price.toFixed(2)}</p>
+                            </div>
+                            
+                            <div className="pt-2 border-t" style={{ borderColor: "#D9CFC7" }}>
+                              <p className="text-sm text-[#8B5A3C]/70 mb-1">Qty: {item.quantity}</p>
+                              <p className="text-base font-semibold text-[#6D4530]">
+                                ₹{(item.price * item.quantity).toFixed(2)}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-foreground">No items found</div>
+                  )}
                 </div>
               </div>
 
