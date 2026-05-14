@@ -252,7 +252,13 @@ export default function Home() {
     if (name === "joy") return "/category/joy"
     if (name === "bliss") return "/category/bliss"
     if (name === "grace") return "/category/grace"
-    if (name.includes("pillow") || name.includes("bedsheet") || name.includes("bedding") || name.includes("more")) {
+    if (
+      name.includes("essentials") ||
+      name.includes("pillow") ||
+      name.includes("bedsheet") ||
+      name.includes("bedding") ||
+      name.includes("more")
+    ) {
       return "/category/essentials"
     }
     return "/category/bliss"
