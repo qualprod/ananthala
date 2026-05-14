@@ -329,9 +329,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </Link>
               </div>
               <Link
-                href="/admin/dashboard"
+                href="/"
                 className="absolute left-1/2 -translate-x-1/2 flex h-20 items-center justify-center overflow-hidden"
-                aria-label="Admin dashboard home"
+                aria-label="Go to Ananthala homepage"
               >
                 <img src="/logo.png" alt="Ananthala" className="h-28 w-auto object-contain" />
               </Link>
