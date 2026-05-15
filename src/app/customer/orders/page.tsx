@@ -9,96 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { OrderLineItem } from "@/components/orders/order-line-item"
+import { OrderItemsPreview } from "@/components/orders/order-items-preview"
+import { normalizeOrderLineItem, type OrderLineItemData } from "@/lib/order-item"
 
-interface OrderItem {
-  productId?: string | number
-  productName: string
-  productImage?: string
-  productSlug?: string
-  quantity: number
-  price: number
-  size?: string
-  fabric?: string
-  productColor?: string
-}
-
-// Product Image Component with Fallback - Always displays image area
-function ProductImageWithFallback({ item }: { item: OrderItem }) {
-  const [imageSrc, setImageSrc] = useState<string | null>(item.productImage || null)
-  const [loading, setLoading] = useState(!item.productImage && !!item.productId)
-  const [hasError, setHasError] = useState(false)
-
-  useEffect(() => {
-    // If we already have an image, don't fetch
-    if (item.productImage) {
-      setImageSrc(item.productImage)
-      setLoading(false)
-      return
-    }
-
-    // If we don't have productId, we can't fetch
-    if (!item.productId) {
-      setLoading(false)
-      return
-    }
-
-    // Fetch product image from API
-    const fetchProductImage = async () => {
-      try {
-        const response = await fetch(`/api/products/${item.productId}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.product) {
-            // Use primaryImage first, then first imageUrl
-            const imageUrl = data.product.primaryImage || data.product.imageUrls?.[0] || null
-            if (imageUrl) {
-              setImageSrc(imageUrl)
-            } else {
-              setHasError(true)
-            }
-          }
-        }
-      } catch (error) {
-        console.error("[v0] Error fetching product image:", error)
-        setHasError(true)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProductImage()
-  }, [item.productId, item.productImage])
-
-  // Always display image area - with placeholder if no image
-  return (
-    <a
-      href={`/product/${item.productId}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex-shrink-0 w-24 h-24 bg-[#F9F7F4] rounded-lg border flex items-center justify-center overflow-hidden hover:opacity-80 transition-opacity cursor-pointer group"
-      style={{ borderColor: "#D9CFC7" }}
-      title={`View ${item.productName}`}
-    >
-      {loading ? (
-        <div className="text-center">
-          <div className="w-6 h-6 border-2 border-[#D9CFC7] border-t-[#6D4530] rounded-full animate-spin mx-auto"></div>
-        </div>
-      ) : imageSrc && !hasError ? (
-        <img
-          src={imageSrc}
-          alt={item.productName}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-          onError={() => setHasError(true)}
-        />
-      ) : (
-        <div className="text-center p-2">
-          <Package className="w-8 h-8 text-[#D9CFC7] mx-auto" />
-          <p className="text-xs text-[#8B5A3C]/50 mt-1">No Image</p>
-        </div>
-      )}
-    </a>
-  )
-}
+interface OrderItem extends OrderLineItemData {}
 
 interface TimelineEntry {
   status: string
@@ -184,7 +99,11 @@ export default function OrdersPage() {
       })
 
       const data = await response.json()
-      setOrders(data.orders || [])
+      const normalizedOrders = (data.orders || []).map((order: Order) => ({
+        ...order,
+        items: Array.isArray(order.items) ? order.items.map(normalizeOrderLineItem) : [],
+      }))
+      setOrders(normalizedOrders)
     } catch (error) {
       console.error("Failed to fetch orders:", error)
       setOrders([])
@@ -421,7 +340,11 @@ export default function OrdersPage() {
                         {formatDate(order.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-sm text-foreground">
-                        {order.items.length} {order.items.length === 1 ? "item" : "items"}
+                        {order.items && order.items.length > 0 ? (
+                          <OrderItemsPreview items={order.items} />
+                        ) : (
+                          <span className="text-foreground/70">0 items</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
@@ -582,67 +505,7 @@ export default function OrdersPage() {
                         className="p-4 border-b last:border-b-0 hover:bg-[#F9F7F4] transition-colors" 
                         style={{ borderColor: "#D9CFC7" }}
                       >
-                        <div className="flex gap-4">
-                          {/* Product Image */}
-                          <div className="flex-shrink-0">
-                            <ProductImageWithFallback item={item} />
-                          </div>
-                          
-                          {/* Product Details - Left Column */}
-                          <div className="flex-1 min-w-0">
-                            <div className="mb-3">
-                              {item.productId ? (
-                                <a
-                                  href={`/product/${item.productId}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-base font-semibold text-[#6D4530] hover:text-[#8B5A3C] hover:underline transition-colors break-words"
-                                >
-                                  {item.productName}
-                                </a>
-                              ) : (
-                                <p className="text-base font-semibold text-[#6D4530]">{item.productName}</p>
-                              )}
-                            </div>
-                            
-                            {/* Product Attributes */}
-                            <div className="space-y-1 text-sm text-foreground">
-                              {item.size && (
-                                <div className="flex justify-between">
-                                  <span className="text-[#8B5A3C]/70">Size:</span>
-                                  <span className="font-medium">{item.size}</span>
-                                </div>
-                              )}
-                              {item.fabric && (
-                                <div className="flex justify-between">
-                                  <span className="text-[#8B5A3C]/70">Fabric:</span>
-                                  <span className="font-medium">{item.fabric}</span>
-                                </div>
-                              )}
-                              {item.productColor && (
-                                <div className="flex justify-between">
-                                  <span className="text-[#8B5A3C]/70">Color:</span>
-                                  <span className="font-medium">{item.productColor}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Price & Quantity - Right Column */}
-                          <div className="flex-shrink-0 text-right whitespace-nowrap">
-                            <div className="mb-3">
-                              <p className="text-sm text-[#8B5A3C]/70">Unit Price</p>
-                              <p className="text-lg font-semibold text-[#6D4530]">₹{item.price.toFixed(2)}</p>
-                            </div>
-                            
-                            <div className="pt-2 border-t" style={{ borderColor: "#D9CFC7" }}>
-                              <p className="text-sm text-[#8B5A3C]/70 mb-1">Qty: {item.quantity}</p>
-                              <p className="text-base font-semibold text-[#6D4530]">
-                                ₹{(item.price * item.quantity).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                        <OrderLineItem item={item} thumbnailSize="lg" />
                       </div>
                     ))
                   ) : (

@@ -193,6 +193,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           trackingNumber: trackingNumber || order.trackingNumber,
           notes: notes || undefined,
           totalAmount: order.totalAmount,
+          items: order.items,
         })
         console.log(`[v0] Status update email ${emailSent ? "sent" : "failed to send"} for order ${order.orderId}`)
       } catch (emailError) {

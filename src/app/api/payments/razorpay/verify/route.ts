@@ -13,6 +13,7 @@ export const runtime = "nodejs"
 
 interface CartItemPayload {
   id?: string
+  productId?: string
   name: string
   image?: string
   slug?: string
@@ -123,10 +124,25 @@ const {
 
     const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`
     const orderItems = Array.isArray(items)
-      ? (items as CartItemPayload[]).map((item) => ({
-          productId: item.id,
+      ? (items as CartItemPayload[]).map((item) => {
+          const lineId = item.id?.trim() || ""
+          const explicitProductId = item.productId?.trim() || ""
+          const objectIdFromLine = lineId.match(/[a-f0-9]{24}/i)?.[0]
+          const productId =
+            (explicitProductId && /^[a-f0-9]{24}$/i.test(explicitProductId) ? explicitProductId : null) ||
+            objectIdFromLine ||
+            explicitProductId ||
+            lineId
+
+          const image =
+            typeof item.image === "string" && item.image.trim() && item.image !== "/placeholder.svg"
+              ? item.image.trim()
+              : item.image?.trim() || ""
+
+          return {
+          productId,
           productName: item.name,
-          productImage: item.image,
+          productImage: image || undefined,
           productSlug: item.slug,
           quantity: item.quantity,
           price: item.price,
@@ -134,7 +150,8 @@ const {
           fabric: item.fabric,
           productColor: item.productColor,
           productColorHex: item.productColorHex,
-        }))
+        }
+        })
       : []
 
     const lineSubtotal = orderItems.reduce(

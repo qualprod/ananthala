@@ -96,8 +96,8 @@ export async function sendOrderConfirmationEmail(
         </td>
         <td style="padding: 12px; vertical-align: top;">
           ${
-            item.productSlug
-              ? `<a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/product/${item.productSlug}" style="color: #6d4530; text-decoration: none; font-weight: 600; font-size: 14px;">${item.productName}</a>`
+            item.productId || item.productSlug
+              ? `<a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/product/${item.productId || item.productSlug}" style="color: #6d4530; text-decoration: none; font-weight: 600; font-size: 14px;">${item.productName}</a>`
               : `<div class="item-name">${item.productName}</div>`
           }
           ${
@@ -1064,6 +1064,17 @@ interface OrderStatusUpdateData {
   trackingNumber?: string
   notes?: string
   totalAmount: number
+  items?: Array<{
+    productId?: string
+    productName: string
+    productImage?: string
+    productSlug?: string
+    quantity: number
+    price: number
+    size?: string
+    fabric?: string
+    productColor?: string
+  }>
 }
 
 export async function sendOrderStatusUpdateEmail(
