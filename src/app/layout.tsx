@@ -28,15 +28,15 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "ANANTHALA - Crafted for comfort naturally",
+  title: "Ananthala - crafted for comfort",
   description:
-    "ANANTHALA crafts virgin cotton sleep products rooted in heritage. Naati cotton, no synthetics—crafted for comfort, naturally. 100-night trial and 15-year warranty.",
+    "Naturally inspired products that ooze luxury and takes care of your well being",
   keywords:
     "ANANTHALA, virgin cotton bedding, natural sleep products, Naati cotton, organic sleep products, baby sleep products, sustainable bedding, chemical-free bedding, natural comfort, heritage craftsmanship, cotton bedding, baby lounger, 100-night trial",
   openGraph: {
-    title: "ANANTHALA - Crafted for comfort naturally",
+    title: "Ananthala - crafted for comfort",
     description:
-      "Virgin cotton sleep products—heritage craftsmanship, Naati cotton, and comfort without synthetics.",
+      "Naturally inspired products that ooze luxury and takes care of your well being",
     type: "website",
   },
   icons: {
