@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "ANANTHALA - Premium Mattresses for Better Sleep",
+  title: "ANANTHALA -Crafted for comfort naturally",
   description:
     "Premium mattresses crafted for your best sleep. Experience luxury comfort with our 100-night trial and 15-year warranty.",
   keywords: "mattresses, premium sleep, luxury bedding, better sleep, 100-night trial",
