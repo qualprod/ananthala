@@ -11,13 +11,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { IndianRupee, Loader2 } from "lucide-react"
+import { OrderLineItem } from "@/components/orders/order-line-item"
+import { OrderItemsPreview } from "@/components/orders/order-items-preview"
+import type { OrderLineItemData } from "@/lib/order-item"
 
-interface OrderItem {
-  productId: string
-  productName: string
-  quantity: number
-  price: number
-  size: string
+interface OrderItem extends OrderLineItemData {
+  size?: string
 }
 
 interface TimelineEvent {
@@ -401,7 +400,11 @@ export default function OrderManagementPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-foreground">
-                        {Array.isArray(order.items) ? order.items.length : 0} items
+                        {Array.isArray(order.items) && order.items.length > 0 ? (
+                          <OrderItemsPreview items={order.items} />
+                        ) : (
+                          <span className="text-foreground/70">0 items</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-semibold text-foreground flex items-center gap-1">
@@ -553,19 +556,10 @@ export default function OrderManagementPage() {
                     selectedOrder.items.map((item, index) => (
                       <div
                         key={index}
-                        className="flex justify-between items-center p-3 border rounded-lg"
+                        className="p-4 border rounded-lg hover:bg-[#F9F7F4] transition-colors"
                         style={{ borderColor: "#D9CFC7" }}
                       >
-                        <div>
-                          <p className="font-medium text-foreground">{item.productName}</p>
-                          <p className="text-xs text-foreground/70">
-                            Size: {item.size} | Qty: {item.quantity}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1 font-semibold text-foreground">
-                          <IndianRupee className="w-4 h-4" />
-                          {(item.price * item.quantity).toLocaleString("en-IN")}
-                        </div>
+                        <OrderLineItem item={item} thumbnailSize="md" />
                       </div>
                     ))
                   ) : (

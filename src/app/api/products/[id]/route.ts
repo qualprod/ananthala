@@ -673,17 +673,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     const nextImageUrls = [...existingImageUrls, ...uploadedImageUrls]
+    const colorOptionPrimary = colorOptions[0]?.imageUrls?.[0]
     const primaryImage =
+      uploadedImageUrls[0] ||
+      colorOptionPrimary ||
       nextImageUrls[0] ||
-      colorOptions[0]?.imageUrls?.[0] ||
       (productType === "single" ? processedVariants[0]?.imageUrls?.[0] : undefined) ||
       ""
     const resolvedImageUrls =
-      nextImageUrls.length > 0
+      uploadedImageUrls.length > 0
         ? nextImageUrls
-        : productType === "single"
-          ? (processedVariants[0]?.imageUrls?.slice(0, 1) ?? [])
-          : []
+        : colorOptionPrimary
+          ? [colorOptionPrimary]
+          : nextImageUrls.length > 0
+            ? nextImageUrls
+            : productType === "single"
+              ? (processedVariants[0]?.imageUrls?.slice(0, 1) ?? [])
+              : []
 
     const product = await Product.findByIdAndUpdate(
       id,

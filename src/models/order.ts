@@ -83,6 +83,13 @@ shippingAddress: {
       type: String,
       default: null,
     },
+    /** When an agent-assigned coupon was used, credits this agent for reporting. */
+    couponAgentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
+    },
     totalAmount: {
       type: Number,
       required: true,

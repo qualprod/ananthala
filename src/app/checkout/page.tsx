@@ -35,6 +35,15 @@ interface UserProfile {
   addresses: SavedAddress[]
 }
 
+interface AvailableCoupon {
+  code: string
+  type: "percentage" | "fixed"
+  discount: number
+  maxDiscount: number | null
+  minPurchase: number
+  expiryDate: string
+}
+
 declare global {
   interface Window {
     Razorpay?: any
@@ -51,6 +60,7 @@ export default function CheckoutPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [couponCode, setCouponCode] = useState("")
   const [couponError, setCouponError] = useState("")
+  const [availableCoupons, setAvailableCoupons] = useState<AvailableCoupon[]>([])
   const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE)
   const { toast } = useToast()
   
@@ -164,6 +174,25 @@ useEffect(() => {
 
     ensureAuthenticated()
   }, [router])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const response = await fetch("/api/coupons/available")
+        const data = await response.json()
+        if (!cancelled && data.success && Array.isArray(data.coupons)) {
+          setAvailableCoupons(data.coupons)
+        }
+      } catch {
+        if (!cancelled) setAvailableCoupons([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated])
 
   // Fetch user profile and saved addresses
   const fetchUserProfile = async () => {
@@ -308,8 +337,9 @@ useEffect(() => {
   const totalDiscount = appliedCoupons.reduce((sum, coupon) => sum + coupon.discountAmount, 0)
   const total = subtotal - totalDiscount + shipping
 
-  const applyCoupon = async () => {
-    if (!couponCode.trim()) {
+  const applyCoupon = async (codeOverride?: string) => {
+    const entered = (codeOverride ?? couponCode).trim()
+    if (!entered) {
       setCouponError("Please enter a coupon code")
       return
     }
@@ -324,8 +354,8 @@ useEffect(() => {
       return
     }
 
-    // Check if coupon already applied
-    if (appliedCoupons.find((c) => c.code === couponCode.toUpperCase())) {
+    const normalized = entered.toUpperCase()
+    if (appliedCoupons.find((c) => c.code === normalized)) {
       setCouponError("This coupon is already applied")
       return
     }
@@ -335,7 +365,7 @@ useEffect(() => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code: couponCode.trim(),
+          code: entered,
           subtotal: subtotal,
         }),
       })
@@ -344,7 +374,7 @@ useEffect(() => {
 
       if (data.success) {
         setAppliedCoupon({
-          code: couponCode.toUpperCase(),
+          code: normalized,
           discountAmount: data.coupon.discountAmount,
           type: data.coupon.type,
           discount: data.coupon.discount,
@@ -655,7 +685,8 @@ shippingAddress: {
                   companyName: companyName,
                 } : null,
                 items: cartItems.map((item) => ({
-                  id: item.productId || item.id,
+                  id: item.id,
+                  productId: item.productId,
                   name: item.name,
                   image: item.image,
                   slug: item.slug,
@@ -748,7 +779,7 @@ shippingAddress: {
               Please add items to your cart before checkout.
             </p>
             <button
-              onClick={() => router.push("/#find-your-perfect-mattress")}
+              onClick={() => router.push("/#shop")}
               className="px-8 py-3 text-foreground hover:opacity-90 transition-opacity"
               style={{ backgroundColor: "#EED9C4" }}
             >
@@ -780,7 +811,7 @@ shippingAddress: {
                 <ChevronRight className="w-4 h-4 text-foreground/50" />
               </li>
               <li>
-                <Link href="/#find-your-perfect-mattress" className="text-foreground hover:opacity-80 transition-opacity">
+                <Link href="/#shop" className="text-foreground hover:opacity-80 transition-opacity">
                   Products
                 </Link>
               </li>
@@ -1597,22 +1628,70 @@ shippingAddress: {
                     <span className="text-xs text-gray-600">(max 1 per order)</span>
                   </div>
                   {appliedCoupons.length < 1 && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <input
-                        type="text"
-                        placeholder="Enter Coupon Code"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        className="flex-1 px-3 py-2 border rounded-md text-sm text-black focus:outline-none"
-                        style={{ borderColor: "#D9CFC7" }}
-                      />
-                      <button
-                        onClick={applyCoupon}
-                        className="px-4 py-2 text-sm text-black bg-gray-200 hover:bg-gray-300 transition-colors rounded-md"
-                      >
-                        Apply
-                      </button>
-                    </div>
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input
+                          type="text"
+                          placeholder="Enter Coupon Code"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          className="flex-1 px-3 py-2 border rounded-md text-sm text-black focus:outline-none"
+                          style={{ borderColor: "#D9CFC7" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => applyCoupon()}
+                          className="px-4 py-2 text-sm text-black bg-gray-200 hover:bg-gray-300 transition-colors rounded-md"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                      {availableCoupons.length > 0 && (
+                        <div className="mb-2 space-y-2">
+                          <p className="text-xs font-medium text-gray-700">Available offers</p>
+                          <div className="flex flex-wrap gap-2">
+                            {availableCoupons.map((c) => {
+                              const meetsMin = subtotal >= c.minPurchase
+                              const offLabel =
+                                c.type === "percentage"
+                                  ? `${c.discount}% off${
+                                      c.maxDiscount ? ` (max ₹${c.maxDiscount.toLocaleString("en-IN")})` : ""
+                                    }`
+                                  : `₹${c.discount.toLocaleString("en-IN")} off`
+                              return (
+                                <button
+                                  key={c.code}
+                                  type="button"
+                                  disabled={!meetsMin}
+                                  title={
+                                    meetsMin
+                                      ? `Apply ${c.code}`
+                                      : `Minimum cart ₹${c.minPurchase.toLocaleString("en-IN")} required`
+                                  }
+                                  onClick={() => {
+                                    setCouponCode(c.code)
+                                    void applyCoupon(c.code)
+                                  }}
+                                  className={`text-left px-3 py-2 rounded-md border text-xs transition-colors ${
+                                    meetsMin
+                                      ? "border-[#D9CFC7] bg-white hover:bg-gray-100 text-black cursor-pointer"
+                                      : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  }`}
+                                >
+                                  <span className="font-mono font-semibold">{c.code}</span>
+                                  <span className="block text-[11px] text-gray-600 mt-0.5">{offLabel}</span>
+                                  {!meetsMin && (
+                                    <span className="block text-[11px] text-amber-700 mt-0.5">
+                                      Min. order ₹{c.minPurchase.toLocaleString("en-IN")}
+                                    </span>
+                                  )}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                   {couponError && <p className="text-xs text-red-600 mb-2">{couponError}</p>}
                   {appliedCoupons.length > 0 && (

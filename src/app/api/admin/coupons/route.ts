@@ -94,6 +94,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Usage limit must be at least 1" }, { status: 400 })
     }
 
+    if (agents.length > 1) {
+      return NextResponse.json(
+        {
+          error:
+            "Agent coupons must have exactly one assigned agent. Create a separate coupon code for each agent.",
+        },
+        { status: 400 },
+      )
+    }
+
     // Set expiry date to end of day (23:59:59)
     const expiryDateTime = new Date(expiryDate)
     expiryDateTime.setHours(23, 59, 59, 999)

@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getProductListingImage } from "@/lib/product-images"
 
 interface ApiProductVariant {
   price: number
@@ -24,6 +25,7 @@ interface ApiProduct {
   productRole?: "normal" | "complementary"
   displayOrder?: number | null
   createdAt?: string
+  colorOptions?: Array<{ fabric?: string; imageUrls?: string[] }>
 }
 
 interface CategoryProductsGridProps {
@@ -176,7 +178,7 @@ export function CategoryProductsGrid({ collection }: CategoryProductsGridProps) 
             <Link href={`/product/${product._id}`} className="block">
               <div className="relative aspect-square overflow-hidden mb-3 cursor-pointer">
                 <Image
-                  src={product.primaryImage || product.imageUrls?.[0] || "/placeholder.svg"}
+                  src={getProductListingImage(product)}
                   alt={product.productTitle}
                   fill
                   className="object-cover"

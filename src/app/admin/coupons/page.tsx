@@ -132,10 +132,10 @@ export default function AdminCouponManagementPage() {
     }
   }
 
-  const toggleAgent = (agentId: string) => {
+  const setExclusiveAgent = (value: string) => {
     setFormData((prev) => ({
       ...prev,
-      agents: prev.agents.includes(agentId) ? prev.agents.filter((id) => id !== agentId) : [...prev.agents, agentId],
+      agents: value === "__none__" || !value ? [] : [value],
     }))
   }
 
@@ -154,9 +154,9 @@ export default function AdminCouponManagementPage() {
     setIsSubmitting(true)
     try {
       // Get selected agent names
-      const selectedAgentNames = formData.agents.map(
-        (id) => agents.find((a) => a.id === id)?.name || ""
-      ).filter(Boolean)
+      const selectedAgentNames = formData.agents
+        .map((id) => agents.find((a) => a.id === id)?.name || "")
+        .filter(Boolean)
 
       const response = await fetch("/api/admin/coupons", {
         method: "POST",
@@ -408,38 +408,35 @@ export default function AdminCouponManagementPage() {
                 </div>
               </div>
 
-              {/* Agent Selection */}
+              {/* Agent Selection — one exclusive agent per code so sales can be attributed */}
               <div className="grid gap-2 border-t border-[#D9CFC7] pt-4">
-                <Label className="text-foreground">
-                  Assign to Agents (Optional)
-                </Label>
-                <p className="text-sm text-foreground/70 mb-3">
-                  {formData.agents.length > 0
-                    ? `${formData.agents.length} agent(s) selected`
-                    : "No agents selected - coupon available to all"}
+                <Label className="text-foreground">Agent for this code (optional)</Label>
+                <p className="text-sm text-foreground/70 mb-2">
+                  Leave as general for everyone, or pick exactly one agent so their coupon sales can be tracked.
+                  Each agent should have their own coupon code.
                 </p>
                 {isLoadingAgents ? (
                   <p className="text-sm text-foreground">Loading agents...</p>
                 ) : agents.length === 0 ? (
                   <p className="text-sm text-foreground/70">No agents available</p>
                 ) : (
-                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border border-[#D9CFC7] rounded-lg p-3 bg-stone-50">
-                    {agents.map((agent) => (
-                      <label key={agent.id} className="flex items-center gap-3 cursor-pointer hover:bg-white p-2 rounded transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={formData.agents.includes(agent.id)}
-                          onChange={() => toggleAgent(agent.id)}
-                          disabled={isSubmitting}
-                          className="w-4 h-4 border-[#D9CFC7] text-foreground focus:ring-[#8B5A3C] rounded cursor-pointer"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-foreground">{agent.name}</p>
-                          <p className="text-xs text-foreground/70">{agent.email}</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
+                  <Select
+                    value={formData.agents[0] ?? "__none__"}
+                    onValueChange={setExclusiveAgent}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="border-[#D9CFC7]">
+                      <SelectValue placeholder="General coupon (no agent)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">General — anyone can use</SelectItem>
+                      {agents.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id}>
+                          {agent.name} ({agent.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
             </div>
@@ -607,7 +604,7 @@ export default function AdminCouponManagementPage() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-foreground/70 text-sm">All agents</span>
+                        <span className="text-foreground/70 text-sm">General (public)</span>
                       )}
                     </TableCell>
                     <TableCell className="text-foreground">{coupon.expiryDate}</TableCell>

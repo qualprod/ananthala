@@ -10,6 +10,12 @@ import { useCart } from "@/contexts/cart-context"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SearchDropdown } from "@/components/search/search-dropdown"
 import { DEFAULT_NAVIGATION_MENU_ITEMS } from "@/lib/navigation-menu-defaults"
+import {
+  HOME_SHOP_PATH,
+  isHomeShopHref,
+  normalizeHomeShopHref,
+  scrollToHomeShopSection,
+} from "@/lib/home-shop-anchor"
 
   
 interface NavigationMenuItem {
@@ -20,17 +26,16 @@ interface NavigationMenuItem {
   displayOrder?: number
 }
 
-const handleShopClick = (e: React.MouseEvent<HTMLAnchorElement>, router: any, pathname: string) => {
-  const targetPath = "/#find-your-perfect-mattress"
-  
+const handleShopClick = (e: React.MouseEvent<HTMLAnchorElement>, router: ReturnType<typeof useRouter>, pathname: string) => {
+  e.preventDefault()
+
   if (pathname === "/" || pathname === "") {
-    e.preventDefault()
-    const element = document.getElementById("find-your-perfect-mattress")
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-    window.history.pushState({}, "", targetPath)
+    scrollToHomeShopSection("smooth")
+    window.history.pushState({}, "", HOME_SHOP_PATH)
+    return
   }
+
+  router.push(HOME_SHOP_PATH)
 }
 
 interface AuthenticatedUser {
@@ -125,7 +130,7 @@ export function Header() {
     if (href === "/my-account") {
       return user ? "/customer/dashboard" : "/login"
     }
-    return href
+    return normalizeHomeShopHref(href)
   }
 
   return (
@@ -267,7 +272,7 @@ export function Header() {
                       className="block py-2.5 px-4 text-foreground text-base font-medium uppercase tracking-wide hover:text-[#8B5A3C] transition-all duration-300 rounded-md"
                       onClick={(e) => {
                         setIsMenuOpen(false)
-                        if (resolveMenuHref(item.href) === "/#find-your-perfect-mattress") {
+                        if (isHomeShopHref(item.href)) {
                           handleShopClick(e, router, pathname)
                         }
                       }}

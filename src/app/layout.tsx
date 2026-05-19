@@ -28,13 +28,15 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "ANANTHALA - Premium Mattresses for Better Sleep",
+  title: "Ananthala - crafted for comfort",
   description:
-    "Premium mattresses crafted for your best sleep. Experience luxury comfort with our 100-night trial and 15-year warranty.",
-  keywords: "mattresses, premium sleep, luxury bedding, better sleep, 100-night trial",
+    "Naturally inspired products that ooze luxury and takes care of your well being",
+  keywords:
+    "ANANTHALA, virgin cotton bedding, natural sleep products, Naati cotton, organic sleep products, baby sleep products, sustainable bedding, chemical-free bedding, natural comfort, heritage craftsmanship, cotton bedding, baby lounger, 100-night trial",
   openGraph: {
-    title: "ANANTHALA - Premium Mattresses for Better Sleep",
-    description: "Premium mattresses crafted for your best sleep.",
+    title: "Ananthala - crafted for comfort",
+    description:
+      "Naturally inspired products that ooze luxury and takes care of your well being",
     type: "website",
   },
   icons: {

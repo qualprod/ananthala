@@ -5,6 +5,7 @@ import { cookies } from "next/headers"
 import { verifyToken } from "@/lib/jwt"
 import connectDB from "@/lib/mongodb"
 import Order from "@/models/order"
+import Coupon from "@/models/Coupons"
 import { sendOrderConfirmationEmail } from "@/lib/email-service"
 import { withCountryCode } from "@/lib/phone"
 
@@ -12,6 +13,7 @@ export const runtime = "nodejs"
 
 interface CartItemPayload {
   id?: string
+  productId?: string
   name: string
   image?: string
   slug?: string
@@ -69,6 +71,7 @@ const {
       discount,
       totalAmount,
       paymentMethod,
+      appliedCoupons,
     } = await request.json()
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -91,15 +94,55 @@ const {
 
     await connectDB()
 
+    const parseCouponCodes = (raw: unknown): string[] => {
+      if (typeof raw !== "string" || !raw.trim()) return []
+      return raw
+        .split(",")
+        .map((c) => c.trim().toUpperCase())
+        .filter(Boolean)
+    }
+
+    const computeExpectedDiscount = (coupon: {
+      type: string
+      discount: number
+      maxDiscount?: number
+    }, lineSubtotal: number): number => {
+      let discountAmount = 0
+      if (coupon.type === "percentage") {
+        discountAmount = (lineSubtotal * coupon.discount) / 100
+        if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
+          discountAmount = coupon.maxDiscount
+        }
+      } else if (coupon.type === "fixed") {
+        discountAmount = coupon.discount
+      }
+      return Math.round(discountAmount * 100) / 100
+    }
+
     // Convert userId string to MongoDB ObjectId
     const customerId = new mongoose.Types.ObjectId(decoded.userId)
 
     const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`
     const orderItems = Array.isArray(items)
-      ? (items as CartItemPayload[]).map((item) => ({
-          productId: item.id,
+      ? (items as CartItemPayload[]).map((item) => {
+          const lineId = item.id?.trim() || ""
+          const explicitProductId = item.productId?.trim() || ""
+          const objectIdFromLine = lineId.match(/[a-f0-9]{24}/i)?.[0]
+          const productId =
+            (explicitProductId && /^[a-f0-9]{24}$/i.test(explicitProductId) ? explicitProductId : null) ||
+            objectIdFromLine ||
+            explicitProductId ||
+            lineId
+
+          const image =
+            typeof item.image === "string" && item.image.trim() && item.image !== "/placeholder.svg"
+              ? item.image.trim()
+              : item.image?.trim() || ""
+
+          return {
+          productId,
           productName: item.name,
-          productImage: item.image,
+          productImage: image || undefined,
           productSlug: item.slug,
           quantity: item.quantity,
           price: item.price,
@@ -107,8 +150,91 @@ const {
           fabric: item.fabric,
           productColor: item.productColor,
           productColorHex: item.productColorHex,
-        }))
+        }
+        })
       : []
+
+    const lineSubtotal = orderItems.reduce(
+      (sum, row) => sum + Number(row.price || 0) * Number(row.quantity || 0),
+      0,
+    )
+    const claimedSubtotal = Number(subtotal) || 0
+    if (Math.abs(lineSubtotal - claimedSubtotal) > 0.05) {
+      return NextResponse.json(
+        { success: false, message: "Order subtotal does not match cart items." },
+        { status: 400 },
+      )
+    }
+
+    const couponCodes = parseCouponCodes(appliedCoupons)
+    const claimedDiscount = Number(discount) || 0
+    let couponCodeStored: string | null = null
+    let couponAgentId: mongoose.Types.ObjectId | undefined
+
+    if (claimedDiscount > 0) {
+      if (couponCodes.length === 0) {
+        return NextResponse.json(
+          { success: false, message: "Discount applied without a coupon code." },
+          { status: 400 },
+        )
+      }
+      const primaryCode = couponCodes[0]
+      const couponDoc = await Coupon.findOne({
+        code: primaryCode,
+        status: "active",
+      })
+      if (!couponDoc) {
+        return NextResponse.json(
+          { success: false, message: "Invalid coupon used for this order." },
+          { status: 400 },
+        )
+      }
+      if (new Date(couponDoc.expiryDate) < new Date()) {
+        return NextResponse.json(
+          { success: false, message: "Coupon has expired." },
+          { status: 400 },
+        )
+      }
+      if (couponDoc.usedCount >= couponDoc.usageLimit) {
+        return NextResponse.json(
+          { success: false, message: "Coupon usage limit reached." },
+          { status: 400 },
+        )
+      }
+      if (claimedSubtotal < couponDoc.minPurchase) {
+        return NextResponse.json(
+          { success: false, message: "Cart does not meet coupon minimum purchase." },
+          { status: 400 },
+        )
+      }
+      const expectedDisc = computeExpectedDiscount(couponDoc, claimedSubtotal)
+      if (Math.abs(expectedDisc - claimedDiscount) > 0.05) {
+        return NextResponse.json(
+          { success: false, message: "Discount amount does not match coupon rules." },
+          { status: 400 },
+        )
+      }
+      couponCodeStored = couponCodes.join(", ")
+      const agents = couponDoc.agents
+      if (Array.isArray(agents) && agents.length > 0 && mongoose.Types.ObjectId.isValid(agents[0])) {
+        couponAgentId = new mongoose.Types.ObjectId(agents[0])
+      }
+    } else if (couponCodes.length > 0) {
+      return NextResponse.json(
+        { success: false, message: "Coupon codes provided but no discount was applied." },
+        { status: 400 },
+      )
+    }
+
+    const shippingNum = Number(shippingCost) || 0
+    const expectedTotal = Math.round((claimedSubtotal - claimedDiscount + shippingNum) * 100) / 100
+    const claimedTotal = Number(totalAmount) || 0
+    if (Math.abs(expectedTotal - claimedTotal) > 0.05) {
+      return NextResponse.json(
+        { success: false, message: "Order total does not match subtotal, discount, and shipping." },
+        { status: 400 },
+      )
+    }
 
     const order = await Order.create({
       orderId,
@@ -148,6 +274,8 @@ shippingAddress: {
       subtotal: Number(subtotal) || 0,
       shippingCost: Number(shippingCost) || 0,
       discount: Number(discount) || 0,
+      couponCode: couponCodeStored,
+      couponAgentId,
       totalAmount: Number(totalAmount) || 0,
       paymentMethod: paymentMethod || "razorpay",
       paymentStatus: "completed",
@@ -163,6 +291,23 @@ shippingAddress: {
       razorpayPaymentId: razorpay_payment_id,
       razorpaySignature: razorpay_signature,
     })
+
+    if (couponCodes.length > 0 && claimedDiscount > 0) {
+      const updated = await Coupon.findOneAndUpdate(
+        {
+          code: couponCodes[0],
+          status: "active",
+          $expr: { $lt: ["$usedCount", "$usageLimit"] },
+        },
+        { $inc: { usedCount: 1 } },
+        { new: true },
+      )
+      if (!updated) {
+        console.warn(
+          `[v0] Coupon increment failed for code ${couponCodes[0]} after order ${order.orderId}`,
+        )
+      }
+    }
 
     // Send order confirmation email
     try {

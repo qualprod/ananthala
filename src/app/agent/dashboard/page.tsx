@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { UserCheck, HelpCircle, LogOut, TrendingUp, Calendar, DollarSign, Tag } from "lucide-react"
+import { UserCheck, HelpCircle, LogOut, TrendingUp, Calendar, DollarSign, Tag, ShoppingBag } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 
@@ -17,6 +17,11 @@ export default function AgentDashboard() {
     usedToday: 0,
     usageData: [],
     recentCoupons: [],
+  })
+  const [salesSummary, setSalesSummary] = useState({
+    orderCount: 0,
+    revenue: 0,
+    discountGiven: 0,
   })
   const [isLoadingStats, setIsLoadingStats] = useState(false)
   const router = useRouter()
@@ -68,6 +73,16 @@ export default function AgentDashboard() {
           usageData,
           recentCoupons: coupons.slice(0, 3),
         })
+      }
+
+      try {
+        const salesRes = await fetch("/api/agent/coupon-sales", { credentials: "include" })
+        const salesData = await salesRes.json()
+        if (salesRes.ok && salesData.success && salesData.summary) {
+          setSalesSummary(salesData.summary)
+        }
+      } catch {
+        /* ignore */
       }
     } catch (error) {
       console.error("Error fetching coupon stats:", error)
@@ -170,36 +185,39 @@ export default function AgentDashboard() {
     )
   }
 
-  const statCards = [
-    {
-      label: "Total Coupons",
-      value: couponStats.totalCoupons,
-      icon: <Tag className="w-6 h-6" />,
-      color: "#8B5A3C",
-      bgColor: "#F5F1ED",
-    },
-    {
-      label: "Active Coupons",
-      value: couponStats.activeCoupons,
-      icon: <TrendingUp className="w-6 h-6" />,
-      color: "#22C55E",
-      bgColor: "#F0FDF4",
-    },
-    {
-      label: "Total Savings",
-      value: `₹${couponStats.totalSavings.toLocaleString()}`,
-      icon: <DollarSign className="w-6 h-6" />,
-      color: "#2563EB",
-      bgColor: "#EFF6FF",
-    },
-    {
-      label: "Expiring Soon",
-      value: couponStats.expiringSoon,
-      icon: <Calendar className="w-6 h-6" />,
-      color: "#EF4444",
-      bgColor: "#FEF2F2",
-    },
-  ]
+  const statCards = useMemo(
+    () => [
+      {
+        label: "Total Coupons",
+        value: couponStats.totalCoupons,
+        icon: <Tag className="w-6 h-6" />,
+        color: "#8B5A3C",
+        bgColor: "#F5F1ED",
+      },
+      {
+        label: "Active Coupons",
+        value: couponStats.activeCoupons,
+        icon: <TrendingUp className="w-6 h-6" />,
+        color: "#22C55E",
+        bgColor: "#F0FDF4",
+      },
+      {
+        label: "Sales revenue (your coupon codes)",
+        value: `₹${salesSummary.revenue.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
+        icon: <DollarSign className="w-6 h-6" />,
+        color: "#2563EB",
+        bgColor: "#EFF6FF",
+      },
+      {
+        label: "Paid orders (your coupon codes)",
+        value: salesSummary.orderCount,
+        icon: <ShoppingBag className="w-6 h-6" />,
+        color: "#6D4530",
+        bgColor: "#F5F1ED",
+      },
+    ],
+    [couponStats.totalCoupons, couponStats.activeCoupons, salesSummary.revenue, salesSummary.orderCount],
+  )
 
   const COLORS = ["#8B5A3C", "#6D4530", "#A67C52", "#C89968", "#D4A574"]
 

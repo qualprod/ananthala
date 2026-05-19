@@ -10,6 +10,7 @@ import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { isHomepageCardVideoUrl } from "@/lib/homepage-card-media"
+import { HOME_SHOP_PATH, isHomeShopHash, scrollToHomeShopSection } from "@/lib/home-shop-anchor"
 
 // Categories data
 const categories = [
@@ -232,13 +233,32 @@ export default function Home() {
     fetchHomepageCards()
   }, [])
 
+  useEffect(() => {
+    const scrollToShopFromHash = () => {
+      if (!isHomeShopHash(window.location.hash)) return
+      window.setTimeout(() => {
+        scrollToHomeShopSection("smooth")
+      }, 100)
+    }
+
+    scrollToShopFromHash()
+    window.addEventListener("hashchange", scrollToShopFromHash)
+    return () => window.removeEventListener("hashchange", scrollToShopFromHash)
+  }, [])
+
   const getCategoryPath = (productName: string) => {
     const name = productName.toLowerCase()
     // Map product names to category pages (matching second section redirects)
     if (name === "joy") return "/category/joy"
     if (name === "bliss") return "/category/bliss"
     if (name === "grace") return "/category/grace"
-    if (name.includes("pillow") || name.includes("bedsheet") || name.includes("bedding") || name.includes("more")) {
+    if (
+      name.includes("essentials") ||
+      name.includes("pillow") ||
+      name.includes("bedsheet") ||
+      name.includes("bedding") ||
+      name.includes("more")
+    ) {
       return "/category/essentials"
     }
     return "/category/bliss"
@@ -279,10 +299,10 @@ export default function Home() {
               className="bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground px-8 py-6 text-lg rounded-md shadow-lg transition-all duration-200 hover:scale-105 w-full sm:w-auto min-w-[160px] flex items-center justify-center"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300 }}
               onClick={(e) => {
-                const element = document.getElementById("find-your-perfect-mattress")
+                const element = document.getElementById("shop")
                 if (element) {
                   element.scrollIntoView({ behavior: "smooth" })
-                  window.history.pushState({}, "", "/#find-your-perfect-mattress")
+                  window.history.pushState({}, "", "/#shop")
                 }
               }}
             >
@@ -354,10 +374,10 @@ export default function Home() {
                   </h2>
                   <button
                     onClick={(e) => {
-                      const element = document.getElementById("find-your-perfect-mattress")
+                      const element = document.getElementById("shop")
                       if (element) {
                         element.scrollIntoView({ behavior: "smooth" })
-                        window.history.pushState({}, "", "/#find-your-perfect-mattress")
+                        window.history.pushState({}, "", "/#shop")
                       }
                     }}
                     className={`px-8 py-3 bg-white/95 hover:bg-white text-foreground text-sm tracking-[0.3em] uppercase font-sans shadow-lg transition-all duration-300 hover:scale-105 absolute bottom-10 md:static ${
@@ -406,7 +426,7 @@ export default function Home() {
         </section>
 
         {/* Products Section */}
-        <section id="find-your-perfect-mattress" className="py-14 md:py-24 px-4 bg-white">
+        <section id="shop" className="py-14 md:py-24 px-4 bg-white">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="mb-4 text-4xl font-medium text-foreground">Find your perfect Ananthala product</h2>

@@ -87,7 +87,7 @@ export default function CustomerCartPage() {
               <h3 className="text-lg font-semibold text-foreground mb-2">Your cart is empty</h3>
               <p className="text-foreground mb-6">Add items to your cart to continue shopping</p>
               <a
-                href="/#find-your-perfect-mattress"
+                href="/#shop"
                 className="inline-block bg-[#6D4530] text-white px-6 py-2 rounded-lg hover:bg-[#5A3A26] transition-colors"
               >
                 Continue Shopping

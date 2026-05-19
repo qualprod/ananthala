@@ -46,7 +46,7 @@ export default function CartPage() {
               Looks like you haven't added anything to your cart yet.
             </p>
             <button
-              onClick={() => router.push("/#find-your-perfect-mattress")}
+              onClick={() => router.push("/#shop")}
               className="px-8 py-3 text-foreground hover:opacity-90 transition-opacity"
               style={{ backgroundColor: "#EED9C4" }}
             >
@@ -78,7 +78,7 @@ export default function CartPage() {
                 <ChevronRight className="w-4 h-4 text-foreground/50" />
               </li>
               <li>
-                <Link href="/#find-your-perfect-mattress" className="text-foreground hover:opacity-80 transition-opacity">
+                <Link href="/#shop" className="text-foreground hover:opacity-80 transition-opacity">
                   Products
                 </Link>
               </li>
@@ -287,7 +287,7 @@ export default function CartPage() {
                 </button>
 
                 <button
-                  onClick={() => router.push("/#find-your-perfect-mattress")}
+                  onClick={() => router.push("/#shop")}
                   className="w-full py-3 border text-foreground hover:opacity-70 transition-opacity bg-gray-100"
                 >
                   Continue Shopping
