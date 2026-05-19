@@ -72,13 +72,13 @@ export async function GET(request: NextRequest) {
     }
 
     const orders = await Order.find(filter)
-      .select(
-        "orderId customerId customerName customerEmail customerPhone orderStatus paymentStatus totalAmount subtotal shippingCost discount items orderTimeline createdAt updatedAt trackingNumber shippingAddress razorpayPaymentId razorpayOrderId paymentMethod refundDetails cancellationDetails",
-      )
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean()
+
+    // Log the raw orders data for debugging
+    console.log("[ORDERS_API] Raw orders from DB:", JSON.stringify(orders.slice(0, 1), null, 2))
 
     const totalOrders = await Order.countDocuments(filter)
 
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       {
-        orders,
+        orders: orders,
         pagination: {
           page,
           limit,

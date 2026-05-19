@@ -655,7 +655,10 @@ shippingAddress: {
                   companyName: companyName,
                 } : null,
                 items: cartItems.map((item) => ({
+                  id: item.productId || item.id,
                   name: item.name,
+                  image: item.image,
+                  slug: item.slug,
                   quantity: item.quantity,
                   price: item.price,
                   size: item.size,
