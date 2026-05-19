@@ -571,8 +571,8 @@ export async function sendOrderConfirmationEmail(
               <strong>Hours:</strong> Mon-Fri, 9 AM - 6 PM IST
             </div>
             <div class="footer-links">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL}/track-order" class="footer-link">Track Order</a>
-              <a href="${process.env.NEXT_PUBLIC_APP_URL}/contact-us" class="footer-link">Contact Us</a>
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/track-order" class="footer-link">Track Order</a>
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/contact-us" class="footer-link">Contact Us</a>
               <a href="${process.env.NEXT_PUBLIC_APP_URL}/policy-privacy" class="footer-link">Privacy Policy</a>
             </div>
             <div class="footer-bottom">
@@ -986,7 +986,7 @@ export async function sendOrderCancellationEmail(
               <strong>Phone:</strong> +91 9071799966
             </div>
             <div style="margin: 16px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL}/contact-us" class="footer-link">Contact Support</a>
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/contact-us" class="footer-link">Contact Support</a>
               <a href="${process.env.NEXT_PUBLIC_APP_URL}/policy-privacy" class="footer-link">Privacy Policy</a>
             </div>
             <div style="color: #b0a595; font-size: 11px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e8ddd5;">
@@ -1353,7 +1353,7 @@ export async function sendOrderStatusUpdateEmail(
             }
 
             <div class="button-container">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL}/customer/orders?orderId=${statusData.orderId}" class="cta-button">View Order Details</a>
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/customer/orders?orderId=${statusData.orderId}" class="cta-button">View Order Details</a>
             </div>
           </div>
 
@@ -1395,7 +1395,7 @@ ${statusData.notes ? `Additional Information: ${statusData.notes}\n` : ""}
 
 Message: ${getStatusMessage(statusData.newStatus)}
 
-View your order details: ${process.env.NEXT_PUBLIC_APP_URL}/customer/orders?orderId=${statusData.orderId}
+View your order details: ${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/customer/orders?orderId=${statusData.orderId}
 
 If you have any questions, please contact us at:
 Email: qualprodsllp@gmail.com
