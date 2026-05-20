@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer"
 import type { Order, OrderItem } from "@/types/index"
-import { getEmbeddedLogoDataUri } from "./email-utils"
 
 const getEmailTransporter = async () => {
   // Check if using Gmail with EMAIL_PROVIDER explicitly set to gmail
@@ -119,7 +118,7 @@ export async function sendOrderConfirmationEmail(
 
     const trackOrderUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/track-order`
 
-    const logoUrl = getEmbeddedLogoDataUri()
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -666,7 +665,7 @@ export async function sendOrderCancellationEmail(
       return false
     }
 
-    const logoUrl = getEmbeddedLogoDataUri()
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const itemsHTML = orderData.items
       .map(
@@ -1084,7 +1083,7 @@ export async function sendOrderStatusUpdateEmail(
   try {
     const transporter = await getEmailTransporter()
     
-    const logoUrl = getEmbeddedLogoDataUri()
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const getStatusColor = (status: string) => {
       const statusColors: Record<string, { color: string; bg: string; icon: string }> = {
@@ -1429,7 +1428,7 @@ export async function sendWelcomeEmail(
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"
-    const logoUrl = getEmbeddedLogoDataUri()
+    const logoUrl = `${appUrl}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -1568,7 +1567,7 @@ export async function sendOTPEmail(
     console.log(`[v0] Email transporter configured successfully`)
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"
-    const logoUrl = getEmbeddedLogoDataUri()
+    const logoUrl = `${appUrl}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -1760,7 +1759,7 @@ export async function sendPasswordResetConfirmationEmail(
       return false
     }
 
-    const logoUrl = getEmbeddedLogoDataUri()
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -2023,7 +2022,7 @@ export async function sendAdminOrderCancellationNotification(
       return false
     }
 
-    const logoUrl = getEmbeddedLogoDataUri()
+    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
