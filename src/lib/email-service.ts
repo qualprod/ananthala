@@ -118,7 +118,9 @@ export async function sendOrderConfirmationEmail(
 
     const trackOrderUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/track-order`
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
+    // Build absolute URL properly
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com"
+    const logoUrl = `${appUrl.replace(/\/$/, "")}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -164,6 +166,7 @@ export async function sendOrderConfirmationEmail(
           height: auto;
           margin: 0 auto 8px;
           display: block;
+          border: none;
         }
         .header-subtitle {
           font-size: 13px;
@@ -665,7 +668,9 @@ export async function sendOrderCancellationEmail(
       return false
     }
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
+    // Build absolute URL properly
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com"
+    const logoUrl = `${appUrl.replace(/\/$/, "")}/logo.png`
 
     const itemsHTML = orderData.items
       .map(
@@ -1083,7 +1088,9 @@ export async function sendOrderStatusUpdateEmail(
   try {
     const transporter = await getEmailTransporter()
     
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
+    // Build absolute URL properly
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com"
+    const logoUrl = `${appUrl.replace(/\/$/, "")}/logo.png`
 
     const getStatusColor = (status: string) => {
       const statusColors: Record<string, { color: string; bg: string; icon: string }> = {
@@ -1427,8 +1434,8 @@ export async function sendWelcomeEmail(
       return false
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"
-    const logoUrl = `${appUrl}/logo.png`
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com"
+    const logoUrl = `${appUrl.replace(/\/$/, "")}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -1566,8 +1573,8 @@ export async function sendOTPEmail(
 
     console.log(`[v0] Email transporter configured successfully`)
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"
-    const logoUrl = `${appUrl}/logo.png`
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com"
+    const logoUrl = `${appUrl.replace(/\/$/, "")}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -1759,7 +1766,9 @@ export async function sendPasswordResetConfirmationEmail(
       return false
     }
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
+    // Build absolute URL properly
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com"
+    const logoUrl = `${appUrl.replace(/\/$/, "")}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -2022,7 +2031,9 @@ export async function sendAdminOrderCancellationNotification(
       return false
     }
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com/"}/logo.png`
+    // Build absolute URL properly
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.ananthala.com"
+    const logoUrl = `${appUrl.replace(/\/$/, "")}/logo.png`
 
     const htmlContent = `
     <!DOCTYPE html>
