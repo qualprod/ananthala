@@ -78,8 +78,10 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     msg91Url.searchParams.append("sender", senderId)
     msg91Url.searchParams.append("route", "4") // OTP route
     msg91Url.searchParams.append("country", "91") // India country code
+    msg91Url.searchParams.append("type", "sms") // Specify SMS type
+    msg91Url.searchParams.append("fl", "0") // No flash SMS
 
-    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&mobiles=${normalizedPhone}&route=4&country=91&sender=${senderId}&message=...`)
+    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&mobiles=${normalizedPhone}&route=4&country=91&type=sms&fl=0&sender=${senderId}&message=...`)
 
     const response = await fetch(msg91Url.toString(), {
       method: "GET",
@@ -93,41 +95,78 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     console.log(`[v0] MSG91 Response Headers: Content-Type=${response.headers.get("content-type")}`)
     console.log(`[v0] MSG91 Response Body: "${responseText}"`)
 
-    // Parse response - MSG91 returns numeric codes
+    // Parse response - MSG91 returns numeric codes or XML
     const trimmedResponse = responseText.trim()
 
+    console.log(`[v0] Raw response length: ${trimmedResponse.length}, first 50 chars: ${trimmedResponse.substring(0, 50)}`)
+
+    // Check for JSON response
+    if (trimmedResponse.startsWith("{")) {
+      try {
+        const jsonResponse = JSON.parse(trimmedResponse)
+        console.log(`[v0] JSON Response received:`, jsonResponse)
+        if (jsonResponse.type === "success" || jsonResponse.request_id) {
+          console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Request ID: ${jsonResponse.request_id})`)
+          return true
+        }
+        throw new Error(`MSG91 Error: ${jsonResponse.message || "Unknown error"}`)
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          console.log(`[v0] Response is not JSON, treating as plain text`)
+        } else {
+          throw e
+        }
+      }
+    }
+
     // Success indicators based on MSG91 documentation
-    // 401 = Success
-    // Various numeric responses indicate different statuses
+    // 401 = Success (actual MSG91 success code)
+    // 0 = Success (sometimes returns this)
+    // If response contains message_id or request_id, it's success
     console.log(`[v0] Checking response...`)
 
-    if (trimmedResponse === "401") {
-      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Response: 401)`)
+    if (trimmedResponse === "401" || trimmedResponse === "0") {
+      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Response: ${trimmedResponse})`)
       return true
     }
 
-    if (trimmedResponse.startsWith("0") || trimmedResponse.includes("message_id")) {
+    if (trimmedResponse.toLowerCase().includes("message_id") || trimmedResponse.toLowerCase().includes("request_id")) {
       console.log(`[SMS_SUCCESS] OTP sent via MSG91 to ${normalizedPhone} (Response: ${trimmedResponse})`)
       return true
     }
 
+    // Check for hex-encoded response (indicates error)
+    if (/^[0-9a-fA-F]+$/.test(trimmedResponse)) {
+      console.log(`[v0] CRITICAL: MSG91 returned hex-encoded response: ${trimmedResponse}`)
+      console.log(`[v0] This typically indicates an error. Possible issues:`)
+      console.log(`[v0] 1. Sender ID might not be verified`)
+      console.log(`[v0] 2. Insufficient balance in MSG91 account`)
+      console.log(`[v0] 3. Phone number might be blacklisted`)
+      console.log(`[v0] 4. Route parameter not supported for this account`)
+      throw new Error(`MSG91 Error (Hex Response): ${trimmedResponse}. Please verify Sender ID is active and account has balance.`)
+    }
+
     // Error responses
-    if (trimmedResponse.includes("-1") || trimmedResponse.includes("Authentication failed")) {
+    if (trimmedResponse.includes("-1") || trimmedResponse.toLowerCase().includes("authentication failed")) {
       throw new Error(`MSG91 Authentication Error: Invalid AuthKey. Response: ${trimmedResponse}`)
     }
 
     if (trimmedResponse.includes("-2")) {
-      throw new Error(`MSG91 Error: Invalid phone number. Response: ${trimmedResponse}`)
+      throw new Error(`MSG91 Error: Invalid phone number format. Response: ${trimmedResponse}`)
     }
 
-    if (trimmedResponse.includes("Invalid sender")) {
-      throw new Error(`MSG91 Error: Invalid Sender ID (${senderId}). Response: ${trimmedResponse}`)
+    if (trimmedResponse.toLowerCase().includes("invalid sender")) {
+      throw new Error(`MSG91 Error: Sender ID "${senderId}" is not verified or active in your MSG91 account. Response: ${trimmedResponse}`)
+    }
+
+    if (trimmedResponse.toLowerCase().includes("insufficient")) {
+      throw new Error(`MSG91 Error: Insufficient balance in your MSG91 account. Response: ${trimmedResponse}`)
     }
 
     // If response is not understood but request was successful
     if (response.ok && response.status === 200) {
-      console.log(`[SMS_SUCCESS] OTP sent via MSG91 to ${normalizedPhone} (Response: ${trimmedResponse})`)
-      return true
+      console.warn(`[v0] WARNING: MSG91 returned 200 but response is unclear: ${trimmedResponse}`)
+      throw new Error(`MSG91 returned unclear response. This might indicate a configuration issue. Response: ${trimmedResponse}`)
     }
 
     // Unknown response
@@ -159,6 +198,8 @@ export async function sendMsg91SMS(phone: string, message: string): Promise<bool
     msg91Url.searchParams.append("sender", senderId)
     msg91Url.searchParams.append("route", "4") // Transactional route
     msg91Url.searchParams.append("country", "91")
+    msg91Url.searchParams.append("type", "sms")
+    msg91Url.searchParams.append("fl", "0")
 
     const response = await fetch(msg91Url.toString(), {
       method: "GET",
