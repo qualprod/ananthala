@@ -15,10 +15,17 @@ interface MSG91Response {
 export function validateMsg91Config(): void {
   const authKey = process.env.MSG91_AUTH_KEY
   const senderId = process.env.MSG91_SENDER_ID
+  const templateId = process.env.MSG91_DLT_TEMPLATE_ID
 
   if (!authKey || !senderId) {
     throw new Error(
       "MSG91 credentials not configured. Please add MSG91_AUTH_KEY and MSG91_SENDER_ID to your .env.local file.",
+    )
+  }
+
+  if (!templateId) {
+    throw new Error(
+      "MSG91 DLT Template ID not configured. Please add MSG91_DLT_TEMPLATE_ID to your .env.local file. Get this from MSG91 → DLT Registration → OTP Template ID.",
     )
   }
 }
@@ -61,6 +68,7 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     const normalizedPhone = normalizePhoneNumber(phone)
     const authKey = process.env.MSG91_AUTH_KEY!
     const senderId = process.env.MSG91_SENDER_ID!
+    const templateId = process.env.MSG91_DLT_TEMPLATE_ID!
 
     const message = `Your Ananthala OTP is: ${otp}. Valid for 5 minutes. Do not share this OTP with anyone.`
 
@@ -68,6 +76,7 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     console.log(`[v0] Phone: ${normalizedPhone}`)
     console.log(`[v0] OTP: ${otp}`)
     console.log(`[v0] SenderID: ${senderId}`)
+    console.log(`[v0] Template ID: ${templateId}`)
     console.log(`[v0] AuthKey (first 10 chars): ${authKey.substring(0, 10)}...`)
 
     // Use MSG91 correct endpoint - /api/sendhttp.php with all required parameters
@@ -80,8 +89,9 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     msg91Url.searchParams.append("country", "91") // India country code
     msg91Url.searchParams.append("type", "sms") // Specify SMS type
     msg91Url.searchParams.append("fl", "0") // No flash SMS
+    msg91Url.searchParams.append("template_id", templateId) // DLT Template ID (CRITICAL for India)
 
-    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&mobiles=${normalizedPhone}&route=4&country=91&type=sms&fl=0&sender=${senderId}&message=...`)
+    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&mobiles=${normalizedPhone}&route=4&country=91&type=sms&fl=0&sender=${senderId}&template_id=${templateId}&message=...`)
 
     const response = await fetch(msg91Url.toString(), {
       method: "GET",
@@ -187,6 +197,7 @@ export async function sendMsg91SMS(phone: string, message: string): Promise<bool
     const normalizedPhone = normalizePhoneNumber(phone)
     const authKey = process.env.MSG91_AUTH_KEY!
     const senderId = process.env.MSG91_SENDER_ID!
+    const templateId = process.env.MSG91_DLT_TEMPLATE_ID!
 
     console.log(`[v0] Sending SMS to ${normalizedPhone}`)
 
@@ -200,6 +211,7 @@ export async function sendMsg91SMS(phone: string, message: string): Promise<bool
     msg91Url.searchParams.append("country", "91")
     msg91Url.searchParams.append("type", "sms")
     msg91Url.searchParams.append("fl", "0")
+    msg91Url.searchParams.append("template_id", templateId) // DLT Template ID
 
     const response = await fetch(msg91Url.toString(), {
       method: "GET",
