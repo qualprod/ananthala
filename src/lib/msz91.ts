@@ -31,6 +31,32 @@ export function validateMsg91Config(): void {
 }
 
 /**
+ * Converts normalized phone number to 10-digit format for MSG91 API
+ * MSG91 requires just the 10-digit number for India (without 91 country code)
+ * Input: 917491922495 → Output: 7491922495
+ */
+function getPhoneForMsg91(normalizedPhone: string): string {
+  const digits = normalizedPhone.replace(/\D/g, "")
+  
+  // If it starts with 91 (India country code), remove it to get 10-digit number
+  if (digits.startsWith("91") && digits.length === 12) {
+    return digits.slice(2) // Remove first 2 digits (91) to get 10-digit number
+  }
+  
+  // If it's already 10 digits, return as is
+  if (digits.length === 10) {
+    return digits
+  }
+  
+  // For other country codes, remove country code
+  if (digits.length > 10) {
+    return digits.slice(-10) // Get last 10 digits
+  }
+  
+  return digits
+}
+
+/**
  * Normalizes and validates phone number
  * Converts to format with country code (91 for India)
  */
@@ -66,6 +92,7 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     validateMsg91Config()
 
     const normalizedPhone = normalizePhoneNumber(phone)
+    const phoneForMsg91 = getPhoneForMsg91(normalizedPhone) // Convert to 10-digit format for MSG91
     const authKey = process.env.MSG91_AUTH_KEY!
     const senderId = process.env.MSG91_SENDER_ID!
     const templateId = process.env.MSG91_DLT_TEMPLATE_ID!
@@ -73,23 +100,24 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     const message = `Your Ananthala OTP is: ${otp}. Valid for 5 minutes. Do not share this OTP with anyone.`
 
     console.log(`[v0] === SENDING OTP VIA MSG91 ===`)
-    console.log(`[v0] Phone: ${normalizedPhone}`)
+    console.log(`[v0] Original phone: ${phone}, Normalized: ${normalizedPhone}`)
+    console.log(`[v0] Phone for MSG91 (10-digit): ${phoneForMsg91}`)
     console.log(`[v0] OTP: ${otp}`)
     console.log(`[v0] SenderID: ${senderId}`)
     console.log(`[v0] Template ID: ${templateId}`)
     console.log(`[v0] AuthKey (first 10 chars): ${authKey.substring(0, 10)}...`)
 
-    // Use MSG91 correct endpoint - /api/sendhttp.php (v5 endpoint doesn't exist, this is the correct one)
+    // Use MSG91 correct endpoint - /api/sendhttp.php with all required parameters
     const msg91Url = new URL("https://api.msg91.com/api/sendhttp.php")
     msg91Url.searchParams.append("authkey", authKey)
-    msg91Url.searchParams.append("mobiles", normalizedPhone)
+    msg91Url.searchParams.append("mobiles", phoneForMsg91) // Send 10-digit number only
     msg91Url.searchParams.append("message", message)
     msg91Url.searchParams.append("sender", senderId)
     msg91Url.searchParams.append("route", "4") // Transactional OTP route
     msg91Url.searchParams.append("country", "91") // India country code
     msg91Url.searchParams.append("template_id", templateId) // DLT Template ID (CRITICAL for India)
 
-    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&mobiles=${normalizedPhone}&route=4&country=91&sender=${senderId}&template_id=${templateId}&message=...`)
+    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&mobiles=${phoneForMsg91}&route=4&country=91&sender=${senderId}&template_id=${templateId}&message=...`)
 
     const response = await fetch(msg91Url.toString(), {
       method: "GET",
@@ -117,25 +145,25 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
 
     // Check for numeric success codes
     if (trimmedResponse === "401" || trimmedResponse === "0") {
-      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Response: ${trimmedResponse})`)
+      console.log(`[SMS_SUCCESS] OTP sent successfully to ${phoneForMsg91} (Response: ${trimmedResponse})`)
       return true
     }
 
     // Check if response is a message ID (hex string without quotes)
     if (/^[0-9a-fA-F]{15,}$/.test(trimmedResponse)) {
-      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Message ID: ${trimmedResponse})`)
+      console.log(`[SMS_SUCCESS] OTP sent successfully to ${phoneForMsg91} (Message ID: ${trimmedResponse})`)
       return true
     }
 
     // Check for success keywords
     if (trimmedResponse.toLowerCase().includes("success") || trimmedResponse.toLowerCase().includes("message_id")) {
-      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone}`)
+      console.log(`[SMS_SUCCESS] OTP sent successfully to ${phoneForMsg91}`)
       return true
     }
 
     // If status is 200 and no error indicators, likely success
     if (response.status === 200 && !trimmedResponse.toLowerCase().includes("error") && !trimmedResponse.toLowerCase().includes("invalid")) {
-      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Status: 200)`)
+      console.log(`[SMS_SUCCESS] OTP sent successfully to ${phoneForMsg91} (Status: 200)`)
       return true
     }
 
@@ -183,16 +211,17 @@ export async function sendMsg91SMS(phone: string, message: string): Promise<bool
     validateMsg91Config()
 
     const normalizedPhone = normalizePhoneNumber(phone)
+    const phoneForMsg91 = getPhoneForMsg91(normalizedPhone) // Convert to 10-digit format for MSG91
     const authKey = process.env.MSG91_AUTH_KEY!
     const senderId = process.env.MSG91_SENDER_ID!
     const templateId = process.env.MSG91_DLT_TEMPLATE_ID!
 
-    console.log(`[v0] Sending SMS to ${normalizedPhone}`)
+    console.log(`[v0] Sending SMS to ${phoneForMsg91}`)
 
     // Build MSG91 API URL - using correct endpoint with proper parameters
     const msg91Url = new URL("https://api.msg91.com/api/sendhttp.php")
     msg91Url.searchParams.append("authkey", authKey)
-    msg91Url.searchParams.append("mobiles", normalizedPhone)
+    msg91Url.searchParams.append("mobiles", phoneForMsg91) // Send 10-digit number only
     msg91Url.searchParams.append("message", message)
     msg91Url.searchParams.append("sender", senderId)
     msg91Url.searchParams.append("route", "4") // Transactional route
@@ -218,13 +247,13 @@ export async function sendMsg91SMS(phone: string, message: string): Promise<bool
       if (trimmedResponse.toLowerCase().includes("error") || trimmedResponse.toLowerCase().includes("invalid")) {
         throw new Error(`MSG91 Error: ${trimmedResponse}`)
       }
-      console.log(`[SMS_SUCCESS] SMS sent via MSG91 to ${normalizedPhone}`)
+      console.log(`[SMS_SUCCESS] SMS sent via MSG91 to ${phoneForMsg91}`)
       return true
     }
 
     // Check if response is a message ID (hex string)
     if (/^[0-9a-fA-F]{15,}$/.test(trimmedResponse)) {
-      console.log(`[SMS_SUCCESS] SMS sent via MSG91 to ${normalizedPhone}`)
+      console.log(`[SMS_SUCCESS] SMS sent via MSG91 to ${phoneForMsg91}`)
       return true
     }
 
