@@ -79,8 +79,8 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     console.log(`[v0] Template ID: ${templateId}`)
     console.log(`[v0] AuthKey (first 10 chars): ${authKey.substring(0, 10)}...`)
 
-    // Use MSG91 modern v5 endpoint which properly handles DLT templates
-    const msg91Url = new URL("https://api.msg91.com/api/v5/sendsms.php")
+    // Use MSG91 correct endpoint - /api/sendhttp.php (v5 endpoint doesn't exist, this is the correct one)
+    const msg91Url = new URL("https://api.msg91.com/api/sendhttp.php")
     msg91Url.searchParams.append("authkey", authKey)
     msg91Url.searchParams.append("mobiles", normalizedPhone)
     msg91Url.searchParams.append("message", message)
@@ -89,7 +89,7 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     msg91Url.searchParams.append("country", "91") // India country code
     msg91Url.searchParams.append("template_id", templateId) // DLT Template ID (CRITICAL for India)
 
-    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/v5/sendsms.php?authkey=***&mobiles=${normalizedPhone}&route=4&country=91&sender=${senderId}&template_id=${templateId}&message=...`)
+    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&mobiles=${normalizedPhone}&route=4&country=91&sender=${senderId}&template_id=${templateId}&message=...`)
 
     const response = await fetch(msg91Url.toString(), {
       method: "GET",
@@ -103,85 +103,71 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     console.log(`[v0] MSG91 Response Headers: Content-Type=${response.headers.get("content-type")}`)
     console.log(`[v0] MSG91 Response Body: "${responseText}"`)
 
-    // Parse response - MSG91 v5 API returns JSON
+    // Parse response - /api/sendhttp.php returns plain text responses
     const trimmedResponse = responseText.trim()
 
     console.log(`[v0] Raw response length: ${trimmedResponse.length}, first 100 chars: ${trimmedResponse.substring(0, 100)}`)
 
-    // v5 API returns JSON
-    if (trimmedResponse.startsWith("{")) {
-      try {
-        const jsonResponse = JSON.parse(trimmedResponse)
-        console.log(`[v0] JSON Response received:`, JSON.stringify(jsonResponse))
-        
-        // Check for success indicators in v5 response
-        if (jsonResponse.type === "success" || jsonResponse.request_id || jsonResponse.status === "success") {
-          console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Request ID: ${jsonResponse.request_id || "N/A"})`)
-          return true
-        }
-        
-        // Check for errors
-        if (jsonResponse.type === "error" || jsonResponse.message) {
-          throw new Error(`MSG91 Error: ${jsonResponse.message || "Unknown error"}`)
-        }
-        
-        // If it has request_id, it's likely success
-        if (jsonResponse.request_id) {
-          console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Request ID: ${jsonResponse.request_id})`)
-          return true
-        }
-        
-        console.log(`[SMS_SUCCESS] OTP sent successfully (Response: ${JSON.stringify(jsonResponse)})`)
-        return true
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          console.log(`[v0] Response looks like JSON but failed to parse, treating as error`)
-          throw new Error(`MSG91 returned invalid JSON: ${trimmedResponse}`)
-        }
-        throw e
-      }
-    }
+    // Success responses for sendhttp.php endpoint
+    // "401" or "0" = Success
+    // Hex string = Message ID (success)
+    // Any non-error response with 200 status = usually success
+    
+    console.log(`[v0] Checking response format...`)
 
-    // Fallback: check for legacy response formats or numeric codes
-    console.log(`[v0] Checking legacy response format...`)
-
+    // Check for numeric success codes
     if (trimmedResponse === "401" || trimmedResponse === "0") {
       console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Response: ${trimmedResponse})`)
       return true
     }
 
-    if (trimmedResponse.toLowerCase().includes("success") || trimmedResponse.toLowerCase().includes("message_id")) {
-      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Response: ${trimmedResponse})`)
+    // Check if response is a message ID (hex string without quotes)
+    if (/^[0-9a-fA-F]{15,}$/.test(trimmedResponse)) {
+      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Message ID: ${trimmedResponse})`)
       return true
     }
 
-    // Check for hex-encoded response (indicates error from legacy endpoint)
-    if (/^[0-9a-fA-F]{20,}$/.test(trimmedResponse)) {
-      console.log(`[v0] CRITICAL: MSG91 returned unexpected hex response: ${trimmedResponse}`)
-      throw new Error(`MSG91 Error (Hex Response): ${trimmedResponse}. The API endpoint may have changed. Please verify your template ID and sender ID are active.`)
+    // Check for success keywords
+    if (trimmedResponse.toLowerCase().includes("success") || trimmedResponse.toLowerCase().includes("message_id")) {
+      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone}`)
+      return true
     }
 
-    // Error responses
-    if (trimmedResponse.includes("-1") || trimmedResponse.toLowerCase().includes("authentication")) {
+    // If status is 200 and no error indicators, likely success
+    if (response.status === 200 && !trimmedResponse.toLowerCase().includes("error") && !trimmedResponse.toLowerCase().includes("invalid")) {
+      console.log(`[SMS_SUCCESS] OTP sent successfully to ${normalizedPhone} (Status: 200)`)
+      return true
+    }
+
+    // Error detection
+    if (trimmedResponse.toLowerCase().includes("authentication failed") || trimmedResponse.includes("-1")) {
       throw new Error(`MSG91 Authentication Error: Invalid AuthKey. Response: ${trimmedResponse}`)
     }
 
-    if (trimmedResponse.includes("-2") || trimmedResponse.toLowerCase().includes("invalid")) {
-      throw new Error(`MSG91 Error: Invalid parameters. Response: ${trimmedResponse}`)
+    if (trimmedResponse.toLowerCase().includes("invalid") && trimmedResponse.toLowerCase().includes("sender")) {
+      throw new Error(`MSG91 Error: Sender ID "${senderId}" is not valid or not registered. Response: ${trimmedResponse}`)
     }
 
-    if (trimmedResponse.toLowerCase().includes("insufficient")) {
-      throw new Error(`MSG91 Error: Insufficient balance in your MSG91 account. Response: ${trimmedResponse}`)
+    if (trimmedResponse.toLowerCase().includes("invalid mobile")) {
+      throw new Error(`MSG91 Error: Invalid phone number format. Response: ${trimmedResponse}`)
     }
 
-    // If response is not understood
+    if (trimmedResponse.toLowerCase().includes("insufficient") || trimmedResponse.toLowerCase().includes("balance")) {
+      throw new Error(`MSG91 Error: Insufficient balance in MSG91 account. Response: ${trimmedResponse}`)
+    }
+
+    if (trimmedResponse.toLowerCase().includes("template") && trimmedResponse.toLowerCase().includes("invalid")) {
+      throw new Error(`MSG91 Error: Template ID "${templateId}" is invalid or not registered. Response: ${trimmedResponse}`)
+    }
+
+    // Unknown error response
     if (!response.ok) {
       throw new Error(`MSG91 API Error. Status: ${response.status}, Body: "${trimmedResponse}"`)
     }
 
-    // Unknown but 200 OK - treat as potential success if we can't decode
-    console.warn(`[v0] WARNING: MSG91 returned 200 but response format unclear: ${trimmedResponse}`)
-    console.log(`[SMS_SUCCESS] Request appears successful despite unclear response`)
+    // If we get here with 200 status but unclear response, assume success
+    console.warn(`[v0] WARNING: MSG91 returned 200 but response is unclear: ${trimmedResponse}`)
+    console.log(`[SMS_SUCCESS] Request completed (unclear response)`)
     return true
   } catch (error) {
     console.error("[SMS_ERROR] OTP sending failed:", error)
@@ -203,8 +189,8 @@ export async function sendMsg91SMS(phone: string, message: string): Promise<bool
 
     console.log(`[v0] Sending SMS to ${normalizedPhone}`)
 
-    // Build MSG91 API URL - using modern v5 endpoint with proper parameters
-    const msg91Url = new URL("https://api.msg91.com/api/v5/sendsms.php")
+    // Build MSG91 API URL - using correct endpoint with proper parameters
+    const msg91Url = new URL("https://api.msg91.com/api/sendhttp.php")
     msg91Url.searchParams.append("authkey", authKey)
     msg91Url.searchParams.append("mobiles", normalizedPhone)
     msg91Url.searchParams.append("message", message)
@@ -226,33 +212,18 @@ export async function sendMsg91SMS(phone: string, message: string): Promise<bool
     console.log(`[v0] SMS Response Status: ${response.status}`)
     console.log(`[v0] SMS Response Body: "${trimmedResponse}"`)
 
-    // v5 API returns JSON
-    if (trimmedResponse.startsWith("{")) {
-      try {
-        const jsonResponse = JSON.parse(trimmedResponse)
-        console.log(`[v0] SMS JSON Response:`, JSON.stringify(jsonResponse))
-        
-        if (jsonResponse.type === "success" || jsonResponse.request_id || jsonResponse.status === "success") {
-          console.log(`[SMS_SUCCESS] SMS sent via MSG91 to ${normalizedPhone}`)
-          return true
-        }
-        
-        if (jsonResponse.request_id) {
-          console.log(`[SMS_SUCCESS] SMS sent via MSG91 to ${normalizedPhone}`)
-          return true
-        }
-        
-        throw new Error(`MSG91 Error: ${jsonResponse.message || "Unknown error"}`)
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          throw new Error(`Invalid JSON response from MSG91: ${trimmedResponse}`)
-        }
-        throw e
+    // Check for success indicators
+    if (trimmedResponse === "401" || trimmedResponse === "0" || response.status === 200) {
+      // Check for error keywords even with 200 status
+      if (trimmedResponse.toLowerCase().includes("error") || trimmedResponse.toLowerCase().includes("invalid")) {
+        throw new Error(`MSG91 Error: ${trimmedResponse}`)
       }
+      console.log(`[SMS_SUCCESS] SMS sent via MSG91 to ${normalizedPhone}`)
+      return true
     }
 
-    // Check for legacy response formats
-    if (trimmedResponse === "401" || trimmedResponse === "0" || response.ok) {
+    // Check if response is a message ID (hex string)
+    if (/^[0-9a-fA-F]{15,}$/.test(trimmedResponse)) {
       console.log(`[SMS_SUCCESS] SMS sent via MSG91 to ${normalizedPhone}`)
       return true
     }
