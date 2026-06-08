@@ -78,7 +78,7 @@ async function sendViaMSG91(phone: string, message: string): Promise<boolean> {
     // Build exact MSG91 API URL format: authkey=XXX&sender=YYY&mobiles=91XXXXXXXXXX&route=4&DLT_TE_ID=ZZZ&message=MSG
     const url = `https://api.msg91.com/api/sendhttp.php?authkey=${authKey}&sender=${senderId}&mobiles=${normalizedPhone}&route=4&DLT_TE_ID=${templateId}&message=${encodeURIComponent(message)}`
 
-    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&sender=${senderId}&mobiles=${normalizedPhone}&route=4&DLT_TE_ID=${templateId}&message=...`)
+    console.log(`[https://api.msg91.com/api/sendhttp.php?authkey=***&sender=${senderId}&mobiles=${normalizedPhone}&route=4&DLT_TE_ID=${templateId}&message=...`)
 
     const response = await fetch(url, {
       method: "GET",
