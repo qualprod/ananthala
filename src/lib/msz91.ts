@@ -1,7 +1,4 @@
-/**
- * MSG91 OTP Service Utility
- * Handles all MSG91 SMS/OTP operations
- */
+
 
 interface MSG91Response {
   type: "success" | "error"
@@ -73,23 +70,23 @@ export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean>
     const message = `Your Ananthala OTP is: ${otp}. Valid for 5 minutes. Do not share this OTP with anyone.`
 
     console.log(`[v0] === SENDING OTP VIA MSG91 ===`)
-    console.log(`[v0] Phone: ${normalizedPhone}`)
+    console.log(`[v0] Original phone: ${phone}, Normalized: ${normalizedPhone}`)
     console.log(`[v0] OTP: ${otp}`)
     console.log(`[v0] SenderID: ${senderId}`)
-    console.log(`[v0] Template ID: ${templateId}`)
+    console.log(`[v0] Template ID (DLT_TE_ID): ${templateId}`)
     console.log(`[v0] AuthKey (first 10 chars): ${authKey.substring(0, 10)}...`)
 
-    // Use MSG91 correct endpoint - /api/sendhttp.php (v5 endpoint doesn't exist, this is the correct one)
+    // Use MSG91 correct endpoint - /api/sendhttp.php with correct parameter names
+    // Format: https://api.msg91.com/api/sendhttp.php?authkey=XXX&sender=YYY&mobiles=91XXXXXXXXXX&route=4&DLT_TE_ID=ZZZ&message=MSG
     const msg91Url = new URL("https://api.msg91.com/api/sendhttp.php")
     msg91Url.searchParams.append("authkey", authKey)
-    msg91Url.searchParams.append("mobiles", normalizedPhone)
-    msg91Url.searchParams.append("message", message)
     msg91Url.searchParams.append("sender", senderId)
+    msg91Url.searchParams.append("mobiles", normalizedPhone) // Send with country code (91XXXXXXXXXX)
     msg91Url.searchParams.append("route", "4") // Transactional OTP route
-    msg91Url.searchParams.append("country", "91") // India country code
-    msg91Url.searchParams.append("template_id", templateId) // DLT Template ID (CRITICAL for India)
+    msg91Url.searchParams.append("DLT_TE_ID", templateId) // CORRECT parameter name for DLT Template ID
+    msg91Url.searchParams.append("message", message)
 
-    console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&mobiles=${normalizedPhone}&route=4&country=91&sender=${senderId}&template_id=${templateId}&message=...`)
+    console.log(`[Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&sender=${senderId}&mobiles=${normalizedPhone}&route=4&DLT_TE_ID=${templateId}&message=...`)
 
     const response = await fetch(msg91Url.toString(), {
       method: "GET",
@@ -192,12 +189,11 @@ export async function sendMsg91SMS(phone: string, message: string): Promise<bool
     // Build MSG91 API URL - using correct endpoint with proper parameters
     const msg91Url = new URL("https://api.msg91.com/api/sendhttp.php")
     msg91Url.searchParams.append("authkey", authKey)
-    msg91Url.searchParams.append("mobiles", normalizedPhone)
-    msg91Url.searchParams.append("message", message)
     msg91Url.searchParams.append("sender", senderId)
+    msg91Url.searchParams.append("mobiles", normalizedPhone) // Send with country code (91XXXXXXXXXX)
     msg91Url.searchParams.append("route", "4") // Transactional route
-    msg91Url.searchParams.append("country", "91")
-    msg91Url.searchParams.append("template_id", templateId) // DLT Template ID
+    msg91Url.searchParams.append("DLT_TE_ID", templateId) // CORRECT parameter name for DLT Template ID
+    msg91Url.searchParams.append("message", message)
 
     const response = await fetch(msg91Url.toString(), {
       method: "GET",
