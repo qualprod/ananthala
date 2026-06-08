@@ -75,19 +75,12 @@ async function sendViaMSG91(phone: string, message: string): Promise<boolean> {
     console.log(`[v0] SenderID: ${senderId}`)
     console.log(`[v0] AuthKey (first 10 chars): ${authKey.substring(0, 10)}...`)
 
-    // Build MSG91 API URL - using correct endpoint with proper parameters
-    // Format: https://api.msg91.com/api/sendhttp.php?authkey=XXX&sender=YYY&mobiles=91XXXXXXXXXX&route=4&DLT_TE_ID=ZZZ&message=MSG
-    const msg91Url = new URL("https://api.msg91.com/api/sendhttp.php")
-    msg91Url.searchParams.append("authkey", authKey)
-    msg91Url.searchParams.append("sender", senderId)
-    msg91Url.searchParams.append("mobiles", normalizedPhone)
-    msg91Url.searchParams.append("route", "4")
-    msg91Url.searchParams.append("DLT_TE_ID", templateId)
-    msg91Url.searchParams.append("message", message)
+    // Build exact MSG91 API URL format: authkey=XXX&sender=YYY&mobiles=91XXXXXXXXXX&route=4&DLT_TE_ID=ZZZ&message=MSG
+    const url = `https://api.msg91.com/api/sendhttp.php?authkey=${authKey}&sender=${senderId}&mobiles=${normalizedPhone}&route=4&DLT_TE_ID=${templateId}&message=${encodeURIComponent(message)}`
 
     console.log(`[v0] Full URL (with authkey hidden): https://api.msg91.com/api/sendhttp.php?authkey=***&sender=${senderId}&mobiles=${normalizedPhone}&route=4&DLT_TE_ID=${templateId}&message=...`)
 
-    const response = await fetch(msg91Url.toString(), {
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -162,7 +155,7 @@ async function sendViaMSG91(phone: string, message: string): Promise<boolean> {
  * Sends OTP via MSG91 API
  */
 export async function sendMsg91OTP(phone: string, otp: string): Promise<boolean> {
-  const message = `Your Ananthala OTP is: ${otp}. Valid for 5 minutes. Do not share this OTP with anyone.`
+  const message = `Your OTP for verification is ${otp}. Please do not share this OTP with anyone - Ananthala.`
   console.log(`[v0] OTP: ${otp}`)
   return sendViaMSG91(phone, message)
 }
