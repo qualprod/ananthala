@@ -6,6 +6,7 @@ import { verifyToken } from "@/lib/jwt"
 import connectDB from "@/lib/mongodb"
 import Order from "@/models/order"
 import Coupon from "@/models/Coupons"
+import Product from "@/models/Product"
 import { sendOrderConfirmationEmail } from "@/lib/email-service"
 import { withCountryCode } from "@/lib/phone"
 
@@ -291,6 +292,60 @@ shippingAddress: {
       razorpayPaymentId: razorpay_payment_id,
       razorpaySignature: razorpay_signature,
     })
+
+    // Reduce stock for each product in the order
+    for (const item of orderItems) {
+      if (item.productId && /^[a-f0-9]{24}$/i.test(item.productId.toString())) {
+        try {
+          const productObjectId = new mongoose.Types.ObjectId(item.productId.toString())
+          const product = await Product.findById(productObjectId)
+          
+          if (product) {
+            let variantUpdated = false
+            
+            // For single products, reduce stock from matching variant
+            if (product.productType === "single" && product.variants && product.variants.length > 0) {
+              // Find matching variant by fabric
+              const variantIndex = product.variants.findIndex(
+                (v: any) => v.fabric === item.fabric
+              )
+              
+              if (variantIndex !== -1) {
+                const variant = product.variants[variantIndex]
+                const newStock = Math.max(0, (variant.stock || 0) - (item.quantity || 0))
+                product.variants[variantIndex].stock = newStock
+                variantUpdated = true
+              }
+            }
+            
+            // For hamper products, reduce stock from matching hamper item variants
+            if (product.productType === "hamper" && product.hamperItems && product.hamperItems.length > 0) {
+              for (const hamperItem of product.hamperItems) {
+                if (hamperItem.variants && hamperItem.variants.length > 0) {
+                  const variantIndex = hamperItem.variants.findIndex(
+                    (v: any) => v.fabric === item.fabric
+                  )
+                  if (variantIndex !== -1) {
+                    const variant = hamperItem.variants[variantIndex]
+                    const newStock = Math.max(0, (variant.stock || 0) - (item.quantity || 0))
+                    hamperItem.variants[variantIndex].stock = newStock
+                    variantUpdated = true
+                  }
+                }
+              }
+            }
+            
+            if (variantUpdated) {
+              await product.save()
+              console.log(`[v0] Stock reduced for product ${item.productId}, order ${orderId}`)
+            }
+          }
+        } catch (stockError) {
+          console.error(`[v0] Error reducing stock for product ${item.productId}:`, stockError)
+          // Don't fail order if stock reduction fails - it's not critical
+        }
+      }
+    }
 
     if (couponCodes.length > 0 && claimedDiscount > 0) {
       const updated = await Coupon.findOneAndUpdate(

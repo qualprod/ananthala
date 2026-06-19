@@ -549,6 +549,13 @@ export function ProductConfigurator({
               Only {selectedVariant.stock} left in stock for this selection.
             </p>
           )}
+          {selectedVariant && hasSufficientStock && selectedVariant.stock > 0 && selectedVariant.stock < 5 && (
+            <div className="p-3 bg-red-50 border border-red-300 rounded-md">
+              <p className="text-sm font-semibold text-red-700">
+                ⚠️ Only few items available
+              </p>
+            </div>
+          )}
           <Button
             className="w-full bg-[#EED9C4] hover:bg-[#D9BB9B] text-foreground py-3 text-base"
             onClick={handleAddToCart}
